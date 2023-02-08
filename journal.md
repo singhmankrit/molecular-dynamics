@@ -26,20 +26,20 @@ You will find how to include [links](https://docs.gitlab.com/ee/user/markdown.ht
 useful.
 
 ## Week 1
-(due 14 February 2022, 23:59)
+(due 20 February 2023, 23:59)
 
 
 ## Week 2
-(due 21 February 2022, 23:59)
+(due 27 February 2023, 23:59)
 
 
 ## Week 3
-(due 28 February 2022, 23:59)
+(due 6 March 2023, 23:59)
 
 
 ## Week 4
-(due 7 March 2022, 23:59)
+(due 13 March 2023, 23:59)
 
 
 ## Week 5
-(due 14 March 2022, 23:59)
+(due 20 March 2023, 23:59)
