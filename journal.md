@@ -28,6 +28,9 @@ useful.
 ## Week 1
 (due 20 February 2023, 23:59)
 
+#### Planning
+
+#### Progress report
 
 ## Week 2
 (due 27 February 2023, 23:59)
