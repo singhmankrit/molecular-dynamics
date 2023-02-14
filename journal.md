@@ -6,9 +6,9 @@ In this journal you will document your progress of the project, making use of th
 
 Every week you should 
 
-1. write down **on the day of the lecture** a short plan (bullet list is sufficient) of how you want to 
-   reach the weekly milestones. Think about how to distribute work in the group, 
-   what pieces of code functionality need to be implemented.
+1. write down **on the day of the lecture** a short plan of how you want to 
+   reach the weekly milestones. Try to be specific: Think about how to distribute work in the group, 
+   what pieces of code functionality need to be implemented, and set target deadlines.
 2. write about your progress **until Monday, 23:59** before the next lecture with respect to the milestones.
    Substantiate your progress with links to code, pictures or test results. Reflect on the
    relation to your original plan.
@@ -16,6 +16,11 @@ Every week you should
 We will give feedback on your progress on Tuesday before the following lecture. Consult the 
 [grading scheme](https://computationalphysics.quantumtinkerer.tudelft.nl/proj1-moldyn-grading/) 
 for details how the journal enters your grade.
+
+In week 3, we ask you additionally to use the [team checklist](https://compphys.quantumtinkerer.tudelft.nl/planning_project/#team-checklist)
+to reflect on how the group work is going. Please include the individually filled-out
+team checklists of every member (either in this journal or linked to separate files) and
+reflect on what you could improve.
 
 Note that the file format of the journal is *markdown*. This is a flexible and easy method of 
 converting text to HTML. 
@@ -30,19 +35,50 @@ useful.
 
 #### Planning
 
+
 #### Progress report
+
+
 
 ## Week 2
 (due 27 February 2023, 23:59)
+
+#### Planning
+
+
+#### Progress report
+
 
 
 ## Week 3
 (due 6 March 2023, 23:59)
 
+#### Planning
+
+
+#### Progress report
+
+
+#### Reflection on group work
+
+
 
 ## Week 4
 (due 13 March 2023, 23:59)
 
+#### Planning
+
+
+#### Progress report
+
+
 
 ## Week 5
 (due 20 March 2023, 23:59)
+
+#### Planning
+
+
+#### Progress report
+
+
