@@ -18,9 +18,9 @@ We will give feedback on your progress on Tuesday before the following lecture. 
 for details how the journal enters your grade.
 
 In week 3, we ask you additionally to use the [team checklist](https://compphys.quantumtinkerer.tudelft.nl/planning_project/#team-checklist)
-to reflect on how the group work is going. Please include the individually filled-out
-team checklists of every member (either in this journal or linked to separate files) and
-reflect on what you could improve.
+to reflect on how the group work is going, and how you could improve in the future.
+(Note that the grade of that week does not depend on how the group functions - but we 
+can give you feedback that helps you!)
 
 Note that the file format of the journal is *markdown*. This is a flexible and easy method of 
 converting text to HTML. 
