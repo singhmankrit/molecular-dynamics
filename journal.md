@@ -31,7 +31,7 @@ You will find how to include [links](https://docs.gitlab.com/ee/user/markdown.ht
 useful.
 
 ## Week 1
-(due 20 February 2023, 23:59)
+(due 19 February 2024, 23:59)
 
 #### Planning
 
@@ -41,7 +41,7 @@ useful.
 
 
 ## Week 2
-(due 27 February 2023, 23:59)
+(due 26 February 2024, 23:59)
 
 #### Planning
 
@@ -51,7 +51,7 @@ useful.
 
 
 ## Week 3
-(due 6 March 2023, 23:59)
+(due 4 March 2024, 23:59)
 
 #### Planning
 
@@ -64,7 +64,7 @@ useful.
 
 
 ## Week 4
-(due 13 March 2023, 23:59)
+(due 11 March 2024, 23:59)
 
 #### Planning
 
@@ -74,7 +74,7 @@ useful.
 
 
 ## Week 5
-(due 20 March 2023, 23:59)
+(due 18 March 2024, 23:59)
 
 #### Planning
 
