@@ -84,5 +84,4 @@ useful.
 
 ## Reminder final deadline
 
-You need to hand in the report and code via the repository by **25 March, 23:59**
-
+The deadline for project 1 is **25 March, 23:59**. By then, you must have uploaded the report to the repository, and the repository must contain the latest version of the code.
