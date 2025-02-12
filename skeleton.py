@@ -30,6 +30,8 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     -------
     Any quantities or observables that you wish to study.
     """
+    positions = [init_pos]
+    velocities = [init_vel]
 
     return
 
