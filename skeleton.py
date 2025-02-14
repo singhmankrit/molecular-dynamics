@@ -41,6 +41,26 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     positions = [init_pos]
     velocities = [init_vel]
 
+    # atomic weight modified to be in kg
+    mass = 39.792 * 1.660539066e-27
+    current_positions = init_pos
+    current_velocities = init_vel
+
+    for step in np.arange(num_tsteps):
+        # create the n-by-n matrix of all the distances and the n-by-n-by-3 matrix of the relative positions
+        relative_positions, distances = atomic_distances(current_positions, box_dim)
+        # get the n-by-3 matrix of all the total forces on the particles
+        forces = lj_force(relative_positions, distances)
+        # Euler integration step, we'll have to rewrite this to improve energy conservation
+        current_positions = (
+            current_positions + current_velocities * timestep
+        ) % box_dim
+        current_velocities += forces * timestep / mass
+
+        # append the new positions and velocities to the arrays after PR 1 is merged
+        # positions.append(current_positions)
+        # velocities.append(current_velocities)
+
     return
 
 
@@ -85,7 +105,7 @@ def atomic_distances(
 
 def lj_force(rel_pos, rel_dist):
     """
-    Calculates the net forces on each atom.
+    Calculates the net forces on each atom from the matrices containing the positions and distances.
 
     Parameters
     ----------
