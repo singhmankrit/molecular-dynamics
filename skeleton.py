@@ -65,7 +65,9 @@ def atomic_distances(
     z_dist = (central_z - other_z + box_dim[2] / 2) % box_dim[2] - box_dim[2] / 2
 
     # return the full distance matrix of shape n-by-n
-    return np.sqrt(x_dist * x_dist + y_dist * y_dist + z_dist * z_dist)
+    return np.ma.masked_values(
+        np.sqrt(x_dist * x_dist + y_dist * y_dist + z_dist * z_dist), 0.0
+    )
 
 
 def lj_force(rel_pos, rel_dist):
