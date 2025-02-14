@@ -34,7 +34,9 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     return
 
 
-def atomic_distances(pos, box_dim):
+def atomic_distances(
+    pos: np.typing.NDArray[np.float64], box_dim: np.typing.NDArray[np.float64]
+) -> np.typing.NDArray[np.float64]:
     """
     Calculates relative positions and distances between particles.
 
