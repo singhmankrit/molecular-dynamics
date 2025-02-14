@@ -114,6 +114,12 @@ def kinetic_energy(vel):
     return
 
 
+def lj_potential(distance):
+    epsilon = 119.8
+    sigma = 3.405e-10
+    return 4 * epsilon * ((sigma / distance) ** 12 - (sigma / distance) ** 6)
+
+
 def potential_energy(rel_dist):
     """
     Computes the potential energy of an atomic system.
@@ -129,7 +135,7 @@ def potential_energy(rel_dist):
         The total potential energy of the system.
     """
 
-    return
+    return 1 / 2 * np.sum(lj_potential(rel_dist))
 
 
 def init_velocity(num_atoms, temp):
