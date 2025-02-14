@@ -7,6 +7,13 @@ you have a good reason to do so.
 
 import numpy as np
 
+init_pos = np.array(
+    [
+        [0.2, 0.5, 0.0],
+        [0.5, 0.8, 0.0],
+    ]
+)
+
 
 def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     """
@@ -24,13 +31,15 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
         The total number of simulation steps
     timestep : float
         Duration of a single simulation step
-    box_dim : float
+    box_dim : np.ndarray(float)
         Dimensions of the simulation box
 
     Returns
     -------
     Any quantities or observables that you wish to study.
     """
+    positions = [init_pos]
+    velocities = [init_vel]
 
     return
 
@@ -150,4 +159,21 @@ def init_velocity(num_atoms, temp):
         Array of particle velocities
     """
 
-    return
+    # NOTE: I don't know what the scale should be, it should also be a maxwell-boltzmann distribution to be
+    # fully correct. Though that'd require scipy or someone finding how
+    scale = temp
+    velocities = np.random.normal(loc=0.0, scale=scale, size=(num_atoms, 3))
+    return velocities
+
+
+if __name__ == "main":
+    timesteps = 1000
+    step_size = 0.01
+    temp = 113.7
+    simulate(
+        init_pos,
+        init_velocity(len(init_pos), temp),
+        timesteps,
+        step_size,
+        np.array([1.0, 1.0, 1.0]),
+    )
