@@ -115,7 +115,7 @@ def kinetic_energy(vel):
 
 
 def lj_potential(distance):
-    epsilon = 119.8
+    epsilon = 119.8 * 1.380649e-23
     sigma = 3.405e-10
     return 4 * epsilon * ((sigma / distance) ** 12 - (sigma / distance) ** 6)
 
