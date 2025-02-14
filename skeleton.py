@@ -31,8 +31,8 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     Any quantities or observables that you wish to study.
     """
 
-    mass = 1e-6
-
+    # atomic weight modified to be in kg
+    mass = 39.792 * 1.660539066e-27
     current_positions = init_pos
     current_velocities = init_vel
 
