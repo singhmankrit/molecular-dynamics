@@ -42,7 +42,9 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
         # get the n-by-3 matrix of all the total forces on the particles
         forces = lj_force(relative_positions, distances)
         # Euler integration step, we'll have to rewrite this to improve energy conservation
-        current_positions = current_positions + current_velocities * timestep % box_dim
+        current_positions = (
+            current_positions + current_velocities * timestep
+        ) % box_dim
         current_velocities += forces * timestep / mass
 
         # append the new positions and velocities to the arrays after PR 1 is merged
