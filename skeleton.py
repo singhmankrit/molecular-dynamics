@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 This is a suggestion for structuring your simulation code properly.
 However, it is not set in stone. You may modify it if you feel like
