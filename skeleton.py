@@ -121,14 +121,12 @@ def lj_force(rel_pos, rel_dist):
     """
     epsilon = 119.8 * 1.380649e-23
     sigma = 3.405e-10
-
-    np.fill_diagonal(rel_dist, 0.0)
     
     # Compute force magnitude using the Lennard-Jones force formula
-    force_magnitude = np.where(rel_dist!=0,(24 * epsilon / rel_dist**7) * (sigma**6) * (1 - 2 * (sigma**6 / rel_dist**6)),0)
+    force_magnitude = (24 * epsilon/rel_dist) * ((sigma/rel_dist)**6 - 2*(sigma/rel_dist)**12)
 
     # Compute force matrix
-    force_direction = np.where(rel_dist!=0,rel_pos / rel_dist,0)
+    force_direction = rel_pos / rel_dist
 
     force_matrix = force_magnitude * force_direction
     
