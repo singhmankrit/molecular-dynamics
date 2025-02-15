@@ -117,10 +117,24 @@ def lj_force(rel_pos, rel_dist):
     Returns
     -------
     np.ndarray
-        The net force acting on particle i due to all other particles
+        nx3 array having the net vector force acting on particle i due to all other particles
     """
+    epsilon = 119.8 * 1.380649e-23
+    sigma = 3.405e-10
+    
+    # Compute force magnitude using the Lennard-Jones force formula
+    force_magnitude = (24 * epsilon/rel_dist) * ((sigma/rel_dist)**6 - 2*(sigma/rel_dist)**12)
 
-    return
+    # Compute force matrix
+    force_direction = rel_pos / rel_dist
+
+    force_matrix = force_magnitude * force_direction
+    
+    # Sum forces acting on each particle
+    net_force = np.sum(force_matrix, axis=1)  
+    
+    return net_force.T 
+    
 
 
 def fcc_lattice(num_atoms, lat_const):
