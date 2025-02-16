@@ -7,6 +7,8 @@ you have a good reason to do so.
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+from mpl_toolkits.mplot3d import Axes3D
 
 init_pos = np.array(
     [
@@ -259,7 +261,40 @@ def plot_energy(energies):
     plt.ylabel("Energy")
     plt.plot(energies)
     plt.show()
+    
+def create_animation(positions,timesteps,name="particles.mp4"):
+    """
+    Creates an animation of the system.
+    
+    Parameters
+    ----------
+    positions : list
+        List of positions
+    timesteps : int
+        Number of timesteps
+    name : str
+        Name of the animation file
+    """
+    fig = plt.figure(figsize=(7, 7))
+    ax = fig.add_subplot(111, projection='3d')
+    ax.set_xlim(0,1)
+    ax.set_ylim(0,1)
+    ax.set_zlim(0,1)
+    positions = np.array(positions)  # Convert to NumPy array if it's a list
+    # Scatter plot for particles
+    particles, = ax.plot([], [], [], 'bo', markersize=5)
 
+    # Update function for animation
+    def update(frame):
+        particles.set_data(positions[frame, :, 0], positions[frame, :, 1])  # X, Y
+        particles.set_3d_properties(positions[frame, :, 2])  # Z
+        return particles,
+
+    # Create animation
+    ani = animation.FuncAnimation(fig, update, frames=timesteps, interval=10, blit=True)
+
+    ani.save(name, writer="ffmpeg", fps=30)
+    
 if __name__ == "main":
     timesteps = 1000
     step_size = 0.01
@@ -272,4 +307,5 @@ if __name__ == "main":
         np.array([1.0, 1.0, 1.0]),
     )
     plot_energy(energies)
+    create_animation(positions,timesteps)
     
