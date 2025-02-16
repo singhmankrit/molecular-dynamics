@@ -13,7 +13,11 @@ init_pos = np.array(
         [0.5, 0.8, 0.0],
     ]
 )
+# atomic weight modified to be in kg
+mass = 39.792 * 1.660539066e-27
 
+epsilon = 119.8 * 1.380649e-23
+sigma = 3.405e-10
 
 def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     """
@@ -41,8 +45,6 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     positions = [init_pos]
     velocities = [init_vel]
 
-    # atomic weight modified to be in kg
-    mass = 39.792 * 1.660539066e-27
     current_positions = init_pos
     current_velocities = init_vel
 
@@ -119,8 +121,7 @@ def lj_force(rel_pos, rel_dist):
     np.ndarray
         nx3 array having the net vector force acting on particle i due to all other particles
     """
-    epsilon = 119.8 * 1.380649e-23
-    sigma = 3.405e-10
+    
     
     # Compute force magnitude using the Lennard-Jones force formula
     force_magnitude = (24 * epsilon/rel_dist) * ((sigma/rel_dist)**6 - 2*(sigma/rel_dist)**12)
@@ -176,8 +177,6 @@ def kinetic_energy(vel):
 
 
 def lj_potential(distance):
-    epsilon = 119.8 * 1.380649e-23
-    sigma = 3.405e-10
     return 4 * epsilon * ((sigma / distance) ** 12 - (sigma / distance) ** 6)
 
 
