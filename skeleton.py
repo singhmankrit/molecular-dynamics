@@ -6,6 +6,7 @@ you have a good reason to do so.
 """
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 init_pos = np.array(
     [
@@ -270,4 +271,5 @@ if __name__ == "main":
         step_size,
         np.array([1.0, 1.0, 1.0]),
     )
-    plot_
+    plot_energy(energies)
+    
