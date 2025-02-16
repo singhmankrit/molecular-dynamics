@@ -172,8 +172,11 @@ def kinetic_energy(vel):
     float
         The total kinetic energy of the system.
     """
-
-    return
+    # Kinetic energy for each particle
+    ke_individual = 1/2 * mass * np.sum(vel**2, axis=1)
+    # Total Kinetic Energy
+    ke = np.sum(ke_individual)
+    return ke
 
 
 def lj_potential(distance):
