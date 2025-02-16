@@ -44,7 +44,8 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     """
     positions = [init_pos]
     velocities = [init_vel]
-
+    energies =[]
+    
     current_positions = init_pos
     current_velocities = init_vel
 
@@ -53,17 +54,19 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
         relative_positions, distances = atomic_distances(current_positions, box_dim)
         # get the n-by-3 matrix of all the total forces on the particles
         forces = lj_force(relative_positions, distances)
+        # get current total energy and append
+        energies.append(total_energy(distances, current_velocities))
         # Euler integration step, we'll have to rewrite this to improve energy conservation
         current_positions = (
             current_positions + current_velocities * timestep
         ) % box_dim
         current_velocities += forces * timestep / mass
 
-        # append the new positions and velocities to the arrays after PR 1 is merged
-        # positions.append(current_positions)
-        # velocities.append(current_velocities)
+        # append the new positions and velocities to the arrays
+        positions.append(current_positions)
+        velocities.append(current_velocities)
 
-    return
+    return positions, velocities, energies
 
 
 def atomic_distances(
@@ -240,16 +243,31 @@ def init_velocity(num_atoms, temp):
     scale = temp
     velocities = np.random.normal(loc=0.0, scale=scale, size=(num_atoms, 3))
     return velocities
-
+    
+def plot_energy(energies):
+    """
+    Plots the energy vs timesteps.
+    
+    Parameters
+    ----------
+    energies : list
+        List of energies   
+    """
+    plt.title("Energy vs timesteps")
+    plt.xlabel("timesteps")
+    plt.ylabel("Energy")
+    plt.plot(energies)
+    plt.show()
 
 if __name__ == "main":
     timesteps = 1000
     step_size = 0.01
     temp = 113.7
-    simulate(
+    pos,vel,energies = simulate(
         init_pos,
         init_velocity(len(init_pos), temp),
         timesteps,
         step_size,
         np.array([1.0, 1.0, 1.0]),
     )
+    plot_
