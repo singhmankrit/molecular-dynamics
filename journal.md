@@ -35,6 +35,10 @@ useful.
 
 #### Planning
 
+Our group wasn't complete yet so we didn't make a planning.
+Instead two of us looked at the milestones for the week and made sure to understand them.
+We then created gitlab issues (#2, #3, #4, #6, #8, #11 and #12) and a [milestone](https://gitlab.kwant-project.org/computational_physics/projects/Project1_mankritsingh_npaarts_rjuyal/-/milestones/5)
+to keep track of the progress and worked on them when we had time.
 
 #### Progress report
 
