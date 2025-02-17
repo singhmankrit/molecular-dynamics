@@ -10,7 +10,9 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 
-init_pos = np.random.uniform(0.0, 1.0, (100, 3))
+amount_of_particles = 100
+
+init_pos = np.random.uniform(0.0, 1.0, (amount_of_particles, 3))
 # atomic weight modified to be in kg
 mass = 39.792 * 1.660539066e-27
 
@@ -313,7 +315,7 @@ if __name__ == "__main__":
     )
     pos, vel, energies = simulate(
         init_pos,
-        np.zeros((2,3)),
+        np.zeros((amount_of_particles, 3)),
         timesteps,
         step_size,
         box_size,
