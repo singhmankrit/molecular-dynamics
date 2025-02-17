@@ -223,7 +223,7 @@ def init_velocity(num_atoms, temp):
     return velocities
 
 
-if __name__ == "main":
+if __name__ == "__main__":
     timesteps = 1000
     step_size = 0.01
     temp = 113.7
