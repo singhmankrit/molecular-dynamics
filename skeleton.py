@@ -250,7 +250,7 @@ def init_velocity(num_atoms, temp):
     return velocities
 
 
-def plot_energy(energies):
+def plot_energy(energies, file_name="energies.png"):
     """
     Plots the energy vs timesteps.
 
@@ -263,7 +263,7 @@ def plot_energy(energies):
     plt.xlabel("timesteps")
     plt.ylabel("Energy")
     plt.plot(energies)
-    plt.show()
+    plt.savefig(file_name)
 
 
 def create_animation(positions, timesteps, name="particles.mp4"):
@@ -295,14 +295,14 @@ def create_animation(positions, timesteps, name="particles.mp4"):
         return (particles,)
 
     # Create animation
-    ani = animation.FuncAnimation(fig, update, frames=timesteps, interval=10, blit=True)
+    ani = animation.FuncAnimation(fig, update, frames=timesteps, blit=True)
 
     ani.save(name, writer="ffmpeg", fps=30)
 
 
 if __name__ == "__main__":
     timesteps = 1000
-    step_size = 0.01
+    step_size = 0.0001
     temp = 113.7
     print(
         f"simulating the particles for {timesteps} timesteps, with a time step size of {step_size}"
