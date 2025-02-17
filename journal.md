@@ -42,6 +42,12 @@ to keep track of the progress and worked on them when we had time.
 
 #### Progress report
 
+- After creating the issues, we created branches to solve those issues and then merged them after review. 
+- We first stored each particle's position and velocity at every timestep(see issue #2) using lists of numpy arrays. 
+- We then created a function to calculate relative positions and distances taking into account for periodic boundary(see issues #6 and #11). This was done by creating a box with the ith particle at the centre and taking modulo to get the relative position(and thus the distance) of the jth particle. 
+- We then implemented the Euler method for time evolution(see issue #3) making sure to keep the periodic boundary on the position.
+- Then the total potential energy function was created(see issue #8) and after that we created the function to calculate the force(see issue #4).
+- Finally we added functions for total kinetic energy, total energy, plot of total energy vs timestep and rendering the animation of the particles(see issue #12).
 
 
 ## Week 2
