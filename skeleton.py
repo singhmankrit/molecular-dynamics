@@ -49,6 +49,9 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     current_velocities = init_vel
 
     for step in np.arange(num_tsteps):
+        print(
+            f"the particles are at {current_positions}\nthe particles have velocities {current_velocities}"
+        )
         # create the n-by-n matrix of all the distances and the n-by-n-by-3 matrix of the relative positions
         relative_positions, distances = atomic_distances(current_positions, box_dim)
         # get the n-by-3 matrix of all the total forces on the particles
@@ -102,7 +105,10 @@ def atomic_distances(
     return (
         np.stack([x_dist, y_dist, z_dist]),
         np.ma.masked_values(
-            np.sqrt(x_dist * x_dist + y_dist * y_dist + z_dist * z_dist), 0.0
+            np.sqrt(x_dist * x_dist + y_dist * y_dist + z_dist * z_dist),
+            0.0,
+            rtol=1e-60,
+            atol=1e-60,
         ),
     )
 
@@ -261,7 +267,7 @@ def plot_energy(energies, file_name="energies.png"):
     plt.savefig(file_name)
 
 
-def create_animation(positions, timesteps, name="particles.mp4"):
+def create_animation(positions, timesteps, box_size, name="particles.mp4"):
     """
     Creates an animation of the system.
 
@@ -271,14 +277,16 @@ def create_animation(positions, timesteps, name="particles.mp4"):
         List of positions
     timesteps : int
         Number of timesteps
+    box_size : np.ndarray
+        Size of the simulation box
     name : str
         Name of the animation file
     """
     fig = plt.figure(figsize=(7, 7))
     ax = fig.add_subplot(111, projection="3d")
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1)
-    ax.set_zlim(0, 1)
+    ax.set_xlim(0, box_size[0])
+    ax.set_ylim(0, box_size[1])
+    ax.set_zlim(0, box_size[2])
     positions = np.array(positions)  # Convert to NumPy array if it's a list
     # Scatter plot for particles
     (particles,) = ax.plot([], [], [], "bo", markersize=5)
@@ -299,17 +307,18 @@ if __name__ == "__main__":
     timesteps = 1000
     step_size = 0.0001
     temp = 113.7
+    box_size = np.array([1.0, 1.0, 1.0]) * 1e-5
     print(
         f"simulating the particles for {timesteps} timesteps, with a time step size of {step_size}"
     )
     pos, vel, energies = simulate(
         init_pos,
-        init_velocity(len(init_pos), temp),
+        np.zeros((2,3)),
         timesteps,
         step_size,
-        np.array([1.0, 1.0, 1.0]),
+        box_size,
     )
     print("finished simulating, plotting the energies over time")
     plot_energy(energies)
     print("plotted the energies")
-    create_animation(pos, timesteps)
+    create_animation(pos, timesteps, box_size)
