@@ -304,6 +304,9 @@ if __name__ == "__main__":
     timesteps = 1000
     step_size = 0.01
     temp = 113.7
+    print(
+        f"simulating the particles for {timesteps} timesteps, with a time step size of {step_size}"
+    )
     pos, vel, energies = simulate(
         init_pos,
         init_velocity(len(init_pos), temp),
@@ -311,5 +314,7 @@ if __name__ == "__main__":
         step_size,
         np.array([1.0, 1.0, 1.0]),
     )
+    print("finished simulating, plotting the energies over time")
     plot_energy(energies)
+    print("plotted the energies")
     create_animation(pos, timesteps)
