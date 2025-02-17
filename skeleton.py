@@ -22,6 +22,7 @@ mass = 39.792 * 1.660539066e-27
 epsilon = 119.8 * 1.380649e-23
 sigma = 3.405e-10
 
+
 def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     """
     Molecular dynamics simulation using the Euler or Verlet's algorithms
@@ -47,8 +48,8 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     """
     positions = [init_pos]
     velocities = [init_vel]
-    energies =[]
-    
+    energies = []
+
     current_positions = init_pos
     current_velocities = init_vel
 
@@ -127,21 +128,20 @@ def lj_force(rel_pos, rel_dist):
     np.ndarray
         nx3 array having the net vector force acting on particle i due to all other particles
     """
-    
-    
     # Compute force magnitude using the Lennard-Jones force formula
-    force_magnitude = (24 * epsilon/rel_dist) * ((sigma/rel_dist)**6 - 2*(sigma/rel_dist)**12)
+    force_magnitude = (24 * epsilon / rel_dist) * (
+        (sigma / rel_dist) ** 6 - 2 * (sigma / rel_dist) ** 12
+    )
 
     # Compute force matrix
     force_direction = rel_pos / rel_dist
 
     force_matrix = force_magnitude * force_direction
-    
+
     # Sum forces acting on each particle
-    net_force = np.sum(force_matrix, axis=1)  
-    
-    return net_force.T 
-    
+    net_force = np.sum(force_matrix, axis=1)
+
+    return net_force.T
 
 
 def fcc_lattice(num_atoms, lat_const):
@@ -179,7 +179,7 @@ def kinetic_energy(vel):
         The total kinetic energy of the system.
     """
     # Kinetic energy for each particle
-    ke_individual = 1/2 * mass * np.sum(vel**2, axis=1)
+    ke_individual = 1 / 2 * mass * np.sum(vel**2, axis=1)
     # Total Kinetic Energy
     ke = np.sum(ke_individual)
     return ke
@@ -206,8 +206,9 @@ def potential_energy(rel_dist):
 
     return 1 / 2 * np.sum(lj_potential(rel_dist))
 
+
 def total_energy(rel_dist, vel):
-    """ 
+    """
     Computes the total energy of an atomic system.
 
     Parameters
@@ -223,6 +224,7 @@ def total_energy(rel_dist, vel):
         The total energy of the system.
     """
     return kinetic_energy(vel) + potential_energy(rel_dist)
+
 
 def init_velocity(num_atoms, temp):
     """
@@ -246,26 +248,28 @@ def init_velocity(num_atoms, temp):
     scale = temp
     velocities = np.random.normal(loc=0.0, scale=scale, size=(num_atoms, 3))
     return velocities
-    
+
+
 def plot_energy(energies):
     """
     Plots the energy vs timesteps.
-    
+
     Parameters
     ----------
     energies : list
-        List of energies   
+        List of energies
     """
     plt.title("Energy vs timesteps")
     plt.xlabel("timesteps")
     plt.ylabel("Energy")
     plt.plot(energies)
     plt.show()
-    
-def create_animation(positions,timesteps,name="particles.mp4"):
+
+
+def create_animation(positions, timesteps, name="particles.mp4"):
     """
     Creates an animation of the system.
-    
+
     Parameters
     ----------
     positions : list
@@ -276,30 +280,31 @@ def create_animation(positions,timesteps,name="particles.mp4"):
         Name of the animation file
     """
     fig = plt.figure(figsize=(7, 7))
-    ax = fig.add_subplot(111, projection='3d')
-    ax.set_xlim(0,1)
-    ax.set_ylim(0,1)
-    ax.set_zlim(0,1)
+    ax = fig.add_subplot(111, projection="3d")
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.set_zlim(0, 1)
     positions = np.array(positions)  # Convert to NumPy array if it's a list
     # Scatter plot for particles
-    particles, = ax.plot([], [], [], 'bo', markersize=5)
+    (particles,) = ax.plot([], [], [], "bo", markersize=5)
 
     # Update function for animation
     def update(frame):
         particles.set_data(positions[frame, :, 0], positions[frame, :, 1])  # X, Y
         particles.set_3d_properties(positions[frame, :, 2])  # Z
-        return particles,
+        return (particles,)
 
     # Create animation
     ani = animation.FuncAnimation(fig, update, frames=timesteps, interval=10, blit=True)
 
     ani.save(name, writer="ffmpeg", fps=30)
-    
-if __name__ == "main":
+
+
+if __name__ == "__main__":
     timesteps = 1000
     step_size = 0.01
     temp = 113.7
-    pos,vel,energies = simulate(
+    pos, vel, energies = simulate(
         init_pos,
         init_velocity(len(init_pos), temp),
         timesteps,
@@ -307,5 +312,4 @@ if __name__ == "main":
         np.array([1.0, 1.0, 1.0]),
     )
     plot_energy(energies)
-    create_animation(positions,timesteps)
-    
+    create_animation(positions, timesteps)
