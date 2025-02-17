@@ -6,13 +6,18 @@ you have a good reason to do so.
 """
 
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+from mpl_toolkits.mplot3d import Axes3D
 
-init_pos = np.array(
-    [
-        [0.2, 0.5, 0.0],
-        [0.5, 0.8, 0.0],
-    ]
-)
+amount_of_particles = 100
+
+init_pos = np.random.uniform(0.0, 1.0, (amount_of_particles, 3))
+# atomic weight modified to be in kg
+mass = 39.792 * 1.660539066e-27
+
+epsilon = 119.8 * 1.380649e-23
+sigma = 3.405e-10
 
 
 def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
@@ -40,28 +45,34 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     """
     positions = [init_pos]
     velocities = [init_vel]
+    energies = []
 
-    # atomic weight modified to be in kg
-    mass = 39.792 * 1.660539066e-27
     current_positions = init_pos
     current_velocities = init_vel
 
     for step in np.arange(num_tsteps):
+        # For Debugging
+        # print(
+        #     f"the particles are at {current_positions}\nthe particles have velocities {current_velocities}"
+        # )
+        
         # create the n-by-n matrix of all the distances and the n-by-n-by-3 matrix of the relative positions
         relative_positions, distances = atomic_distances(current_positions, box_dim)
         # get the n-by-3 matrix of all the total forces on the particles
         forces = lj_force(relative_positions, distances)
+        # get current total energy and append
+        energies.append(total_energy(distances, current_velocities))
         # Euler integration step, we'll have to rewrite this to improve energy conservation
         current_positions = (
             current_positions + current_velocities * timestep
         ) % box_dim
         current_velocities += forces * timestep / mass
 
-        # append the new positions and velocities to the arrays after PR 1 is merged
-        # positions.append(current_positions)
-        # velocities.append(current_velocities)
+        # append the new positions and velocities to the arrays
+        positions.append(current_positions)
+        velocities.append(current_velocities)
 
-    return
+    return positions, velocities, energies
 
 
 def atomic_distances(
@@ -98,7 +109,10 @@ def atomic_distances(
     return (
         np.stack([x_dist, y_dist, z_dist]),
         np.ma.masked_values(
-            np.sqrt(x_dist * x_dist + y_dist * y_dist + z_dist * z_dist), 0.0
+            np.sqrt(x_dist * x_dist + y_dist * y_dist + z_dist * z_dist),
+            0.0,
+            rtol=1e-60,
+            atol=1e-60,
         ),
     )
 
@@ -119,9 +133,6 @@ def lj_force(rel_pos, rel_dist):
     np.ndarray
         nx3 array having the net vector force acting on particle i due to all other particles
     """
-    epsilon = 119.8 * 1.380649e-23
-    sigma = 3.405e-10
-
     # Compute force magnitude using the Lennard-Jones force formula
     force_magnitude = (24 * epsilon / rel_dist) * (
         (sigma / rel_dist) ** 6 - 2 * (sigma / rel_dist) ** 12
@@ -133,7 +144,7 @@ def lj_force(rel_pos, rel_dist):
     force_matrix = force_magnitude * force_direction
 
     # Sum forces acting on each particle
-    net_force = np.sum(force_matrix, axis=1)
+    net_force = -np.sum(force_matrix, axis=1)
 
     return net_force.T
 
@@ -172,13 +183,14 @@ def kinetic_energy(vel):
     float
         The total kinetic energy of the system.
     """
-
-    return
+    # Kinetic energy for each particle
+    ke_individual = 1 / 2 * mass * np.sum(vel**2, axis=1)
+    # Total Kinetic Energy
+    ke = np.sum(ke_individual)
+    return ke
 
 
 def lj_potential(distance):
-    epsilon = 119.8 * 1.380649e-23
-    sigma = 3.405e-10
     return 4 * epsilon * ((sigma / distance) ** 12 - (sigma / distance) ** 6)
 
 
@@ -198,6 +210,25 @@ def potential_energy(rel_dist):
     """
 
     return 1 / 2 * np.sum(lj_potential(rel_dist))
+
+
+def total_energy(rel_dist, vel):
+    """
+    Computes the total energy of an atomic system.
+
+    Parameters
+    ----------
+    rel_dist : np.ndarray
+        Relative particle distances as obtained from atomic_distances
+    vel : np.ndarray
+        Velocity of particle
+
+    Returns
+    -------
+    float
+        The total energy of the system.
+    """
+    return kinetic_energy(vel) + potential_energy(rel_dist)
 
 
 def init_velocity(num_atoms, temp):
@@ -224,14 +255,74 @@ def init_velocity(num_atoms, temp):
     return velocities
 
 
+def plot_energy(energies, file_name="energies.png"):
+    """
+    Plots the energy vs timesteps.
+
+    Parameters
+    ----------
+    energies : list
+        List of energies
+    """
+    plt.title("Energy vs timesteps")
+    plt.xlabel("timesteps")
+    plt.ylabel("Energy")
+    plt.plot(energies)
+    plt.savefig(file_name)
+
+
+def create_animation(positions, timesteps, box_size, name="particles.mp4"):
+    """
+    Creates an animation of the system.
+
+    Parameters
+    ----------
+    positions : list
+        List of positions
+    timesteps : int
+        Number of timesteps
+    box_size : np.ndarray
+        Size of the simulation box
+    name : str
+        Name of the animation file
+    """
+    fig = plt.figure(figsize=(7, 7))
+    ax = fig.add_subplot(111, projection="3d")
+    ax.set_xlim(0, box_size[0])
+    ax.set_ylim(0, box_size[1])
+    ax.set_zlim(0, box_size[2])
+    positions = np.array(positions)  # Convert to NumPy array if it's a list
+    # Scatter plot for particles
+    (particles,) = ax.plot([], [], [], "bo", markersize=5)
+
+    # Update function for animation
+    def update(frame):
+        particles.set_data(positions[frame, :, 0], positions[frame, :, 1])  # X, Y
+        particles.set_3d_properties(positions[frame, :, 2])  # Z
+        return (particles,)
+
+    # Create animation
+    ani = animation.FuncAnimation(fig, update, frames=timesteps, blit=True)
+
+    ani.save(name, writer="ffmpeg", fps=30)
+
+
 if __name__ == "__main__":
     timesteps = 1000
-    step_size = 0.01
+    step_size = 0.0001
     temp = 113.7
-    simulate(
+    box_size = np.array([1.0, 1.0, 1.0]) * 1e-5
+    print(
+        f"simulating the particles for {timesteps} timesteps, with a time step size of {step_size}"
+    )
+    pos, vel, energies = simulate(
         init_pos,
-        init_velocity(len(init_pos), temp),
+        np.zeros((amount_of_particles, 3)),
         timesteps,
         step_size,
-        np.array([1.0, 1.0, 1.0]),
+        box_size,
     )
+    print("finished simulating, plotting the energies over time")
+    plot_energy(energies)
+    print("plotted the energies")
+    create_animation(pos, timesteps, box_size)
