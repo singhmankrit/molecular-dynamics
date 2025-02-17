@@ -10,12 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 
-init_pos = np.array(
-    [
-        [0.2, 0.5, 0.0],
-        [0.5, 0.8, 0.0],
-    ]
-)
+init_pos = np.random.uniform(0.0, 1.0, (100, 3))
 # atomic weight modified to be in kg
 mass = 39.792 * 1.660539066e-27
 
