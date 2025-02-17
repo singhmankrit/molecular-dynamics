@@ -51,9 +51,11 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     current_velocities = init_vel
 
     for step in np.arange(num_tsteps):
-        print(
-            f"the particles are at {current_positions}\nthe particles have velocities {current_velocities}"
-        )
+        # For Debugging
+        # print(
+        #     f"the particles are at {current_positions}\nthe particles have velocities {current_velocities}"
+        # )
+        
         # create the n-by-n matrix of all the distances and the n-by-n-by-3 matrix of the relative positions
         relative_positions, distances = atomic_distances(current_positions, box_dim)
         # get the n-by-3 matrix of all the total forces on the particles
