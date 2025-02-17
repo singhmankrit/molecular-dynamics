@@ -312,4 +312,4 @@ if __name__ == "__main__":
         np.array([1.0, 1.0, 1.0]),
     )
     plot_energy(energies)
-    create_animation(positions, timesteps)
+    create_animation(pos, timesteps)
