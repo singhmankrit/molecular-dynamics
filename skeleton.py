@@ -139,7 +139,7 @@ def lj_force(rel_pos, rel_dist):
     force_matrix = force_magnitude * force_direction
 
     # Sum forces acting on each particle
-    net_force = np.sum(force_matrix, axis=1)
+    net_force = -np.sum(force_matrix, axis=1)
 
     return net_force.T
 
