@@ -5,14 +5,25 @@ However, it is not set in stone. You may modify it if you feel like
 you have a good reason to do so.
 """
 
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 
+debug = True if os.environ.get("DEBUG") is not None else False
+
+
+def dprint(str):
+    """ """
+    if debug:
+        print(str)
+
+
 amount_of_particles = 100
 
 init_pos = np.random.uniform(0.0, 1.0, (amount_of_particles, 3))
+dprint(f"created {amount_of_particles} particles")
 # atomic weight modified to be in kg
 mass = 39.792 * 1.660539066e-27
 
@@ -51,11 +62,13 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     current_velocities = init_vel
 
     for step in np.arange(num_tsteps):
-        # For Debugging
-        # print(
-        #     f"the particles are at {current_positions}\nthe particles have velocities {current_velocities}"
-        # )
-        
+        dprint(
+            f"""
+            at step {step} the particles are at {current_positions}
+            the particles have velocities {current_velocities}
+            """
+        )
+
         # create the n-by-n matrix of all the distances and the n-by-n-by-3 matrix of the relative positions
         relative_positions, distances = atomic_distances(current_positions, box_dim)
         # get the n-by-3 matrix of all the total forces on the particles
@@ -105,16 +118,17 @@ def atomic_distances(
     y_dist = (central_y - other_y + box_dim[1] / 2) % box_dim[1] - box_dim[1] / 2
     z_dist = (central_z - other_z + box_dim[2] / 2) % box_dim[2] - box_dim[2] / 2
 
-    # return the full distance matrix of shape n-by-n
-    return (
-        np.stack([x_dist, y_dist, z_dist]),
-        np.ma.masked_values(
-            np.sqrt(x_dist * x_dist + y_dist * y_dist + z_dist * z_dist),
-            0.0,
-            rtol=1e-60,
-            atol=1e-60,
-        ),
+    relative_positions = np.stack([x_dist, y_dist, z_dist])
+    distances = np.ma.masked_values(
+        np.sqrt(x_dist * x_dist + y_dist * y_dist + z_dist * z_dist),
+        0.0,
+        rtol=1e-60,
+        atol=1e-60,
     )
+    dprint(f"there are {np.ma.count_masked(distances)} masked distance values")
+
+    # return the full distance matrix of shape n-by-n
+    return (relative_positions, distances)
 
 
 def lj_force(rel_pos, rel_dist):
@@ -134,8 +148,11 @@ def lj_force(rel_pos, rel_dist):
         nx3 array having the net vector force acting on particle i due to all other particles
     """
     # Compute force magnitude using the Lennard-Jones force formula
-    force_magnitude = (24 * epsilon / rel_dist) * (
-        (sigma / rel_dist) ** 6 - 2 * (sigma / rel_dist) ** 12
+    force_magnitude = (
+        24 * epsilon * (sigma / rel_dist) ** 7 - 48 * epsilon * (sigma / rel_dist) ** 13
+    )
+    dprint(
+        f"the minimal force magnitude is {np.min(force_magnitude)} and the maximum force is {np.max(force_magnitude)}"
     )
 
     # Compute force matrix
@@ -268,6 +285,7 @@ def plot_energy(energies, file_name="energies.png"):
     plt.xlabel("timesteps")
     plt.ylabel("Energy")
     plt.plot(energies)
+    dprint(f"saving the energies plot to {file_name}")
     plt.savefig(file_name)
 
 
@@ -304,14 +322,15 @@ def create_animation(positions, timesteps, box_size, name="particles.mp4"):
     # Create animation
     ani = animation.FuncAnimation(fig, update, frames=timesteps, blit=True)
 
+    dprint(f"saving the animation to {name}")
     ani.save(name, writer="ffmpeg", fps=30)
 
 
 if __name__ == "__main__":
     timesteps = 1000
-    step_size = 0.0001
+    step_size = 0.001
     temp = 113.7
-    box_size = np.array([1.0, 1.0, 1.0]) * 1e-5
+    box_size = np.array([1.0, 1.0, 1.0])
     print(
         f"simulating the particles for {timesteps} timesteps, with a time step size of {step_size}"
     )
@@ -324,5 +343,5 @@ if __name__ == "__main__":
     )
     print("finished simulating, plotting the energies over time")
     plot_energy(energies)
-    print("plotted the energies")
+    print("plotted the energies, now creating the animation")
     create_animation(pos, timesteps, box_size)
