@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 
-amount_of_particles = 100
+amount_of_particles = 3
 
 init_pos = np.random.uniform(0.0, 1.0, (amount_of_particles, 3))
 # atomic weight modified to be in kg
@@ -55,7 +55,7 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
         # print(
         #     f"the particles are at {current_positions}\nthe particles have velocities {current_velocities}"
         # )
-        
+
         # create the n-by-n matrix of all the distances and the n-by-n-by-3 matrix of the relative positions
         relative_positions, distances = atomic_distances(current_positions, box_dim)
         # get the n-by-3 matrix of all the total forces on the particles
@@ -309,9 +309,9 @@ def create_animation(positions, timesteps, box_size, name="particles.mp4"):
 
 if __name__ == "__main__":
     timesteps = 1000
-    step_size = 0.0001
+    step_size = 0.01
     temp = 113.7
-    box_size = np.array([1.0, 1.0, 1.0]) * 1e-5
+    box_size = np.array([1.0, 1.0, 1.0]) * 1e-6
     print(
         f"simulating the particles for {timesteps} timesteps, with a time step size of {step_size}"
     )
