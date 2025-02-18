@@ -48,6 +48,7 @@ to keep track of the progress and worked on them when we had time.
 - We then implemented the Euler method for time evolution(see issue #3) making sure to keep the periodic boundary on the position.
 - Then the total potential energy function was created(see issue #8) and after that we created the function to calculate the force(see issue #4).
 - Finally we added functions for total kinetic energy, total energy, plot of total energy vs timestep and rendering the animation of the particles(see issue #12).
+- Currently the animation seems incorrect but this may be due to incorrect scales.
 
 
 ## Week 2
