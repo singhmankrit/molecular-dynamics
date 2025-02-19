@@ -16,7 +16,14 @@ debug = True if os.environ.get("DEBUG") is not None else False
 
 
 def dprint(str):
-    """ """
+    """
+    Prints the passed string only if the debug environment variable is set.
+
+    Parameters
+    ----------
+    str : string
+        The string to print
+    """
     if debug:
         print(str)
 
