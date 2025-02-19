@@ -214,25 +214,6 @@ def potential_energy(rel_dist):
     return 1 / 2 * np.sum(lj_potential(rel_dist))
 
 
-def total_energy(rel_dist, vel):
-    """
-    Computes the total energy of an atomic system.
-
-    Parameters
-    ----------
-    rel_dist : np.ndarray
-        Relative particle distances as obtained from atomic_distances
-    vel : np.ndarray
-        Velocity of particle
-
-    Returns
-    -------
-    float
-        The total energy of the system.
-    """
-    return kinetic_energy(vel) + potential_energy(rel_dist)
-
-
 def init_velocity(num_atoms, temp):
     """
     Initializes the system with Gaussian distributed velocities.
