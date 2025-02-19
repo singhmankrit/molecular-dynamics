@@ -64,7 +64,8 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     """
     positions = [init_pos]
     velocities = [init_vel]
-    energies = []
+    kinetic_energies = []
+    potential_energies = []
 
     current_positions = init_pos
     current_velocities = init_vel
@@ -82,7 +83,8 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
         # get the n-by-3 matrix of all the total forces on the particles
         forces = lj_force(relative_positions, distances)
         # get current total energy and append
-        energies.append(total_energy(distances, current_velocities))
+        kinetic_energies.append(kinetic_energy(current_velocities))
+        potential_energies.append(potential_energy(distances))
         # Euler integration step, we'll have to rewrite this to improve energy conservation
         current_positions = (
             current_positions + current_velocities * timestep
@@ -93,7 +95,7 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
         positions.append(current_positions)
         velocities.append(current_velocities)
 
-    return positions, velocities, energies
+    return positions, velocities, kinetic_energies, potential_energies
 
 
 def atomic_distances(
@@ -237,25 +239,6 @@ def potential_energy(rel_dist):
     return 1 / 2 * np.sum(lj_potential(rel_dist))
 
 
-def total_energy(rel_dist, vel):
-    """
-    Computes the total energy of an atomic system.
-
-    Parameters
-    ----------
-    rel_dist : np.ndarray
-        Relative particle distances as obtained from atomic_distances
-    vel : np.ndarray
-        Velocity of particle
-
-    Returns
-    -------
-    float
-        The total energy of the system.
-    """
-    return kinetic_energy(vel) + potential_energy(rel_dist)
-
-
 def init_velocity(num_atoms, temp):
     """
     Initializes the system with Gaussian distributed velocities.
@@ -280,19 +263,27 @@ def init_velocity(num_atoms, temp):
     return velocities
 
 
-def plot_energy(energies, file_name="energies.png"):
+def plot_energy(kinetic, potential, file_name="energies.png"):
     """
     Plots the energy vs timesteps.
 
     Parameters
     ----------
-    energies : list
-        List of energies
+    kinetic : list
+        List of kinetic energies
+    potential : list
+        List of potential energies
+    file_name : string
+        Name of file to save to
     """
     plt.title("Energy vs timesteps")
     plt.xlabel("timesteps")
     plt.ylabel("Energy")
-    plt.plot(energies)
+    plt.plot(kinetic, label="kinetic", color="orange")
+    plt.plot(potential, label="potential", color="purple")
+    plt.plot(np.array(kinetic) + np.array(potential), label="total", color="black")
+    plt.legend()
+    plt.tight_layout()
     dprint(f"saving the energies plot to {file_name}")
     plt.savefig(file_name)
 
@@ -342,7 +333,7 @@ if __name__ == "__main__":
     print(
         f"simulating the particles for {timesteps} timesteps, with a time step size of {step_size}"
     )
-    pos, vel, energies = simulate(
+    pos, vel, kinetic, potential = simulate(
         init_pos,
         np.zeros((amount_of_particles, 3)),
         timesteps,
@@ -350,6 +341,6 @@ if __name__ == "__main__":
         box_size,
     )
     print("finished simulating, plotting the energies over time")
-    plot_energy(energies)
+    plot_energy(kinetic, potential)
     print("plotted the energies, now creating the animation")
     create_animation(pos, timesteps, box_size)
