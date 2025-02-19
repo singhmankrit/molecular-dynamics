@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 
+
 debug = True if os.environ.get("DEBUG") is not None else False
 
 
@@ -20,7 +21,7 @@ def dprint(str):
         print(str)
 
 
-amount_of_particles = 100
+amount_of_particles = 3
 
 init_pos = np.random.uniform(0.0, 1.0, (amount_of_particles, 3))
 dprint(f"created {amount_of_particles} particles")
@@ -328,9 +329,9 @@ def create_animation(positions, timesteps, box_size, name="particles.mp4"):
 
 if __name__ == "__main__":
     timesteps = 1000
-    step_size = 0.001
+    step_size = 0.01
     temp = 113.7
-    box_size = np.array([1.0, 1.0, 1.0])
+    box_size = np.array([1.0, 1.0, 1.0]) * 1e-6
     print(
         f"simulating the particles for {timesteps} timesteps, with a time step size of {step_size}"
     )

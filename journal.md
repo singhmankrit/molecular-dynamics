@@ -50,6 +50,11 @@ to keep track of the progress and worked on them when we had time.
 - Finally we added functions for total kinetic energy, total energy, plot of total energy vs timestep and rendering the animation of the particles(see issue #12).
 - Currently the animation seems incorrect but this may be due to incorrect scales.
 
+The energies have short periods of being stable but large jumps in between as can be seen in
+![the total energy of the particles in time](images/journal_1/energies.png)
+
+When we look at the particles moving around in the box we can understand at least the first jump
+![a video of the positions of the particles in time](images/journal_1/particles.mp4)
 
 ## Week 2
 (due 25 February 2025, 11:00)
