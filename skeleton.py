@@ -1,9 +1,4 @@
 #!/usr/bin/env python
-"""
-This is a suggestion for structuring your simulation code properly.
-However, it is not set in stone. You may modify it if you feel like
-you have a good reason to do so.
-"""
 
 import os
 import numpy as np
@@ -32,12 +27,6 @@ amount_of_particles = 3
 
 init_pos = np.random.uniform(0.0, 1.0, (amount_of_particles, 3))
 dprint(f"created {amount_of_particles} particles")
-# atomic weight modified to be in kg
-mass = 39.792 * 1.660539066e-27
-
-epsilon = 119.8 * 1.380649e-23
-sigma = 3.405e-10
-
 
 def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     """
@@ -89,7 +78,7 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
         current_positions = (
             current_positions + current_velocities * timestep
         ) % box_dim
-        current_velocities += forces * timestep / mass
+        current_velocities += forces * timestep
 
         # append the new positions and velocities to the arrays
         positions.append(current_positions)
@@ -141,7 +130,7 @@ def atomic_distances(
     return (relative_positions, distances)
 
 
-def lj_force(rel_pos, rel_dist):
+def lj_force(rel_pos, rel_dist): # units of epsilon/sigma 
     """
     Calculates the net forces on each atom from the matrices containing the positions and distances.
 
@@ -159,7 +148,7 @@ def lj_force(rel_pos, rel_dist):
     """
     # Compute force magnitude using the Lennard-Jones force formula
     force_magnitude = (
-        24 * epsilon * (sigma / rel_dist) ** 7 - 48 * epsilon * (sigma / rel_dist) ** 13
+        24 * ( 1 / rel_dist ) ** 7 - 48 * ( 1 / rel_dist ) ** 13
     )
     dprint(
         f"the minimal force magnitude is {np.min(force_magnitude)} and the maximum force is {np.max(force_magnitude)}"
@@ -196,7 +185,7 @@ def fcc_lattice(num_atoms, lat_const):
     return
 
 
-def kinetic_energy(vel):
+def kinetic_energy(vel): # units of epsilon
     """
     Computes the kinetic energy of an atomic system.
 
@@ -211,14 +200,14 @@ def kinetic_energy(vel):
         The total kinetic energy of the system.
     """
     # Kinetic energy for each particle
-    ke_individual = 1 / 2 * mass * np.sum(vel**2, axis=1)
+    ke_individual = 1 / 2 * np.sum(vel**2, axis=1)
     # Total Kinetic Energy
     ke = np.sum(ke_individual)
     return ke
 
 
-def lj_potential(distance):
-    return 4 * epsilon * ((sigma / distance) ** 12 - (sigma / distance) ** 6)
+def lj_potential(distance): # units of epsilon
+    return 4 * ((1 / distance) ** 12 - (1 / distance) ** 6)
 
 
 def potential_energy(rel_dist):
@@ -327,9 +316,9 @@ def create_animation(positions, timesteps, box_size, name="particles.mp4"):
 
 if __name__ == "__main__":
     timesteps = 1000
-    step_size = 0.01
+    step_size = 1e-5
     temp = 113.7
-    box_size = np.array([1.0, 1.0, 1.0]) * 1e-6
+    box_size = np.array([1.0, 1.0, 1.0])
     print(
         f"simulating the particles for {timesteps} timesteps, with a time step size of {step_size}"
     )
