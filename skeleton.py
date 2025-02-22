@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 
+from utilities import parse_config
 
 debug = True if os.environ.get("DEBUG") is not None else False
 
@@ -22,11 +23,6 @@ def dprint(str):
     if debug:
         print(str)
 
-
-amount_of_particles = 3
-
-init_pos = np.random.uniform(0.0, 1.0, (amount_of_particles, 3))
-dprint(f"created {amount_of_particles} particles")
 
 def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     """
@@ -315,16 +311,17 @@ def create_animation(positions, timesteps, box_size, name="particles.mp4"):
 
 
 if __name__ == "__main__":
-    timesteps = 1000
-    step_size = 1e-5
-    temp = 113.7
-    box_size = np.array([1.0, 1.0, 1.0])
+    amount_of_particles, step_size, timesteps, temperature, box_size = parse_config(
+        "config.json"
+    )
+    init_pos = np.random.uniform(0.0, 1.0, (amount_of_particles, 3))
+    dprint(f"created {amount_of_particles} particles")
     print(
         f"simulating the particles for {timesteps} timesteps, with a time step size of {step_size}"
     )
     pos, vel, kinetic, potential = simulate(
         init_pos,
-        np.zeros((amount_of_particles, 3)),
+        init_velocity(amount_of_particles, temperature),
         timesteps,
         step_size,
         box_size,
