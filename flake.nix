@@ -24,7 +24,8 @@
               ppkgs.numpy
               ppkgs.matplotlib
             ]))
-            ffmpeg-headless
+            ffmpeg-headless # needed to make the animations
+            mpv # for watching the generated videos
           ];
 
           LD_LIBRARY_PATH = "${pkgs.${system}.libGL}/lib";
