@@ -28,12 +28,6 @@ amount_of_particles = 3
 init_pos = np.random.uniform(0.0, 1.0, (amount_of_particles, 3))
 dprint(f"created {amount_of_particles} particles")
 
-# constants
-# mass = 39.792 * 1.660539066e-27
-# epsilon = 119.8 * 1.380649e-23
-# sigma = 3.405e-10
-
-
 def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     """
     Molecular dynamics simulation using the Euler or Verlet's algorithms
@@ -94,8 +88,8 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
 
 
 def atomic_distances(
-    pos: np._typing.NDArray[np.float64], box_dim: np._typing.NDArray[np.float64]
-) -> np._typing.NDArray[np.float64]:
+    pos: np.typing.NDArray[np.float64], box_dim: np.typing.NDArray[np.float64]
+) -> np.typing.NDArray[np.float64]:
     """
     Calculates relative positions and distances between particles.
 
@@ -136,7 +130,7 @@ def atomic_distances(
     return (relative_positions, distances)
 
 
-def lj_force(rel_pos, rel_dist): # dimensionless
+def lj_force(rel_pos, rel_dist): # units of epsilon/sigma 
     """
     Calculates the net forces on each atom from the matrices containing the positions and distances.
 
