@@ -62,7 +62,8 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     velocities = [init_vel]
     kinetic_energies = []
     potential_energies = []
-
+    distance_list = []
+    
     current_positions = init_pos
     current_velocities = init_vel
 
@@ -78,9 +79,10 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
         relative_positions, distances = atomic_distances(current_positions, box_dim)
         # get the n-by-3 matrix of all the total forces on the particles
         forces = lj_force(relative_positions, distances)
-        # get current total energy and append
+        # get current energies and distances and append
         kinetic_energies.append(kinetic_energy(current_velocities))
         potential_energies.append(potential_energy(distances))
+        distance_list.append(distances)
         # Euler integration step, we'll have to rewrite this to improve energy conservation
         current_positions = (
             current_positions + current_velocities * timestep
@@ -91,7 +93,7 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
         positions.append(current_positions)
         velocities.append(current_velocities)
 
-    return positions, velocities, kinetic_energies, potential_energies
+    return positions, velocities, kinetic_energies, potential_energies, distance_list
 
 
 def atomic_distances(
@@ -282,6 +284,34 @@ def plot_energy(kinetic, potential, file_name="energies.png"):
     plt.tight_layout()
     dprint(f"saving the energies plot to {file_name}")
     plt.savefig(file_name)
+    plt.close()
+
+
+def plot_distances(distance_list, particle=0, file_name="distances.png"):
+    """
+    Plots the distances between particles.
+
+    Parameters
+    ----------
+    distance_list : list
+        List of distances
+    particle : int
+        Particle to plot distances from
+    file_name : string
+        Name of file to save to
+    """
+    plt.title(f"Distances between particle {particle} and other particles")
+    plt.xlabel("timesteps")
+    plt.ylabel("Distance")
+    for i in range(0, len(distance_list[0])):
+        if i == particle:
+            continue
+        plt.plot(np.array(distance_list)[:, particle, i], label=f"Particle {i}")
+    plt.tight_layout()
+    plt.legend()
+    dprint(f"saving the distances plot to {file_name}")
+    plt.savefig(file_name)
+    plt.close()
 
 
 def create_animation(positions, timesteps, box_size, name="particles.mp4"):
@@ -338,5 +368,7 @@ if __name__ == "__main__":
     )
     print("finished simulating, plotting the energies over time")
     plot_energy(kinetic, potential)
-    print("plotted the energies, now creating the animation")
+    print("plotted the energies, now plotting the distances")
+    plot_distances(distance_list)
+    print("plotted the distances, now creating the animation")
     create_animation(pos, timesteps, box_size)
