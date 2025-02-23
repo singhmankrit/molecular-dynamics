@@ -25,7 +25,14 @@ def dprint(str):
 
 amount_of_particles = 3
 
-init_pos = np.random.uniform(0.0, 1.0, (amount_of_particles, 3))
+# init_pos = np.random.uniform(0.0, 1.0, (amount_of_particles, 3))
+# Initial position for 2 particles close to the boundary
+init_pos = np.array(
+    [
+        [0.5, 0.5, 0.5],
+        [4.5, 4.5, 4.5],
+    ]
+)
 dprint(f"created {amount_of_particles} particles")
 
 def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
