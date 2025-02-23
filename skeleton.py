@@ -23,7 +23,7 @@ def dprint(str):
         print(str)
 
 
-amount_of_particles = 3
+amount_of_particles = 2
 
 # init_pos = np.random.uniform(0.0, 1.0, (amount_of_particles, 3))
 # Initial position for 2 particles close to the boundary
@@ -353,13 +353,13 @@ def create_animation(positions, timesteps, box_size, name="particles.mp4"):
 
 if __name__ == "__main__":
     timesteps = 1000
-    step_size = 1e-5
+    step_size = 0.01
     temp = 113.7
-    box_size = np.array([1.0, 1.0, 1.0])
+    box_size = np.array([5.0, 5.0, 5.0])
     print(
         f"simulating the particles for {timesteps} timesteps, with a time step size of {step_size}"
     )
-    pos, vel, kinetic, potential = simulate(
+    pos, vel, kinetic, potential,distance_list = simulate(
         init_pos,
         np.zeros((amount_of_particles, 3)),
         timesteps,
