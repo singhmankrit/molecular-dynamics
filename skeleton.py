@@ -4,7 +4,6 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-from mpl_toolkits.mplot3d import Axes3D
 
 
 debug = True if os.environ.get("DEBUG") is not None else False
@@ -27,6 +26,7 @@ amount_of_particles = 3
 
 init_pos = np.random.uniform(0.0, 5.0, (amount_of_particles, 3))
 dprint(f"created {amount_of_particles} particles")
+
 
 def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     """
@@ -136,7 +136,7 @@ def atomic_distances(
     return (relative_positions, distances)
 
 
-def lj_force(rel_pos, rel_dist): # units of epsilon/sigma 
+def lj_force(rel_pos, rel_dist):  # units of epsilon/sigma
     """
     Calculates the net forces on each atom from the matrices containing the positions and distances.
 
@@ -153,9 +153,7 @@ def lj_force(rel_pos, rel_dist): # units of epsilon/sigma
         nx3 array having the net vector force acting on particle i due to all other particles
     """
     # Compute force magnitude using the Lennard-Jones force formula
-    force_magnitude = (
-        24 * ( 1 / rel_dist ) ** 7 - 48 * ( 1 / rel_dist ) ** 13
-    )
+    force_magnitude = 24 * (1 / rel_dist) ** 7 - 48 * (1 / rel_dist) ** 13
     dprint(
         f"the minimal force magnitude is {np.min(force_magnitude)} and the maximum force is {np.max(force_magnitude)}"
     )
@@ -191,7 +189,7 @@ def fcc_lattice(num_atoms, lat_const):
     return
 
 
-def kinetic_energy(vel): # units of epsilon
+def kinetic_energy(vel):  # units of epsilon
     """
     Computes the kinetic energy of an atomic system.
 
@@ -212,7 +210,7 @@ def kinetic_energy(vel): # units of epsilon
     return ke
 
 
-def lj_potential(distance): # units of epsilon
+def lj_potential(distance):  # units of epsilon
     return 4 * ((1 / distance) ** 12 - (1 / distance) ** 6)
 
 
