@@ -62,8 +62,6 @@ When we look at the particles moving around in the box we can understand at leas
 #### Planning
 This week @mankritsingh will work on making the code dimensionless, @npaarts will work on quality of life improvements like making it easier to debug, creating a config file, etc, and @rjuyal will do the simulation of 2 atoms. Since we have already implemented the minimal image convention in !4, we don't need to work on that this week. We aim to finish this by Monday(24 Feb) afternoon so that we can discuss and make final touch ups.
 
-
-
 #### Progress report
 
 Noa: 
@@ -75,6 +73,10 @@ Today I started working on the Velocity-Verlet algorithm for week 3 (!14), it's 
 fully finished yet.
 The default config file can be found at [config.json](https://gitlab.kwant-project.org/computational_physics/projects/Project1_mankritsingh_npaarts_rjuyal/-/blob/fe080d06ddf6b28be85417bc0444849c9d27821b/config.json).
 
+Mankrit:
+Derived the dimensionless units for kinetic energy\
+Made the code dimensionless in Merge Request !11\
+Reviewed other Merge Requests\
 
 ## Week 3
 (due 4 March 2025, 11:00)
