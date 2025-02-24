@@ -66,6 +66,14 @@ This week @mankritsingh will work on making the code dimensionless, @npaarts wil
 
 #### Progress report
 
+Noa: 
+The past week I've been quite busy, so I haven't been able to do too much for the project.
+I knew this already so communicated this with Ragi and Mankrit.
+I've mostly worked on adding simple configuration options in !15 and adding
+a "debug print" called `dprint` which is only active when the `DEBUG` environment variable is set in !10.
+Today I started working on the Velocity-Verlet algorithm for week 3 (!14), it's promising but not
+fully finished yet.
+The default config file can be found at [config.json](https://gitlab.kwant-project.org/computational_physics/projects/Project1_mankritsingh_npaarts_rjuyal/-/blob/fe080d06ddf6b28be85417bc0444849c9d27821b/config.json).
 
 
 ## Week 3
