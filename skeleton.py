@@ -25,7 +25,7 @@ def dprint(str):
 
 amount_of_particles = 3
 
-init_pos = np.random.uniform(0.0, 1.0, (amount_of_particles, 3))
+init_pos = np.random.uniform(0.0, 5.0, (amount_of_particles, 3))
 dprint(f"created {amount_of_particles} particles")
 
 def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
@@ -58,6 +58,9 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
 
     current_positions = init_pos
     current_velocities = init_vel
+    dprint(
+        f"starting positions are {current_positions} and starting velocities are {current_velocities}"
+    )
 
     for step in np.arange(num_tsteps):
         dprint(
@@ -74,11 +77,14 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
         # get current total energy and append
         kinetic_energies.append(kinetic_energy(current_velocities))
         potential_energies.append(potential_energy(distances))
-        # Euler integration step, we'll have to rewrite this to improve energy conservation
+        # Velocity-Verlet integration step, want to remove the extra force calculation if possible
         current_positions = (
-            current_positions + current_velocities * timestep
+            current_positions
+            + current_velocities * timestep
+            + forces * timestep * timestep / 2
         ) % box_dim
-        current_velocities += forces * timestep
+        new_forces = lj_force(*atomic_distances(current_positions, box_dim))
+        current_velocities += (forces + new_forces) * timestep / 2
 
         # append the new positions and velocities to the arrays
         positions.append(current_positions)
@@ -316,9 +322,9 @@ def create_animation(positions, timesteps, box_size, name="particles.mp4"):
 
 if __name__ == "__main__":
     timesteps = 1000
-    step_size = 1e-5
+    step_size = 1e-4
     temp = 113.7
-    box_size = np.array([1.0, 1.0, 1.0])
+    box_size = np.array([5.0, 5.0, 5.0])
     print(
         f"simulating the particles for {timesteps} timesteps, with a time step size of {step_size}"
     )
