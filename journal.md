@@ -73,10 +73,10 @@ Today I started working on the Velocity-Verlet algorithm for week 3 (!14), it's 
 fully finished yet.
 The default config file can be found at [config.json](https://gitlab.kwant-project.org/computational_physics/projects/Project1_mankritsingh_npaarts_rjuyal/-/blob/fe080d06ddf6b28be85417bc0444849c9d27821b/config.json).
 
-Mankrit:
+@mankritsingh:
 Derived the dimensionless units for kinetic energy\
 Made the code dimensionless in Merge Request !11\
-Reviewed other Merge Requests\
+Reviewed other Merge Requests.
 
 ## Week 3
 (due 4 March 2025, 11:00)
