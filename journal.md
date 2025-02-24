@@ -82,12 +82,12 @@ Reviewed other Merge Requests.
 - Added function to plot distances
 - Changed values of parameters like initial position, timestep to produce animation of 2 particles in 3D 
 
-Energies:
-![the kinetic, potential and total energy of the particles in time](images/journal_1/energies_dimensionless.png)
-Distances:
-![the distance of particle 1 wrt particle 0 in time](images/journal_1/distances_dimensionless.png)
-Animation:
-![](images/journal_1/particles_dimensionless.mp4)
+Energies: \
+![the kinetic, potential and total energy of the particles in time](images/journal_1/energies_dimensionless.png) \
+Distances: \
+![the distance of particle 1 wrt particle 0 in time](images/journal_1/distances_dimensionless.png) \
+Animation: \
+![](images/journal_1/particles_dimensionless.mp4) 
 - We assume that this sudden jump is due to the Euler method not conserving the total energy and will be fixed by the velocity-verlet algorithm.
 - We had already added code for minimal image convention(see !4) and code to plot kinetic and potential energy along with total energy(see !9).
 
