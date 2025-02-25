@@ -78,8 +78,8 @@ Derived the dimensionless units for kinetic energy\
 Made the code dimensionless in Merge Request !11\
 Reviewed other Merge Requests.
 
-Derivation can be found here:\
-![derivation for Kinetic Energy and Force](images/journal_2/week2_dimensionless.pdf) \
+Derivation for dimensionless units can be found here:\
+![Derivation for Kinetic Energy and Force](images/journal_2/week2_dimensionless.pdf)
 
 @rjuyal: (see !13)
 - Added function to plot distances
