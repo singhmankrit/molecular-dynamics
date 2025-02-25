@@ -91,6 +91,14 @@ Animation: \
 - We assume that this sudden jump is due to the Euler method not conserving the total energy and will be fixed by the velocity-verlet algorithm.
 - We had already added code for minimal image convention(see !4) and code to plot kinetic and potential energy along with total energy(see !9).
 
+Plots before the sudden blow up: \
+Energies: \
+![the kinetic, potential and total energy of the particles in time](images/journal_1/energies_dimensionless_before_blowup.png) \
+Distances: \
+![the distance of particle 1 wrt particle 0 in time](images/journal_1/distances_dimensionless_before_blowup.png) \
+Animation: \
+![](images/journal_1/particles_dimensionless_before_blowup.mp4)
+
 ## Week 3
 (due 4 March 2025, 11:00)
 
