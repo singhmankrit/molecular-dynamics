@@ -72,8 +72,8 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     relative_positions, distances = atomic_distances(current_positions, box_dim)
     current_forces = lj_force(relative_positions, distances)
 
-    kinetic_energies = [kinetic_energy(current_velocities)]
-    potential_energies = [potential_energy(current_positions)]
+    kinetic_energies = [kinetic_energy(init_vel)]
+    potential_energies = [potential_energy(distances)]
     distance_list = [distances]
 
     for step in np.arange(num_tsteps):
