@@ -106,7 +106,15 @@ Animation: \
 (due 4 March 2025, 11:00)
 
 #### Planning
+- Extend code to more than 2 particles - Done in Week 1
+- Implement Velocity Verlet - In Progress since Week 2 by @npaarts
+- Structure Code properly
+   - Move initialization to separate file, debug print should be in utilities - @npaarts
+   - Different simulators in one file, plotting in another file, input as config - @rjuyal
+- Compare and Plot energies for Euler and Velocity Verlet - @mankritsingh
+- Implement Leapfrog and compare with others (if we have time) - @mankritsingh
 
+We aim to finish this by Monday (3rd March) afternoon so that we can discuss and make final touch ups.
 
 #### Progress report
 
@@ -116,7 +124,7 @@ Animation: \
 
 
 ## Week 4
-(due 11 March 2025, 11:0)
+(due 11 March 2025, 11:00)
 
 #### Planning
 
