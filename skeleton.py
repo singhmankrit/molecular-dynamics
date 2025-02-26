@@ -61,15 +61,20 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     """
     positions = [init_pos]
     velocities = [init_vel]
-    kinetic_energies = []
-    potential_energies = []
-    distance_list = []
 
     current_positions = init_pos
     current_velocities = init_vel
     dprint(
         f"starting positions are {current_positions} and starting velocities are {current_velocities}"
     )
+
+    # we calculate these so we can calculate the "next step" only from now on
+    relative_positions, distances = atomic_distances(current_positions, box_dim)
+    current_forces = lj_force(relative_positions, distances)
+
+    kinetic_energies = [kinetic_energy(current_velocities)]
+    potential_energies = [potential_energy(current_positions)]
+    distance_list = [distances]
 
     for step in np.arange(num_tsteps):
         dprint(
@@ -79,26 +84,27 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
             """
         )
 
-        # create the n-by-n matrix of all the distances and the n-by-n-by-3 matrix of the relative positions
-        relative_positions, distances = atomic_distances(current_positions, box_dim)
-        # get the n-by-3 matrix of all the total forces on the particles
-        forces = lj_force(relative_positions, distances)
-        # get current energies and distances and append
-        kinetic_energies.append(kinetic_energy(current_velocities))
-        potential_energies.append(potential_energy(distances))
-        distance_list.append(distances)
-        # Velocity-Verlet integration step, want to remove the extra force calculation if possible
+        # use velocity-verlet to calculate the new positions and velocities
         current_positions = (
             current_positions
             + current_velocities * timestep
-            + forces * timestep * timestep / 2
+            + current_forces * timestep * timestep / 2
         ) % box_dim
-        new_forces = lj_force(*atomic_distances(current_positions, box_dim))
-        current_velocities += (forces + new_forces) * timestep / 2
+        relative_positions, distances = atomic_distances(current_positions, box_dim)
+        new_forces = lj_force(relative_positions, distances)
+        current_velocities += (current_forces + new_forces) * timestep / 2
 
-        # append the new positions and velocities to the arrays
+        # add the current statistics to the logs
+        kinetic_energies.append(kinetic_energy(current_velocities))
+        potential_energies.append(potential_energy(distances))
+        distance_list.append(distances)
+
+        # keep track of the positions and velocities
         positions.append(current_positions)
         velocities.append(current_velocities)
+
+        # update the forces so n -> n+1
+        current_forces = new_forces
 
     return positions, velocities, kinetic_energies, potential_energies, distance_list
 
