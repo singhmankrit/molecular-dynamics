@@ -5,6 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
+import initialisation
+
 
 debug = True if os.environ.get("DEBUG") is not None else False
 
@@ -20,20 +22,6 @@ def dprint(str):
     """
     if debug:
         print(str)
-
-
-amount_of_particles = 3
-
-# init_pos = np.random.uniform(0.0, 1.0, (amount_of_particles, 3))
-# Initial position for 2 particles close to the boundary
-init_pos = np.array(
-    [
-        [0.5, 0.5, 0.5],
-        [4.5, 4.5, 4.5],
-        [2.5, 4.5, 4.5],
-    ]
-)
-dprint(f"created {amount_of_particles} particles")
 
 
 def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
@@ -185,26 +173,6 @@ def lj_force(rel_pos, rel_dist):  # units of epsilon/sigma
     return net_force.T
 
 
-def fcc_lattice(num_atoms, lat_const):
-    """
-    Initializes a system of atoms on an fcc lattice.
-
-    Parameters
-    ----------
-    num_atoms : int
-        The number of particles in the system
-    lattice_const : float
-        The lattice constant for an fcc lattice
-
-    Returns
-    -------
-    pos_vec : np.ndarray
-        Array of particle coordinates
-    """
-
-    return
-
-
 def kinetic_energy(vel):  # units of epsilon
     """
     Computes the kinetic energy of an atomic system.
@@ -246,30 +214,6 @@ def potential_energy(rel_dist):
     """
 
     return 1 / 2 * np.sum(lj_potential(rel_dist))
-
-
-def init_velocity(num_atoms, temp):
-    """
-    Initializes the system with Gaussian distributed velocities.
-
-    Parameters
-    ----------
-    num_atoms : int
-        The number of particles in the system.
-    temp : float
-        The (unitless) temperature of the system.
-
-    Returns
-    -------
-    vel_vec : np.ndarray
-        Array of particle velocities
-    """
-
-    # NOTE: I don't know what the scale should be, it should also be a maxwell-boltzmann distribution to be
-    # fully correct. Though that'd require scipy or someone finding how
-    scale = temp
-    velocities = np.random.normal(loc=0.0, scale=scale, size=(num_atoms, 3))
-    return velocities
 
 
 def plot_energy(kinetic, potential, file_name="energies.png"):
@@ -363,16 +307,41 @@ def create_animation(positions, timesteps, box_size, name="particles.mp4"):
 
 
 if __name__ == "__main__":
+    # TODO: make these options configurable via config.json (by merging the pr)
+    amount_of_particles = 9
     timesteps = 1000
     step_size = 0.01
     temp = 113.7
     box_size = np.array([5.0, 5.0, 5.0])
     print(
-        f"simulating the particles for {timesteps} timesteps, with a time step size of {step_size}"
+        f"simulating {amount_of_particles} particles for {timesteps} timesteps, with a time step size of {step_size}"
     )
+    position_init_method = "static"
+    velocity_init_method = "zero"
+    init_pos = None
+    if position_init_method == "uniform":
+        init_pos = initialisation.uniform_random(amount_of_particles, box_size)
+    elif position_init_method == "static":
+        init_pos = initialisation.static(amount_of_particles, box_size)
+    else:
+        print(
+            f"Please select a valid position init method, currently: {position_init_method}"
+        )
+        exit(2)
+    init_vel = None
+    if velocity_init_method == "zero":
+        init_vel = initialisation.zero_speed(amount_of_particles)
+    elif velocity_init_method == "mbdist":
+        init_vel = initialisation.init_velocity(amount_of_particles, temp)
+    else:
+        print(
+            f"Please select a valid velocity init method, currently: {velocity_init_method}"
+        )
+        exit(3)
+
     pos, vel, kinetic, potential, distance_list = simulate(
         init_pos,
-        np.zeros((amount_of_particles, 3)),
+        init_vel,
         timesteps,
         step_size,
         box_size,
