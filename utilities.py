@@ -23,13 +23,17 @@ def parse_config(file_path):
     """
     with open(file_path) as file:
         config = json.load(file)
-        amount_of_particles = config["particles"]
-        step_size = config["step_size"]
-        time_steps = config["time_steps"]
-        temperature = config["temperature"]
-        box_x = config["box"]["x"]
-        box_y = config["box"]["y"]
-        box_z = config["box"]["z"]
+        amount_of_particles = config.get("particles", 2)
+        step_size = config.get("step_size", 0.01)
+        time_steps = config.get("time_steps", 1000)
+        temperature = config.get("temperature", 1)
+        box = config.get("box")
+        if box is not None:
+            box_x = config["box"].get("x", 5.0)
+            box_y = config["box"].get("y", 5.0)
+            box_z = config["box"].get("z", 5.0)
+        else:
+            box_x, box_y, box_z = 5.0, 5.0, 5.0
         random_seed = config.get("seed", None)
         return (
             amount_of_particles,
