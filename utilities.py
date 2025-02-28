@@ -35,6 +35,8 @@ def parse_config(file_path):
         else:
             box_x, box_y, box_z = 5.0, 5.0, 5.0
         random_seed = config.get("seed", None)
+        pos_method = config.get("position_method", "uniform")
+        vel_method = config.get("velocity_method", "mbdist")
         return (
             amount_of_particles,
             step_size,
@@ -42,4 +44,6 @@ def parse_config(file_path):
             temperature,
             np.array([box_x, box_y, box_z]),
             random_seed,
+            pos_method,
+            vel_method,
         )

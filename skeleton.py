@@ -307,14 +307,19 @@ def create_animation(positions, timesteps, box_size, name="particles.mp4"):
 
 
 if __name__ == "__main__":
-    amount_of_particles, step_size, timesteps, temperature, box_size, random_seed = (
-        parse_config("config.json")
-    )
+    (
+        amount_of_particles,
+        step_size,
+        timesteps,
+        temperature,
+        box_size,
+        random_seed,
+        position_init_method,
+        velocity_init_method,
+    ) = parse_config("config.json")
     print(
         f"simulating {amount_of_particles} particles for {timesteps} timesteps, with a time step size of {step_size}"
     )
-    position_init_method = "static"
-    velocity_init_method = "zero"
     init_pos = None
     if position_init_method == "uniform":
         init_pos = initialisation.uniform_random(
