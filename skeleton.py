@@ -324,7 +324,7 @@ if __name__ == "__main__":
         init_pos = initialisation.static(amount_of_particles, box_size)
     else:
         print(
-            f"Please select a valid position init method, currently: {position_init_method}"
+            f"Please select a valid position init method ('uniform', 'static'), currently: {position_init_method}"
         )
         exit(2)
     init_vel = None
@@ -336,7 +336,7 @@ if __name__ == "__main__":
         )
     else:
         print(
-            f"Please select a valid velocity init method, currently: {velocity_init_method}"
+            f"Please select a valid velocity init method ('zero', 'mbdist'), currently: {velocity_init_method}"
         )
         exit(3)
 
