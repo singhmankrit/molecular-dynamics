@@ -1,11 +1,13 @@
 {
 	"particles": 3,
 	"box": {
-		"x": 1,
-		"y": 1,
-		"z": 1
+		"x": 5,
+		"y": 5,
+		"z": 5
 	},
 	"time_steps": 1000,
-	"step_size": 1e-3,
-	"temperature": 130
+	"step_size": 0.01,
+	"temperature": 3,
+	"position_method": "uniform",
+	"velocity_method": "zero"
 }
