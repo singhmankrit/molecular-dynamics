@@ -1,0 +1,11 @@
+{
+	"particles": 3,
+	"box": {
+		"x": 1,
+		"y": 1,
+		"z": 1
+	},
+	"time_steps": 1000,
+	"step_size": 1e-3,
+	"temperature": 130
+}

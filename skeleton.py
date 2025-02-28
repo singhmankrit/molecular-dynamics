@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 import initialisation
-
+from utilities import parse_config
 
 debug = True if os.environ.get("DEBUG") is not None else False
 
@@ -307,12 +307,9 @@ def create_animation(positions, timesteps, box_size, name="particles.mp4"):
 
 
 if __name__ == "__main__":
-    # TODO: make these options configurable via config.json (by merging the pr)
-    amount_of_particles = 9
-    timesteps = 1000
-    step_size = 0.01
-    temp = 113.7
-    box_size = np.array([5.0, 5.0, 5.0])
+    amount_of_particles, step_size, timesteps, temperature, box_size = parse_config(
+        "config.json"
+    )
     print(
         f"simulating {amount_of_particles} particles for {timesteps} timesteps, with a time step size of {step_size}"
     )
