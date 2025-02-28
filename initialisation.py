@@ -124,7 +124,7 @@ def zero_speed(amount_of_particles):
     return np.zeros((amount_of_particles, 3))
 
 
-def init_velocity(num_atoms, temp):
+def init_velocity(num_atoms, temp, seed=None):
     """
     Initializes the system with Gaussian distributed velocities.
 
@@ -134,6 +134,8 @@ def init_velocity(num_atoms, temp):
         The number of particles in the system.
     temp : float
         The (unitless) temperature of the system.
+    seed : int
+        The random seed to use for numpy
 
     Returns
     -------
@@ -143,5 +145,6 @@ def init_velocity(num_atoms, temp):
 
     # TODO: I don't know what the scale should be. (for week 4)
     scale = np.sqrt(temp)
+    np.random.seed(seed)
     velocities = np.random.normal(loc=0.0, scale=scale, size=(num_atoms, 3))
     return velocities

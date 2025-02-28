@@ -307,8 +307,8 @@ def create_animation(positions, timesteps, box_size, name="particles.mp4"):
 
 
 if __name__ == "__main__":
-    amount_of_particles, step_size, timesteps, temperature, box_size = parse_config(
-        "config.json"
+    amount_of_particles, step_size, timesteps, temperature, box_size, random_seed = (
+        parse_config("config.json")
     )
     print(
         f"simulating {amount_of_particles} particles for {timesteps} timesteps, with a time step size of {step_size}"
@@ -317,7 +317,9 @@ if __name__ == "__main__":
     velocity_init_method = "zero"
     init_pos = None
     if position_init_method == "uniform":
-        init_pos = initialisation.uniform_random(amount_of_particles, box_size)
+        init_pos = initialisation.uniform_random(
+            amount_of_particles, box_size, random_seed
+        )
     elif position_init_method == "static":
         init_pos = initialisation.static(amount_of_particles, box_size)
     else:
@@ -329,7 +331,9 @@ if __name__ == "__main__":
     if velocity_init_method == "zero":
         init_vel = initialisation.zero_speed(amount_of_particles)
     elif velocity_init_method == "mbdist":
-        init_vel = initialisation.init_velocity(amount_of_particles, temp)
+        init_vel = initialisation.init_velocity(
+            amount_of_particles, temperature, random_seed
+        )
     else:
         print(
             f"Please select a valid velocity init method, currently: {velocity_init_method}"
