@@ -327,6 +327,10 @@ if __name__ == "__main__":
         )
     elif position_init_method == "static":
         init_pos = initialisation.static(amount_of_particles, box_size)
+    elif position_init_method == "fcc":
+        init_pos = initialisation.fcc_lattice(
+            amount_of_particles, 1
+        )  # TODO: change lattice constant
     else:
         print(
             f"Please select a valid position init method ('uniform', 'static'), currently: {position_init_method}"

@@ -97,8 +97,26 @@ def fcc_lattice(num_atoms, lat_const):
     pos_vec : np.ndarray
         Array of particle coordinates
     """
+    # only allow full-cell atom amounts
+    layers = int(np.ceil(np.pow(num_atoms / 4, 1 / 3)))
+    if layers**3 * 4 != num_atoms:
+        print(
+            f"Illegal amount of atoms {num_atoms}, "
+            + f"a full lattice can be constructed with {layers**3 * 4} or {(layers - 1) ** 3 * 4} instead"
+        )
+        exit(4)
 
-    return
+    positions = []
+
+    for layer in range(layers):
+        for cx in range(layers):
+            for cy in range(layers):
+                positions.append(np.array([cx, cy, layer]))
+                positions.append(np.array([cx + 0.5, cy + 0.5, layer]))
+                positions.append(np.array([cx + 0.5, cy, layer + 0.5]))
+                positions.append(np.array([cx, cy + 0.5, layer + 0.5]))
+
+    return np.array(positions) * 1.5
 
 
 ###########################
