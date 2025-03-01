@@ -10,5 +10,6 @@
 	"temperature": 3,
 	"position_method": "uniform",
 	"velocity_method": "zero",
-	"simulator_type": "verlet"
+	"simulator_type": "verlet",
+	"plots": ["energies", "distances", "animation"]
 }
