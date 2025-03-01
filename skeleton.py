@@ -6,22 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 import initialisation
-from utilities import parse_config
-
-debug = True if os.environ.get("DEBUG") is not None else False
-
-
-def dprint(str):
-    """
-    Prints the passed string only if the debug environment variable is set.
-
-    Parameters
-    ----------
-    str : string
-        The string to print
-    """
-    if debug:
-        print(str)
+from utilities import parse_config, dprint
 
 
 def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
