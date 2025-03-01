@@ -9,5 +9,6 @@
 	"step_size": 0.01,
 	"temperature": 3,
 	"position_method": "uniform",
-	"velocity_method": "zero"
+	"velocity_method": "zero",
+	"simulator_type": "verlet"
 }
