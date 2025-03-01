@@ -118,6 +118,30 @@ We aim to finish this by Monday (3rd March) afternoon so that we can discuss and
 
 #### Progress report
 
+@npaarts:
+I've finished up the start I made in week 2 for the velocity verlet algorithm.
+I knew it was working when the two particle situation that blew up before looked more realistic.  
+
+The old integrator (euler):  
+![](images/journal_2/particles_dimensionless.mp4)
+
+The new integrator (verlet):  
+![](images/journal_3/verlet_2_particles.mp4)
+
+It also works well for 27 particles spread around in a grid:  
+![](images/journal_3/verlet_27_particles.mp4)
+
+And we can also look at the energy in this last case  
+![](images/journal_3/verlet_27_particles.png)
+
+After finishing the integrator I worked on moving the different initialisation types we had for
+positions and velocities to a [seperate file](https://gitlab.kwant-project.org/computational_physics/projects/Project1_mankritsingh_npaarts_rjuyal/-/blob/c57fb91294779c319eaa5cec6391c78a46fb9171/initialisation.py).
+Where I gave the different methods explanations and organised them slightly.
+I also improved the config file we had `config.json`, this file can now contain 
+the name of the initialisation method to use that method for both positions and velocities.
+
+Finally I improved the defaults in the config (a7928307b8a0f8d85b5a2afce5d7670cf7e054f4) so the simulation doesn't instantly explode due
+to the particles starting too close together.
 
 #### Reflection on group work
 
