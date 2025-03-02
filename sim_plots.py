@@ -77,7 +77,6 @@ def create_animation(positions, timesteps, box_size, name="particles.mp4"):
     name : str
         Name of the animation file
     """
-    print("Now creating the animation")
     fig = plt.figure(figsize=(7, 7))
     ax = fig.add_subplot(111, projection="3d")
     ax.set_xlim(0, box_size[0])
@@ -86,25 +85,12 @@ def create_animation(positions, timesteps, box_size, name="particles.mp4"):
     positions = np.array(positions)  # Convert to NumPy array if it's a list
     # Scatter plot for particles
     (particles,) = ax.plot([], [], [], "bo", markersize=5)
-    scattr = ax.scatter(
-        positions[0, :, 0],
-        positions[0, :, 1],
-        positions[0, :, 2],
-        c=["b" if i != 0 else "r" for i in range(len(positions[0, :, 0]))],
-    )
 
     # Update function for animation
     def update(frame):
-        particles.set_data(positions[frame, :, 0],
-                           positions[frame, :, 1])  # X, Y
+        particles.set_data(positions[frame, :, 0], positions[frame, :, 1])  # X, Y
         particles.set_3d_properties(positions[frame, :, 2])  # Z
         return (particles,)
-        scattr._offsets3d = (
-            positions[frame, :, 0],
-            positions[frame, :, 1],
-            positions[frame, :, 2],
-        )
-        return (scattr,)
 
     # Create animation
     ani = animation.FuncAnimation(fig, update, frames=timesteps, blit=True)
