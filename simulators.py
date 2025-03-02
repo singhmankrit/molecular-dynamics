@@ -5,8 +5,7 @@ from utilities import dprint
 def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim):
     """
     Molecular dynamics simulation using the Leapfrog algorithm
-    to integrate the equations of motion. Calculates energies and other
-    observables at each timestep.
+    to integrate the equations of motion.
 
     Parameters
     ----------
@@ -43,6 +42,9 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim):
     potential_energies = [potential_energy(distances)]
     distance_list = [distances]
 
+    # Leapfrog starts with a half-step velocity update
+    half_velocities = current_velocities + (current_forces * timestep / 2)
+
     for step in np.arange(num_tsteps):
         dprint(
             f"""
@@ -51,16 +53,19 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim):
             """
         )
 
-        # use velocity-verlet to calculate the new positions and velocities
-        current_positions = (
-            current_positions
-            + current_velocities * timestep
-            + current_forces * timestep * timestep / 2
-        ) % box_dim
+        # Position update using half-step velocities
+        current_positions = (current_positions + half_velocities * timestep) % box_dim
+
+        # Update the positions and forces
         relative_positions, distances = atomic_distances(
             current_positions, box_dim)
-        new_forces = lj_force(relative_positions, distances)
-        current_velocities += (current_forces + new_forces) * timestep / 2
+        current_forces = lj_force(relative_positions, distances)
+
+        # Full-step velocity update
+        current_velocities = half_velocities + (current_forces * timestep / 2)
+
+        # Half-step velocity update for the next step
+        half_velocities += current_forces * timestep
 
         # add the current statistics to the logs
         kinetic_energies.append(kinetic_energy(current_velocities))
@@ -70,9 +75,6 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim):
         # keep track of the positions and velocities
         positions.append(current_positions)
         velocities.append(current_velocities)
-
-        # update the forces so n -> n+1
-        current_forces = new_forces
 
     return positions, velocities, kinetic_energies, potential_energies, distance_list
 
