@@ -2,6 +2,82 @@ import numpy as np
 from utilities import dprint
 
 
+def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim):
+    """
+    Molecular dynamics simulation using the Leapfrog algorithm
+    to integrate the equations of motion.
+
+    Parameters
+    ----------
+    init_pos : np.ndarray
+        The initial positions of the atoms in Cartesian space
+    init_vel : np.ndarray
+        The initial velocities of the atoms in Cartesian space
+    num_tsteps : int
+        The total number of simulation steps
+    timestep : float
+        Duration of a single simulation step
+    box_dim : np.ndarray(float)
+        Dimensions of the simulation box
+
+    Returns
+    -------
+    Any quantities or observables that you wish to study.
+    """
+    positions = [init_pos]
+    velocities = [init_vel]
+
+    current_positions = init_pos
+    current_velocities = init_vel
+    dprint(
+        f"starting positions are {current_positions} and starting velocities are {current_velocities}"
+    )
+
+    # we calculate these so we can calculate the "next step" only from now on
+    relative_positions, distances = atomic_distances(
+        current_positions, box_dim)
+    current_forces = lj_force(relative_positions, distances)
+
+    kinetic_energies = [kinetic_energy(init_vel)]
+    potential_energies = [potential_energy(distances)]
+    distance_list = [distances]
+
+    # Leapfrog starts with a half-step velocity update
+    half_velocities = current_velocities + (current_forces * timestep / 2)
+
+    for step in np.arange(num_tsteps):
+        dprint(
+            f"""
+            at step {step} the particles are at {current_positions}
+            the particles have velocities {current_velocities}
+            """
+        )
+
+        # Position update using half-step velocities
+        current_positions = (current_positions + half_velocities * timestep) % box_dim
+
+        # Update the positions and forces
+        relative_positions, distances = atomic_distances(
+            current_positions, box_dim)
+        current_forces = lj_force(relative_positions, distances)
+
+        # Full-step velocity update
+        current_velocities = half_velocities + (current_forces * timestep / 2)
+
+        # Half-step velocity update for the next step
+        half_velocities += current_forces * timestep
+
+        # add the current statistics to the logs
+        kinetic_energies.append(kinetic_energy(current_velocities))
+        potential_energies.append(potential_energy(distances))
+        distance_list.append(distances)
+
+        # keep track of the positions and velocities
+        positions.append(current_positions)
+        velocities.append(current_velocities)
+
+    return positions, velocities, kinetic_energies, potential_energies, distance_list
+
 def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim):
     """
     Molecular dynamics simulation using the Velocity Verlet's algorithm

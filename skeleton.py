@@ -57,9 +57,11 @@ if __name__ == "__main__":
         simulator = simulators.verlet
     elif simulator_type == "euler":
         simulator = simulators.euler
+    elif simulator_type == "leapfrog":
+        simulator = simulators.leapfrog
     else:
         print(
-            f"Please select a valid simulator ('verlet', 'euler'), currently: {simulator_type}"
+            f"Please select a valid simulator ('leapfrog', 'verlet', 'euler'), currently: {simulator_type}"
         )
         exit(4)
     
