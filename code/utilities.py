@@ -4,7 +4,6 @@ import os
 
 debug = True if os.environ.get("DEBUG") is not None else False
 
-
 def dprint(str):
     """
     Prints the passed string only if the debug environment variable is set.

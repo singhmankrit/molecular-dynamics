@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-import initialisation
+import initialisation as initialisation
 import simulators
 import sim_plots
 from utilities import parse_config, dprint
