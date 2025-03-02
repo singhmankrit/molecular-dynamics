@@ -1,14 +1,10 @@
 #!/usr/bin/env python
 
-import os
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 
 import initialisation
 import simulators
 import sim_plots
-from utilities import parse_config, dprint
+import utilities
 
 
 if __name__ == "__main__":
@@ -23,7 +19,7 @@ if __name__ == "__main__":
         velocity_init_method,
         simulator_type,
         plots,
-    ) = parse_config("config.json")
+    ) = utilities.parse_config("config.json")
     print(
         f"simulating {amount_of_particles} particles for {timesteps} timesteps, with a time step size of {step_size}"
     )
@@ -51,7 +47,7 @@ if __name__ == "__main__":
             f"Please select a valid velocity init method ('zero', 'mbdist'), currently: {velocity_init_method}"
         )
         exit(3)
-        
+
     simulator = None
     if simulator_type == "verlet":
         simulator = simulators.verlet
@@ -64,7 +60,7 @@ if __name__ == "__main__":
             f"Please select a valid simulator ('leapfrog', 'verlet', 'euler'), currently: {simulator_type}"
         )
         exit(4)
-    
+
     print("Starting simulation")
     pos, vel, kinetic, potential, distance_list = simulator(
         init_pos,
@@ -74,7 +70,7 @@ if __name__ == "__main__":
         box_size,
     )
     print("Finished simulation")
-    
+
     if "energies" in plots:
         sim_plots.plot_energy(kinetic, potential)
     if "distances" in plots:
