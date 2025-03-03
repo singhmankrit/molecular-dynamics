@@ -144,20 +144,20 @@ the name of the initialisation method to use that method for both positions and 
 Finally I improved the defaults in the config (a7928307b8a0f8d85b5a2afce5d7670cf7e054f4) so the simulation doesn't instantly explode due
 to the particles starting too close together.
 
-@mankritsingh
-I've added and tested the leapfrog integrator in Merge Request: !21 
-Also did some refactoring for the code, moving the code to a common folder and renamed "skeleton.py" in Merge Request: !22
+@mankritsingh \
+I've added and tested the leapfrog integrator in Merge Request: !21 \
+Also did some refactoring for the code, moving the code to a common folder and renamed "skeleton.py" in Merge Request: !22 \
 Reviewed Merge Requests/code.
 
 Sharing the results of energy conservation below for 3 particles:
 
-Euler:
+**Euler**: \
 ![](images/journal_3/euler_energy.png)
 
-Velocity-Verlet:
+**Velocity-Verlet**: \
 ![](images/journal_3/verlet_energy.png)
 
-Leapfrog:
+**Leapfrog**: \
 ![](images/journal_3/leapfrog_energy.png)
 
 We observe that the total energy is conserved for Velocity Verlet and Leapfrog integrators but not for Eurler integrator as expected.
