@@ -162,6 +162,10 @@ Sharing the results of energy conservation below for 3 particles:
 
 We observe that the total energy is conserved for Velocity Verlet and Leapfrog integrators but not for Eurler integrator as expected.
 
+@rjuyal:
+Moved simulation code to a separate file, moved code for plotting to a separate file and added defaults for them to config. \
+Also reviewed merge requests. 
+
 #### Reflection on group work
 
 
