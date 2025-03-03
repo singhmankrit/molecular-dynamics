@@ -168,6 +168,14 @@ Also reviewed merge requests.
 
 #### Reflection on group work
 
+Ragi's reflection:
+![](images/journal_3/ragi_review.png)
+
+Noa's reflection:
+![](images/journal_3/noa_review.png)
+
+Mankrits reflection:
+![](images/journal_3/mankrit_review.png)
 
 ## Week 4
 (due 11 March 2025, 11:00)
