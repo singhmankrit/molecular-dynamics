@@ -10,6 +10,14 @@
 	"temperature": 3,
 	"position_method": "uniform",
 	"velocity_method": "zero",
-	"simulator_type": "verlet",
-	"plots": ["energies", "distances", "animation"]
+	"seed": 2911,
+	"simulator_type": [
+		"verlet",
+		"euler"
+	],
+	"plots": [
+		"energies",
+		"distances",
+		"animation"
+	]
 }

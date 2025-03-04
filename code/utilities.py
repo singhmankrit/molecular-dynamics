@@ -54,7 +54,7 @@ def parse_config(file_path: str):
         random_seed: int | None = config.get("seed", None)
         pos_method: str = config.get("position_method", "uniform")
         vel_method: str = config.get("velocity_method", "mbdist")
-        simulator_type: str = config.get("simulator_type", "verlet")
+        simulator_type: list[str] = config.get("simulator_type", ["verlet"])
         plots: list[str] = config.get("plots", ["energies", "distances", "animation"])
         return (
             amount_of_particles,

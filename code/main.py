@@ -17,7 +17,7 @@ import utilities
     random_seed,
     position_init_method,
     velocity_init_method,
-    simulator_type,
+    simulator_types,
     plots,
 ) = utilities.parse_config("config.json")
 print(
@@ -50,35 +50,42 @@ else:
     )
     exit(3)
 
-# select the simulator to use
-simulator = None
-if simulator_type == "verlet":
-    simulator = simulators.verlet
-elif simulator_type == "euler":
-    simulator = simulators.euler
-elif simulator_type == "leapfrog":
-    simulator = simulators.leapfrog
-else:
-    print(
-        f"Please select a valid simulator ('leapfrog', 'verlet', 'euler'), currently: {simulator_type}"
+for simulator_type in simulator_types:
+    # select the simulator to use
+    simulator = None
+    if simulator_type == "verlet":
+        simulator = simulators.verlet
+    elif simulator_type == "euler":
+        simulator = simulators.euler
+    elif simulator_type == "leapfrog":
+        simulator = simulators.leapfrog
+    else:
+        print(
+            f"Please select a valid simulator ('leapfrog', 'verlet', 'euler'), currently: {simulator_type}"
+        )
+        exit(4)
+
+    # run the simulation and put the results into variables
+    print(f"Starting {simulator_type} simulation")
+    pos, vel, kinetic, potential, distance_list = simulator(
+        init_pos,
+        init_vel,
+        timesteps,
+        step_size,
+        box_size,
     )
-    exit(4)
+    print(f"Finished {simulator_type} simulation")
 
-# run the simulation and put the results into variables
-print("Starting simulation")
-pos, vel, kinetic, potential, distance_list = simulator(
-    init_pos,
-    init_vel,
-    timesteps,
-    step_size,
-    box_size,
-)
-print("Finished simulation")
-
-# generate plots from the results
-if "energies" in plots:
-    sim_plots.plot_energy(kinetic, potential)
-if "distances" in plots:
-    sim_plots.plot_distances(distance_list)
-if "animation" in plots:
-    sim_plots.create_animation(pos, timesteps, box_size)
+    # generate plots from the results
+    if "energies" in plots:
+        sim_plots.plot_energy(
+            kinetic, potential, file_name=f"energies_{simulator_type}.png"
+        )
+    if "distances" in plots:
+        sim_plots.plot_distances(
+            distance_list, file_name=f"distances_{simulator_type}.png"
+        )
+    if "animation" in plots:
+        sim_plots.create_animation(
+            pos, timesteps, box_size, file_name=f"particles_{simulator_type}.mp4"
+        )
