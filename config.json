@@ -19,5 +19,6 @@
 		"energies",
 		"distances",
 		"animation"
-	]
+	],
+	"do_caching": true
 }

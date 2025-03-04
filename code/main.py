@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 
+import hashlib
+import pickle
+from os.path import isfile
 import initialisation
 import simulators
 import sim_plots
@@ -19,6 +22,7 @@ import utilities
     velocity_init_method,
     simulator_types,
     plots,
+    enable_cache,
 ) = utilities.parse_config("config.json")
 print(
     f"simulating {amount_of_particles} particles for {timesteps} timesteps, with a time step size of {step_size}"
@@ -65,16 +69,40 @@ for simulator_type in simulator_types:
         )
         exit(4)
 
-    # run the simulation and put the results into variables
-    print(f"Starting {simulator_type} simulation")
-    pos, vel, kinetic, potential, distance_list = simulator(
-        init_pos,
-        init_vel,
-        timesteps,
-        step_size,
-        box_size,
+    pos, vel, kinetic, potential, distance_list = None, None, None, None, None
+    # check if we have a cached run already
+    hash = hashlib.sha1(
+        "{}_{}_{}_{}_{}_{}_{}_{}_{}".format(
+            amount_of_particles,
+            step_size,
+            timesteps,
+            temperature,
+            list(box_size),
+            random_seed,
+            position_init_method,
+            velocity_init_method,
+            simulator_type,
+        ).encode()
     )
-    print(f"Finished {simulator_type} simulation")
+    path = f"cache/{hash.hexdigest()}.pkl"
+    if isfile(path) and enable_cache:
+        print(f"found cached results at {path}")
+        with open(path, "rb") as f:
+            pos, vel, kinetic, potential, distance_list = pickle.load(f)
+    else:
+        # run the simulation and put the results into variables
+        print(f"Starting {simulator_type} simulation")
+        pos, vel, kinetic, potential, distance_list = simulator(
+            init_pos,
+            init_vel,
+            timesteps,
+            step_size,
+            box_size,
+        )
+        print(f"Finished {simulator_type} simulation")
+
+        with open(path, "wb") as f:
+            pickle.dump((pos, vel, kinetic, potential, distance_list), f)
 
     # generate plots from the results
     if "energies" in plots:
