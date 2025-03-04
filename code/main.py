@@ -36,7 +36,7 @@ elif position_init_method == "fcc":
     )  # TODO: lattice constant (array??)
 else:
     print(
-        f"Please select a valid position init method ('uniform', 'static'), currently: {position_init_method}"
+        f"Please select a valid position init method ('uniform', 'static', 'fcc'), currently: {position_init_method}"
     )
     exit(2)
 
