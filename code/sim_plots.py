@@ -62,7 +62,9 @@ def plot_distances(distance_list, particle=0, file_name="distances.png"):
     plt.close()
 
 
-def create_animation(positions, timesteps, box_size, file_name="particles.mp4"):
+def create_animation(
+    positions, timesteps, box_size, selected=0, file_name="particles.mp4"
+):
     """
     Creates an animation of the system.
 
@@ -83,13 +85,22 @@ def create_animation(positions, timesteps, box_size, file_name="particles.mp4"):
     ax.set_ylim(0, box_size[1])
     ax.set_zlim(0, box_size[2])
     positions = np.array(positions)  # Convert to NumPy array if it's a list
+    n_particles = positions.shape[1]
     # Scatter plot for particles
-    (particles,) = ax.plot([], [], [], "bo", markersize=5)
+    particles = ax.scatter(
+        positions[0, :, 0],
+        positions[0, :, 1],
+        positions[0, :, 2],
+        c=["r" if i == selected else "b" for i in range(n_particles)],
+    )
 
     # Update function for animation
     def update(frame):
-        particles.set_data(positions[frame, :, 0], positions[frame, :, 1])  # X, Y
-        particles.set_3d_properties(positions[frame, :, 2])  # Z
+        particles._offsets3d = (
+            positions[frame, :, 1],
+            positions[frame, :, 0],
+            positions[frame, :, 2],
+        )
         return (particles,)
 
     # Create animation
@@ -97,4 +108,3 @@ def create_animation(positions, timesteps, box_size, file_name="particles.mp4"):
 
     dprint(f"saving the animation to {file_name}")
     ani.save(file_name, writer="ffmpeg", fps=30)
-
