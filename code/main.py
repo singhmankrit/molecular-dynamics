@@ -22,6 +22,7 @@ import utilities
     velocity_init_method,
     simulator_types,
     plots,
+    enable_cache,
 ) = utilities.parse_config("config.json")
 print(
     f"simulating {amount_of_particles} particles for {timesteps} timesteps, with a time step size of {step_size}"
@@ -84,7 +85,7 @@ for simulator_type in simulator_types:
         ).encode()
     )
     path = f"cache/{hash.hexdigest()}.pkl"
-    if isfile(path):
+    if isfile(path) and enable_cache:
         print(f"found cached results at {path}")
         with open(path, "rb") as f:
             pos, vel, kinetic, potential, distance_list = pickle.load(f)

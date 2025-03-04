@@ -56,6 +56,7 @@ def parse_config(file_path: str):
         vel_method: str = config.get("velocity_method", "mbdist")
         simulator_type: list[str] = config.get("simulator_type", ["verlet"])
         plots: list[str] = config.get("plots", ["energies", "distances", "animation"])
+        enable_cache: bool = config.get("do_caching", True)
         return (
             amount_of_particles,
             step_size,
@@ -67,4 +68,5 @@ def parse_config(file_path: str):
             vel_method,
             simulator_type,
             plots,
+            enable_cache,
         )
