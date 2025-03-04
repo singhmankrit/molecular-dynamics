@@ -51,7 +51,7 @@ def parse_config(file_path: str):
             box_z: float = config["box"].get("z", 5.0)
         else:
             box_x, box_y, box_z = 5.0, 5.0, 5.0
-        random_seed: int | None = config.get("seed", None)
+        random_seed: int = config.get("seed", np.random.randint(0, 1000000000))
         pos_method: str = config.get("position_method", "uniform")
         vel_method: str = config.get("velocity_method", "mbdist")
         simulator_type: list[str] = config.get("simulator_type", ["verlet"])
