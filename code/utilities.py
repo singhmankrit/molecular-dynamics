@@ -1,5 +1,20 @@
 import json
 import numpy as np
+import os
+
+debug = True if os.environ.get("DEBUG") is not None else False
+
+def dprint(str):
+    """
+    Prints the passed string only if the debug environment variable is set.
+
+    Parameters
+    ----------
+    str : string
+        The string to print
+    """
+    if debug:
+        print(str)
 
 
 def parse_config(file_path):
@@ -37,6 +52,8 @@ def parse_config(file_path):
         random_seed = config.get("seed", None)
         pos_method = config.get("position_method", "uniform")
         vel_method = config.get("velocity_method", "mbdist")
+        simulator_type = config.get("simulator_type", "verlet")
+        plots = config.get("plots", ["energies", "distances", "animation"])
         return (
             amount_of_particles,
             step_size,
@@ -46,4 +63,6 @@ def parse_config(file_path):
             random_seed,
             pos_method,
             vel_method,
+            simulator_type,
+            plots,
         )

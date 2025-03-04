@@ -1,32 +1,85 @@
-#!/usr/bin/env python
-
-import os
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-
-import initialisation
-from utilities import parse_config
-
-debug = True if os.environ.get("DEBUG") is not None else False
+from utilities import dprint
 
 
-def dprint(str):
+def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim):
     """
-    Prints the passed string only if the debug environment variable is set.
+    Molecular dynamics simulation using the Leapfrog algorithm
+    to integrate the equations of motion.
 
     Parameters
     ----------
-    str : string
-        The string to print
+    init_pos : np.ndarray
+        The initial positions of the atoms in Cartesian space
+    init_vel : np.ndarray
+        The initial velocities of the atoms in Cartesian space
+    num_tsteps : int
+        The total number of simulation steps
+    timestep : float
+        Duration of a single simulation step
+    box_dim : np.ndarray(float)
+        Dimensions of the simulation box
+
+    Returns
+    -------
+    Any quantities or observables that you wish to study.
     """
-    if debug:
-        print(str)
+    positions = [init_pos]
+    velocities = [init_vel]
+
+    current_positions = init_pos
+    current_velocities = init_vel
+    dprint(
+        f"starting positions are {current_positions} and starting velocities are {current_velocities}"
+    )
+
+    # we calculate these so we can calculate the "next step" only from now on
+    relative_positions, distances = atomic_distances(current_positions, box_dim)
+    current_forces = lj_force(relative_positions, distances)
+
+    kinetic_energies = [kinetic_energy(init_vel)]
+    potential_energies = [potential_energy(distances)]
+    distance_list = [distances]
+
+    # Leapfrog starts with a half-step velocity update
+    half_velocities = current_velocities + (current_forces * timestep / 2)
+
+    for step in np.arange(num_tsteps):
+        dprint(
+            f"""
+            at step {step} the particles are at {current_positions}
+            the particles have velocities {current_velocities}
+            """
+        )
+
+        # Position update using half-step velocities
+        current_positions = (current_positions + half_velocities * timestep) % box_dim
+
+        # Update the positions and forces
+        relative_positions, distances = atomic_distances(current_positions, box_dim)
+        current_forces = lj_force(relative_positions, distances)
+
+        # Full-step velocity update
+        current_velocities = half_velocities + (current_forces * timestep / 2)
+
+        # Half-step velocity update for the next step
+        half_velocities += current_forces * timestep
+
+        # add the current statistics to the logs
+        kinetic_energies.append(kinetic_energy(current_velocities))
+        potential_energies.append(potential_energy(distances))
+        distance_list.append(distances)
+
+        # keep track of the positions and velocities
+        positions.append(current_positions)
+        velocities.append(current_velocities)
+
+    return positions, velocities, kinetic_energies, potential_energies, distance_list
 
 
-def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
+def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim):
     """
-    Molecular dynamics simulation using the Euler or Verlet's algorithms
+    Molecular dynamics simulation using the Velocity Verlet's algorithm
     to integrate the equations of motion. Calculates energies and other
     observables at each timestep.
 
@@ -93,6 +146,67 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
 
         # update the forces so n -> n+1
         current_forces = new_forces
+
+    return positions, velocities, kinetic_energies, potential_energies, distance_list
+
+
+def euler(init_pos, init_vel, num_tsteps, timestep, box_dim):
+    """
+    Molecular dynamics simulation using the Euler algorithm
+    to integrate the equations of motion. Calculates energies and other
+    observables at each timestep.
+
+    Parameters
+    ----------
+    init_pos : np.ndarray
+        The initial positions of the atoms in Cartesian space
+    init_vel : np.ndarray
+        The initial velocities of the atoms in Cartesian space
+    num_tsteps : int
+        The total number of simulation steps
+    timestep : float
+        Duration of a single simulation step
+    box_dim : np.ndarray(float)
+        Dimensions of the simulation box
+
+    Returns
+    -------
+    Any quantities or observables that you wish to study.
+    """
+    positions = [init_pos]
+    velocities = [init_vel]
+    kinetic_energies = []
+    potential_energies = []
+
+    distance_list = []
+    current_positions = init_pos
+    current_velocities = init_vel
+
+    for step in np.arange(num_tsteps):
+        dprint(
+            f"""
+            at step {step} the particles are at {current_positions}
+            the particles have velocities {current_velocities}
+            """
+        )
+        # create the n-by-n matrix of all the distances and the n-by-n-by-3 matrix of the relative positions
+        relative_positions, distances = atomic_distances(current_positions, box_dim)
+        # get the n-by-3 matrix of all the total forces on the particles
+        forces = lj_force(relative_positions, distances)
+
+        # get current energies and distances and append
+        kinetic_energies.append(kinetic_energy(current_velocities))
+        potential_energies.append(potential_energy(distances))
+        distance_list.append(distances)
+        # Euler integration step, we'll have to rewrite this to improve energy conservation
+        current_positions = (
+            current_positions + current_velocities * timestep
+        ) % box_dim
+        current_velocities += forces * timestep
+
+        # append the new positions and velocities to the arrays
+        positions.append(current_positions)
+        velocities.append(current_velocities)
 
     return positions, velocities, kinetic_energies, potential_energies, distance_list
 
@@ -214,151 +328,3 @@ def potential_energy(rel_dist):
     """
 
     return 1 / 2 * np.sum(lj_potential(rel_dist))
-
-
-def plot_energy(kinetic, potential, file_name="energies.png"):
-    """
-    Plots the energy vs timesteps.
-
-    Parameters
-    ----------
-    kinetic : list
-        List of kinetic energies
-    potential : list
-        List of potential energies
-    file_name : string
-        Name of file to save to
-    """
-    plt.title("Energy vs timesteps")
-    plt.xlabel("timesteps")
-    plt.ylabel("Energy")
-    plt.plot(kinetic, label="kinetic", color="orange")
-    plt.plot(potential, label="potential", color="purple")
-    plt.plot(np.array(kinetic) + np.array(potential), label="total", color="black")
-    plt.legend()
-    plt.tight_layout()
-    dprint(f"saving the energies plot to {file_name}")
-    plt.savefig(file_name)
-    plt.close()
-
-
-def plot_distances(distance_list, particle=0, file_name="distances.png"):
-    """
-    Plots the distances between particles.
-
-    Parameters
-    ----------
-    distance_list : list
-        List of distances
-    particle : int
-        Particle to plot distances from
-    file_name : string
-        Name of file to save to
-    """
-    plt.title(f"Distances between particle {particle} and other particles")
-    plt.xlabel("timesteps")
-    plt.ylabel("Distance")
-    for i in range(0, len(distance_list[0])):
-        if i == particle:
-            continue
-        plt.plot(np.array(distance_list)[:, particle, i], label=f"Particle {i}")
-    plt.tight_layout()
-    plt.legend()
-    dprint(f"saving the distances plot to {file_name}")
-    plt.savefig(file_name)
-    plt.close()
-
-
-def create_animation(positions, timesteps, box_size, name="particles.mp4"):
-    """
-    Creates an animation of the system.
-
-    Parameters
-    ----------
-    positions : list
-        List of positions
-    timesteps : int
-        Number of timesteps
-    box_size : np.ndarray
-        Size of the simulation box
-    name : str
-        Name of the animation file
-    """
-    fig = plt.figure(figsize=(7, 7))
-    ax = fig.add_subplot(111, projection="3d")
-    ax.set_xlim(0, box_size[0])
-    ax.set_ylim(0, box_size[1])
-    ax.set_zlim(0, box_size[2])
-    positions = np.array(positions)  # Convert to NumPy array if it's a list
-    # Scatter plot for particles
-    (particles,) = ax.plot([], [], [], "bo", markersize=5)
-
-    # Update function for animation
-    def update(frame):
-        particles.set_data(positions[frame, :, 0], positions[frame, :, 1])  # X, Y
-        particles.set_3d_properties(positions[frame, :, 2])  # Z
-        return (particles,)
-
-    # Create animation
-    ani = animation.FuncAnimation(fig, update, frames=timesteps, blit=True)
-
-    dprint(f"saving the animation to {name}")
-    ani.save(name, writer="ffmpeg", fps=30)
-
-
-if __name__ == "__main__":
-    (
-        amount_of_particles,
-        step_size,
-        timesteps,
-        temperature,
-        box_size,
-        random_seed,
-        position_init_method,
-        velocity_init_method,
-    ) = parse_config("config.json")
-    print(
-        f"simulating {amount_of_particles} particles for {timesteps} timesteps, with a time step size of {step_size}"
-    )
-    init_pos = None
-    if position_init_method == "uniform":
-        init_pos = initialisation.uniform_random(
-            amount_of_particles, box_size, random_seed
-        )
-    elif position_init_method == "static":
-        init_pos = initialisation.static(amount_of_particles, box_size)
-    elif position_init_method == "fcc":
-        init_pos = initialisation.fcc_lattice(
-            amount_of_particles, 1
-        )  # TODO: change lattice constant
-    else:
-        print(
-            f"Please select a valid position init method ('uniform', 'static'), currently: {position_init_method}"
-        )
-        exit(2)
-    init_vel = None
-    if velocity_init_method == "zero":
-        init_vel = initialisation.zero_speed(amount_of_particles)
-    elif velocity_init_method == "mbdist":
-        init_vel = initialisation.init_velocity(
-            amount_of_particles, temperature, random_seed
-        )
-    else:
-        print(
-            f"Please select a valid velocity init method ('zero', 'mbdist'), currently: {velocity_init_method}"
-        )
-        exit(3)
-
-    pos, vel, kinetic, potential, distance_list = simulate(
-        init_pos,
-        init_vel,
-        timesteps,
-        step_size,
-        box_size,
-    )
-    print("finished simulating, plotting the energies over time")
-    plot_energy(kinetic, potential)
-    print("plotted the energies, now plotting the distances")
-    plot_distances(distance_list)
-    print("plotted the distances, now creating the animation")
-    create_animation(pos, timesteps, box_size)

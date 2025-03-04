@@ -108,6 +108,7 @@ Animation: \
 #### Planning
 - Extend code to more than 2 particles - Done in Week 1
 - Implement Velocity Verlet - In Progress since Week 2 by @npaarts
+- Energy plots of total, kinetic and potential energies - Done in Week 1
 - Structure Code properly
    - Move initialization to separate file, debug print should be in utilities - @npaarts
    - Different simulators in one file, plotting in another file, input as config - @rjuyal
@@ -143,9 +144,38 @@ the name of the initialisation method to use that method for both positions and 
 Finally I improved the defaults in the config (a7928307b8a0f8d85b5a2afce5d7670cf7e054f4) so the simulation doesn't instantly explode due
 to the particles starting too close together.
 
+@mankritsingh \
+I've added and tested the leapfrog integrator in Merge Request: !21 \
+Also did some refactoring for the code, moving the code to a common folder and renamed "skeleton.py" in Merge Request: !22 \
+Reviewed Merge Requests/code.
+
+Sharing the results of energy conservation below for 3 particles:
+
+**Euler**: \
+![](images/journal_3/euler_energy.png)
+
+**Velocity-Verlet**: \
+![](images/journal_3/verlet_energy.png)
+
+**Leapfrog**: \
+![](images/journal_3/leapfrog_energy.png)
+
+We observe that the total energy is conserved for Velocity Verlet and Leapfrog integrators but not for Eurler integrator as expected.
+
+@rjuyal:
+Moved simulation code to a separate file, moved code for plotting to a separate file and added defaults for them to config. \
+Also reviewed merge requests. 
+
 #### Reflection on group work
 
+Ragi's reflection:
+![](images/journal_3/ragi_review.png)
 
+Noa's reflection:
+![](images/journal_3/noa_review.png)
+
+Mankrits reflection:
+![](images/journal_3/mankrit_review.png)
 
 ## Week 4
 (due 11 March 2025, 11:00)
