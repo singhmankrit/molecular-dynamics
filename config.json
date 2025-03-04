@@ -20,5 +20,5 @@
 		"distances",
 		"animation"
 	],
-	"do_caching": True
+	"do_caching": true
 }
