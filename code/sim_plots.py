@@ -19,13 +19,13 @@ def plot_energy(kinetic, potential, file_name="energies.png"):
         Name of file to save to
     """
     print("Now plotting the energies")
+    _ = plt.figure()
     plt.title("Energy vs timesteps")
     plt.xlabel("timesteps")
     plt.ylabel("Energy")
     plt.plot(kinetic, label="kinetic", color="orange")
     plt.plot(potential, label="potential", color="purple")
-    plt.plot(np.array(kinetic) + np.array(potential),
-             label="total", color="black")
+    plt.plot(np.array(kinetic) + np.array(potential), label="total", color="black")
     plt.legend()
     plt.tight_layout()
     dprint(f"saving the energies plot to {file_name}")
@@ -47,14 +47,14 @@ def plot_distances(distance_list, particle=0, file_name="distances.png"):
         Name of file to save to
     """
     print("Now plotting the distances")
+    _ = plt.figure()
     plt.title(f"Distances between particle {particle} and other particles")
     plt.xlabel("timesteps")
     plt.ylabel("Distance")
     for i in range(0, len(distance_list[0])):
         if i == particle:
             continue
-        plt.plot(np.array(distance_list)[
-                 :, particle, i], label=f"Particle {i}")
+        plt.plot(np.array(distance_list)[:, particle, i], label=f"Particle {i}")
     plt.tight_layout()
     plt.legend()
     dprint(f"saving the distances plot to {file_name}")
@@ -62,7 +62,7 @@ def plot_distances(distance_list, particle=0, file_name="distances.png"):
     plt.close()
 
 
-def create_animation(positions, timesteps, box_size, name="particles.mp4"):
+def create_animation(positions, timesteps, box_size, file_name="particles.mp4"):
     """
     Creates an animation of the system.
 
@@ -95,5 +95,6 @@ def create_animation(positions, timesteps, box_size, name="particles.mp4"):
     # Create animation
     ani = animation.FuncAnimation(fig, update, frames=timesteps, blit=True)
 
-    dprint(f"saving the animation to {name}")
-    ani.save(name, writer="ffmpeg", fps=30)
+    dprint(f"saving the animation to {file_name}")
+    ani.save(file_name, writer="ffmpeg", fps=30)
+

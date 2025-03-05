@@ -1,10 +1,12 @@
 import json
+from typing import Any
 import numpy as np
 import os
 
 debug = True if os.environ.get("DEBUG") is not None else False
 
-def dprint(str):
+
+def dprint(str: object):
     """
     Prints the passed string only if the debug environment variable is set.
 
@@ -17,7 +19,7 @@ def dprint(str):
         print(str)
 
 
-def parse_config(file_path):
+def parse_config(file_path: str):
     """
     Parse configuration located at `file_path`,
     return the parsed result
@@ -37,23 +39,24 @@ def parse_config(file_path):
     - the box size: np.ndarray
     """
     with open(file_path) as file:
-        config = json.load(file)
-        amount_of_particles = config.get("particles", 2)
-        step_size = config.get("step_size", 0.01)
-        time_steps = config.get("time_steps", 1000)
-        temperature = config.get("temperature", 1)
-        box = config.get("box")
+        config: dict[str, Any] = json.load(file)
+        amount_of_particles: int = config.get("particles", 2)
+        step_size: float = config.get("step_size", 0.01)
+        time_steps: int = config.get("time_steps", 1000)
+        temperature: float = config.get("temperature", 1)
+        box: dict[str, float] | None = config.get("box")
         if box is not None:
-            box_x = config["box"].get("x", 5.0)
-            box_y = config["box"].get("y", 5.0)
-            box_z = config["box"].get("z", 5.0)
+            box_x: float = config["box"].get("x", 5.0)
+            box_y: float = config["box"].get("y", 5.0)
+            box_z: float = config["box"].get("z", 5.0)
         else:
             box_x, box_y, box_z = 5.0, 5.0, 5.0
-        random_seed = config.get("seed", None)
-        pos_method = config.get("position_method", "uniform")
-        vel_method = config.get("velocity_method", "mbdist")
-        simulator_type = config.get("simulator_type", "verlet")
-        plots = config.get("plots", ["energies", "distances", "animation"])
+        random_seed: int = config.get("seed", np.random.randint(0, 1000000000))
+        pos_method: str = config.get("position_method", "uniform")
+        vel_method: str = config.get("velocity_method", "mbdist")
+        simulator_type: list[str] = config.get("simulator_type", ["verlet"])
+        plots: list[str] = config.get("plots", ["energies", "distances", "animation"])
+        enable_cache: bool = config.get("do_caching", True)
         return (
             amount_of_particles,
             step_size,
@@ -65,4 +68,5 @@ def parse_config(file_path):
             vel_method,
             simulator_type,
             plots,
+            enable_cache,
         )
