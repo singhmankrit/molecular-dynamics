@@ -182,6 +182,21 @@ Mankrits reflection:
 
 #### Planning
 
+- FCC lattice (fix problems and find lattice constant etc.) @npaarts
+- Make the initial velocity function for MB correct @mankritsingh
+    - subtract center of mass velocity
+- Show that velocities obey Maxwell-Boltzmann @mankritsingh
+- Velocity rescaling @mankritsingh
+- Study (one) observable @rjuyal (if others finish fast, they can help)
+    - Pair correlation function
+    - Diffusion
+    - Pressure
+    - Specific heat
+- Profiling @npaarts
+- Improve plots @rjuyal
+    - Labels for axes
+    - Time instead of timesteps on the axis
+    - Time in animation title
 
 #### Progress report
 

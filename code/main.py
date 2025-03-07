@@ -93,8 +93,8 @@ for simulator_type in simulator_types:
         # run the simulation and put the results into variables
         print(f"Starting {simulator_type} simulation")
         pos, vel, kinetic, potential, distance_list = simulator(
-            init_pos,
-            init_vel,
+            init_pos.copy(),
+            init_vel.copy(),
             timesteps,
             step_size,
             box_size,
