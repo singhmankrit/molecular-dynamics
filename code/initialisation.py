@@ -173,9 +173,11 @@ def init_velocity(num_atoms, temp, seed=None):
     vel_vec : np.ndarray
         Array of particle velocities
     """
-
-    # TODO: I don't know what the scale should be. (for week 4)
-    scale = np.sqrt(temp)
     np.random.seed(seed)
+
+    # Using Maxwell-Boltzmann distribution, scale = sqrt(T)
+    scale = np.sqrt(temp)
     velocities = np.random.normal(loc=0.0, scale=scale, size=(num_atoms, 3))
+    # Subtracting mean from the velocities
+    velocities -= np.mean(velocities, axis=0)
     return velocities
