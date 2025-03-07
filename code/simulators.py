@@ -19,6 +19,12 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
         Duration of a single simulation step
     box_dim : np.ndarray(float)
         Dimensions of the simulation box
+    equilibrium_steps : int
+        Number of steps after which we apply velocity rescaling (if applicable)
+    target_temperature : float
+        The target temperature of the system
+    temperature_tolerance : float
+        The tolerated error in temperature (actual_temp/target_temp - 1)
 
     Returns
     -------
@@ -97,6 +103,12 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps,
         Duration of a single simulation step
     box_dim : np.ndarray(float)
         Dimensions of the simulation box
+    equilibrium_steps : int
+        Number of steps after which we apply velocity rescaling (if applicable)
+    target_temperature : float
+        The target temperature of the system
+    temperature_tolerance : float
+        The tolerated error in temperature (actual_temp/target_temp - 1)
 
     Returns
     -------
@@ -172,6 +184,12 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, 
         Duration of a single simulation step
     box_dim : np.ndarray(float)
         Dimensions of the simulation box
+    equilibrium_steps : int
+        Number of steps after which we apply velocity rescaling (if applicable)
+    target_temperature : float
+        The target temperature of the system
+    temperature_tolerance : float
+        The tolerated error in temperature (actual_temp/target_temp - 1)
 
     Returns
     -------
