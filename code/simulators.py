@@ -74,11 +74,8 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
         # Half-step velocity update for the next step
         half_velocities += current_forces * timestep
 
-        current_kinetic_energy = kinetic_energy(current_velocities)
-        current_temperature = compute_temperature(current_kinetic_energy, amount_of_particles)
-
         # add the current statistics to the logs
-        kinetic_energies.append(current_kinetic_energy)
+        kinetic_energies.append(kinetic_energy(current_velocities))
         potential_energies.append(potential_energy(distances))
         distance_list.append(distances)
 
@@ -86,9 +83,12 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
         positions.append(current_positions)
         velocities.append(current_velocities)
 
+        # we apply rescaling at half timesteps for leapfrog
         if step % equilibrium_steps == 0:
-            if abs(current_temperature/target_temperature - 1) > temperature_tolerance:
-                half_velocities *= compute_rescale_factor(amount_of_particles, target_temperature, current_kinetic_energy)
+            half_kinetic_energy = kinetic_energy(half_velocities)
+            half_temperature = compute_temperature(half_kinetic_energy, amount_of_particles)
+            if abs(half_temperature/target_temperature - 1) > temperature_tolerance:
+                half_velocities *= compute_rescale_factor(amount_of_particles, target_temperature, half_kinetic_energy)
 
     return positions, velocities, kinetic_energies, potential_energies, distance_list
 
@@ -300,8 +300,8 @@ def compute_rescale_factor(amount_of_particles, target_temperature, kinetic_ener
 
 
 def atomic_distances(
-    pos: np.typing.NDArray[np.float64], box_dim: np.typing.NDArray[np.float64]
-) -> np.typing.NDArray[np.float64]:
+    pos: np._typing.NDArray[np.float64], box_dim: np._typing.NDArray[np.float64]
+) -> np._typing.NDArray[np.float64]:
     """
     Calculates relative positions and distances between particles.
 
