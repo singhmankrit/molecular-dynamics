@@ -75,14 +75,21 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, amount_of_partic
         # Half-step velocity update for the next step
         half_velocities += current_forces * timestep
 
+        kinetic_energy = kinetic_energy(current_velocities)
+        current_temperature = compute_temperature(kinetic_energy, amount_of_particles)
+
         # add the current statistics to the logs
-        kinetic_energies.append(kinetic_energy(current_velocities))
+        kinetic_energies.append(kinetic_energy)
         potential_energies.append(potential_energy(distances))
         distance_list.append(distances)
 
         # keep track of the positions and velocities
         positions.append(current_positions)
         velocities.append(current_velocities)
+
+        if step % equilibrium_steps == 0:
+            if abs(current_temperature/target_temperature - 1) > temperature_tolerance:
+                current_velocities = rescale_velocity(current_velocities, amount_of_particles, target_temperature)
 
     return positions, velocities, kinetic_energies, potential_energies, distance_list
 
@@ -155,8 +162,11 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, amount_of_particle
         new_forces = lj_force(relative_positions, distances)
         current_velocities += (current_forces + new_forces) * timestep / 2
 
+        kinetic_energy = kinetic_energy(current_velocities)
+        current_temperature = compute_temperature(kinetic_energy, amount_of_particles)
+
         # add the current statistics to the logs
-        kinetic_energies.append(kinetic_energy(current_velocities))
+        kinetic_energies.append(kinetic_energy)
         potential_energies.append(potential_energy(distances))
         distance_list.append(distances)
 
@@ -166,6 +176,10 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, amount_of_particle
 
         # update the forces so n -> n+1
         current_forces = new_forces
+
+        if step % equilibrium_steps == 0:
+            if abs(current_temperature/target_temperature - 1) > temperature_tolerance:
+                current_velocities = rescale_velocity(current_velocities, amount_of_particles, target_temperature)
 
     return positions, velocities, kinetic_energies, potential_energies, distance_list
 
@@ -223,8 +237,11 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, amount_of_particles
         # get the n-by-3 matrix of all the total forces on the particles
         forces = lj_force(relative_positions, distances)
 
+        kinetic_energy = kinetic_energy(current_velocities)
+        current_temperature = compute_temperature(kinetic_energy, amount_of_particles)
+
         # get current energies and distances and append
-        kinetic_energies.append(kinetic_energy(current_velocities))
+        kinetic_energies.append(kinetic_energy)
         potential_energies.append(potential_energy(distances))
         distance_list.append(distances)
         # Euler integration step, we'll have to rewrite this to improve energy conservation
@@ -236,6 +253,10 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, amount_of_particles
         # append the new positions and velocities to the arrays
         positions.append(current_positions)
         velocities.append(current_velocities)
+
+        if step % equilibrium_steps == 0:
+            if abs(current_temperature/target_temperature - 1) > temperature_tolerance:
+                current_velocities = rescale_velocity(current_velocities, amount_of_particles, target_temperature)
 
     return positions, velocities, kinetic_energies, potential_energies, distance_list
 
