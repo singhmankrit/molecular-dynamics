@@ -78,6 +78,7 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim):
 
     return positions, velocities, kinetic_energies, potential_energies, distance_list
 
+
 def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim):
     """
     Molecular dynamics simulation using the Velocity Verlet's algorithm
