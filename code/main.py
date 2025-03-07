@@ -23,6 +23,7 @@ import utilities
     simulator_types,
     plots,
     enable_cache,
+    lat_const,
 ) = utilities.parse_config("config.json")
 print(
     f"simulating {amount_of_particles} particles for {timesteps} timesteps, with a time step size of {step_size}"
@@ -36,7 +37,7 @@ elif position_init_method == "static":
     init_pos = initialisation.static(amount_of_particles, box_size)
 elif position_init_method == "fcc":
     init_pos = initialisation.fcc_lattice(
-        amount_of_particles, 1
+        amount_of_particles, lat_const
     )  # TODO: lattice constant (array??)
 else:
     print(

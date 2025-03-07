@@ -57,6 +57,7 @@ def parse_config(file_path: str):
         simulator_type: list[str] = config.get("simulator_type", ["verlet"])
         plots: list[str] = config.get("plots", ["energies", "distances", "animation"])
         enable_cache: bool = config.get("do_caching", True)
+        lat_const: float = config.get("lattice_const", 1.5)
         return (
             amount_of_particles,
             step_size,
@@ -69,4 +70,5 @@ def parse_config(file_path: str):
             simulator_type,
             plots,
             enable_cache,
+            lat_const,
         )
