@@ -7,16 +7,15 @@
 	},
 	"time_steps": 1000,
 	"step_size": 0.01,
-	"equilibrium_steps": 10,
-	"temperature": 3,
+	"equilibrium_steps": 50,
+	"temperature": 0.3,
 	"temperature_tolerance": 0.01,
 	"position_method": "uniform",
 	"velocity_method": "zero",
 	"seed": 2911,
 	"simulator_type": [
 		"verlet",
-		"euler",
-		"leapfrog"
+		"euler"
 	],
 	"plots": [
 		"energies",

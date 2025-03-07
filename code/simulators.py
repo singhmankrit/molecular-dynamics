@@ -307,8 +307,8 @@ def rescale_velocity(current_velocities, amount_of_particles, target_temperature
 
 
 def atomic_distances(
-    pos: np._typing.NDArray[np.float64], box_dim: np._typing.NDArray[np.float64]
-) -> np._typing.NDArray[np.float64]:
+    pos: np.typing.NDArray[np.float64], box_dim: np.typing.NDArray[np.float64]
+) -> np.typing.NDArray[np.float64]:
     """
     Calculates relative positions and distances between particles.
 
