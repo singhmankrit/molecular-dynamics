@@ -75,11 +75,11 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, amount_of_partic
         # Half-step velocity update for the next step
         half_velocities += current_forces * timestep
 
-        kinetic_energy = kinetic_energy(current_velocities)
-        current_temperature = compute_temperature(kinetic_energy, amount_of_particles)
+        current_kinetic_energy = kinetic_energy(current_velocities)
+        current_temperature = compute_temperature(current_kinetic_energy, amount_of_particles)
 
         # add the current statistics to the logs
-        kinetic_energies.append(kinetic_energy)
+        kinetic_energies.append(current_kinetic_energy)
         potential_energies.append(potential_energy(distances))
         distance_list.append(distances)
 
@@ -162,11 +162,11 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, amount_of_particle
         new_forces = lj_force(relative_positions, distances)
         current_velocities += (current_forces + new_forces) * timestep / 2
 
-        kinetic_energy = kinetic_energy(current_velocities)
-        current_temperature = compute_temperature(kinetic_energy, amount_of_particles)
+        current_kinetic_energy = kinetic_energy(current_velocities)
+        current_temperature = compute_temperature(current_kinetic_energy, amount_of_particles)
 
         # add the current statistics to the logs
-        kinetic_energies.append(kinetic_energy)
+        kinetic_energies.append(current_kinetic_energy)
         potential_energies.append(potential_energy(distances))
         distance_list.append(distances)
 
@@ -237,11 +237,11 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, amount_of_particles
         # get the n-by-3 matrix of all the total forces on the particles
         forces = lj_force(relative_positions, distances)
 
-        kinetic_energy = kinetic_energy(current_velocities)
-        current_temperature = compute_temperature(kinetic_energy, amount_of_particles)
+        current_kinetic_energy = kinetic_energy(current_velocities)
+        current_temperature = compute_temperature(current_kinetic_energy, amount_of_particles)
 
         # get current energies and distances and append
-        kinetic_energies.append(kinetic_energy)
+        kinetic_energies.append(current_kinetic_energy)
         potential_energies.append(potential_energy(distances))
         distance_list.append(distances)
         # Euler integration step, we'll have to rewrite this to improve energy conservation
@@ -307,8 +307,8 @@ def rescale_velocity(current_velocities, amount_of_particles, target_temperature
 
 
 def atomic_distances(
-    pos: np.typing.NDArray[np.float64], box_dim: np.typing.NDArray[np.float64]
-) -> np.typing.NDArray[np.float64]:
+    pos: np._typing.NDArray[np.float64], box_dim: np._typing.NDArray[np.float64]
+) -> np._typing.NDArray[np.float64]:
     """
     Calculates relative positions and distances between particles.
 
