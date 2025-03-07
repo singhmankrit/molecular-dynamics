@@ -102,6 +102,7 @@ for simulator_type in simulator_types:
             timesteps,
             step_size,
             box_size,
+            amount_of_particles,
             equilibrium_steps,
             temperature,
             temperature_tolerance,

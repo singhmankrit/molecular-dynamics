@@ -2,7 +2,7 @@ import numpy as np
 from utilities import dprint
 
 
-def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance):
+def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, amount_of_particles, equilibrium_steps, target_temperature, temperature_tolerance):
     """
     Molecular dynamics simulation using the Leapfrog algorithm
     to integrate the equations of motion.
@@ -19,12 +19,14 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
         Duration of a single simulation step
     box_dim : np.ndarray(float)
         Dimensions of the simulation box
+    amount_of_particles: int
+        Total number of particles in the simulation
     equilibrium_steps : int
         Number of steps after which we apply velocity rescaling (if applicable)
     target_temperature : float
         The target temperature of the system
     temperature_tolerance : float
-        The tolerated error in temperature (actual_temp/target_temp - 1)
+        The tolerated error in temperature np.abs(actual_temp/target_temp - 1)
 
     Returns
     -------
@@ -85,7 +87,7 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
     return positions, velocities, kinetic_energies, potential_energies, distance_list
 
 
-def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance):
+def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, amount_of_particles, equilibrium_steps, target_temperature, temperature_tolerance):
     """
     Molecular dynamics simulation using the Velocity Verlet's algorithm
     to integrate the equations of motion. Calculates energies and other
@@ -103,12 +105,14 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps,
         Duration of a single simulation step
     box_dim : np.ndarray(float)
         Dimensions of the simulation box
+    amount_of_particles: int
+        Total number of particles in the simulation
     equilibrium_steps : int
         Number of steps after which we apply velocity rescaling (if applicable)
     target_temperature : float
         The target temperature of the system
     temperature_tolerance : float
-        The tolerated error in temperature (actual_temp/target_temp - 1)
+        The tolerated error in temperature np.abs(actual_temp/target_temp - 1)
 
     Returns
     -------
@@ -166,7 +170,7 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps,
     return positions, velocities, kinetic_energies, potential_energies, distance_list
 
 
-def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance):
+def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, amount_of_particles, equilibrium_steps, target_temperature, temperature_tolerance):
     """
     Molecular dynamics simulation using the Euler algorithm
     to integrate the equations of motion. Calculates energies and other
@@ -184,12 +188,14 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, 
         Duration of a single simulation step
     box_dim : np.ndarray(float)
         Dimensions of the simulation box
+    amount_of_particles: int
+        Total number of particles in the simulation
     equilibrium_steps : int
         Number of steps after which we apply velocity rescaling (if applicable)
     target_temperature : float
         The target temperature of the system
     temperature_tolerance : float
-        The tolerated error in temperature (actual_temp/target_temp - 1)
+        The tolerated error in temperature np.abs(actual_temp/target_temp - 1)
 
     Returns
     -------
@@ -232,6 +238,25 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, 
         velocities.append(current_velocities)
 
     return positions, velocities, kinetic_energies, potential_energies, distance_list
+
+
+def compute_temperature(kinetic_energy, amount_of_particles):
+    """
+    Computes the temperature of the system using the kinetic energy.
+
+    Parameters
+    ----------
+    kinetic_energy : float
+        The total kinetic energy of the system.
+    amount_of_particles : int
+        The number of particles in the system.
+
+    Returns
+    -------
+    float
+        The computed temperature of the system.
+    """
+    return (2 * kinetic_energy) / (3 * (amount_of_particles - 1))  # Equipartition theorem
 
 
 def rescale_velocity(current_velocities, amount_of_particles, target_temperature):
