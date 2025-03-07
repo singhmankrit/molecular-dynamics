@@ -15,7 +15,9 @@ import utilities
     amount_of_particles,
     step_size,
     timesteps,
+    equilibrium_steps,
     temperature,
+    temperature_tolerance,
     box_size,
     random_seed,
     position_init_method,
@@ -72,11 +74,13 @@ for simulator_type in simulator_types:
     pos, vel, kinetic, potential, distance_list = None, None, None, None, None
     # check if we have a cached run already
     hash = hashlib.sha1(
-        "{}_{}_{}_{}_{}_{}_{}_{}_{}".format(
+        "{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}".format(
             amount_of_particles,
             step_size,
             timesteps,
+            equilibrium_steps,
             temperature,
+            temperature_tolerance,
             list(box_size),
             random_seed,
             position_init_method,
@@ -98,6 +102,9 @@ for simulator_type in simulator_types:
             timesteps,
             step_size,
             box_size,
+            equilibrium_steps,
+            temperature,
+            temperature_tolerance,
         )
         print(f"Finished {simulator_type} simulation")
 

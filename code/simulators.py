@@ -2,7 +2,7 @@ import numpy as np
 from utilities import dprint
 
 
-def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim):
+def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance):
     """
     Molecular dynamics simulation using the Leapfrog algorithm
     to integrate the equations of motion.
@@ -79,7 +79,7 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim):
     return positions, velocities, kinetic_energies, potential_energies, distance_list
 
 
-def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim):
+def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance):
     """
     Molecular dynamics simulation using the Velocity Verlet's algorithm
     to integrate the equations of motion. Calculates energies and other
@@ -154,7 +154,7 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim):
     return positions, velocities, kinetic_energies, potential_energies, distance_list
 
 
-def euler(init_pos, init_vel, num_tsteps, timestep, box_dim):
+def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance):
     """
     Molecular dynamics simulation using the Euler algorithm
     to integrate the equations of motion. Calculates energies and other
@@ -214,6 +214,32 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim):
         velocities.append(current_velocities)
 
     return positions, velocities, kinetic_energies, potential_energies, distance_list
+
+
+def rescale_velocity(current_velocities, amount_of_particles, target_temperature):
+    """
+    Rescales the velocities of the particles to reach a target temperature.
+
+    Parameters
+    ----------
+    current_velocities : np.ndarray
+        The current velocities of the particles
+    amount_of_particles : int
+        The amount of particles in the system
+    target_temperature : float
+        The target temperature of the system
+
+    Returns
+    -------
+    scaled_velocities : np.ndarray
+        The rescaled velocities of the particles
+    """
+    # Computing scaling factor
+    scaling_factor = np.sqrt(3*(amount_of_particles-1)*target_temperature/(np.sum(np.square(current_velocities))))
+
+    # Rescaling velocities
+    scaled_velocities = current_velocities * scaling_factor
+    return scaled_velocities
 
 
 def atomic_distances(

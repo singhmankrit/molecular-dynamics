@@ -150,29 +150,3 @@ def init_velocity(num_atoms, temp, seed=None):
     # Subtracting mean from the velocities
     velocities -= np.mean(velocities, axis=0)
     return velocities
-
-
-def rescale_velocity(current_velocities, amount_of_particles, target_temperature):
-    """
-    Rescales the velocities of the particles to reach a target temperature.
-
-    Parameters
-    ----------
-    current_velocities : np.ndarray
-        The current velocities of the particles
-    amount_of_particles : int
-        The amount of particles in the system
-    target_temperature : float
-        The target temperature of the system
-
-    Returns
-    -------
-    scaled_velocities : np.ndarray
-        The rescaled velocities of the particles
-    """
-    # Computing scaling factor
-    scaling_factor = np.sqrt(3*(amount_of_particles-1)*target_temperature/(np.sum(np.square(current_velocities))))
-
-    # Rescaling velocities
-    scaled_velocities = current_velocities * scaling_factor
-    return scaled_velocities
