@@ -1,5 +1,7 @@
 import numpy as np
 
+from utilities import is2d
+
 ###########################
 # Position initialisation #
 ###########################
@@ -81,7 +83,11 @@ def static(amount_of_particles, box_dim):
     return particles[:amount_of_particles, :] * box_dim
 
 
-def fcc_lattice(num_atoms, lat_const):
+def fcc_lattice(
+    num_atoms: int,
+    lat_const: float,
+    corner_offset: np.ndarray[tuple[int], np.dtype[np.float64]],
+) -> np.ndarray[tuple[int, int], np.dtype[np.float64]]:
     """
     Initializes a system of atoms on an fcc lattice.
 
@@ -97,8 +103,11 @@ def fcc_lattice(num_atoms, lat_const):
     pos_vec : np.ndarray
         Array of particle coordinates
     """
-    # only allow full-cell atom amounts
+    # we can initialise only bottom corners of the fcc cubes, this means there are 4 particles per each of these positions,
+    # and the positions are spread around in 3d space.
     layers = int(np.ceil(np.pow(num_atoms / 4, 1 / 3)))
+
+    # NOTE: I don't know if we want to do this or just start filling the grid and stop when we have enough
     if layers**3 * 4 != num_atoms:
         print(
             f"Illegal amount of atoms {num_atoms}, "
@@ -106,17 +115,21 @@ def fcc_lattice(num_atoms, lat_const):
         )
         exit(4)
 
-    positions = []
+    positions: list[list[float]] = []
 
-    for layer in range(layers):
-        for cx in range(layers):
-            for cy in range(layers):
-                positions.append(np.array([cx, cy, layer]))
-                positions.append(np.array([cx + 0.5, cy + 0.5, layer]))
-                positions.append(np.array([cx + 0.5, cy, layer + 0.5]))
-                positions.append(np.array([cx, cy + 0.5, layer + 0.5]))
+    # I don't like these nested loops, but I don't think they matter that much since it'll still be O(n) while the sim is O(n^2)
+    for x in range(layers * 2):
+        for y in range(layers * 2):
+            for z in range(layers * 2):
+                if (x + y + z) % 2 == 0:
+                    positions.append([x, y, z])
 
-    return np.array(positions) * 1.5
+    nppos = np.array(positions, dtype=np.float64) * lat_const / 2 + corner_offset
+    # check if the positions are a 2d array (for typing)
+    if is2d(nppos):
+        return nppos
+    else:
+        raise TypeError("initial positions array not 2D")
 
 
 ###########################

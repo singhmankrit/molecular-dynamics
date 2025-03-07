@@ -14,6 +14,7 @@ The configuration file uses the json format. The options are listed below with t
 | particles | `3` | The amount of particles to simulate |
 | box | `[5,5,5]` | The size of the periodic boundary conditions in dimensionless units, uses the format `[x,y,z]` |
 | lattice_constant | `1.5` | The lattice constant of the fcc lattice, only used when using `"fcc"` initial positions |
+| corner_offset | `[0,0,0]` | The amount to offset the corner of the fcc lattice relative to origin, only used then using `"fcc"` initial positions |
 | time_steps | `1000` | The amount of timesteps to simulate |
 | step_size | `0.01` | The size of a single timestep in dimensionless units |
 | temperature | `3` | The dimensionless temperature of the system |
