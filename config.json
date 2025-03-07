@@ -15,7 +15,8 @@
 	"seed": 2911,
 	"simulator_type": [
 		"verlet",
-		"euler"
+		"euler",
+		"leapfrog"
 	],
 	"plots": [
 		"energies",

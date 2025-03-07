@@ -89,7 +89,7 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, amount_of_partic
 
         if step % equilibrium_steps == 0:
             if abs(current_temperature/target_temperature - 1) > temperature_tolerance:
-                current_velocities = rescale_velocity(current_velocities, amount_of_particles, target_temperature)
+                half_velocities = rescale_velocity(half_velocities, amount_of_particles, target_temperature)
 
     return positions, velocities, kinetic_energies, potential_energies, distance_list
 
