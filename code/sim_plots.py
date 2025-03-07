@@ -79,6 +79,7 @@ def create_animation(
     name : str
         Name of the animation file
     """
+    print("Now creating the animation")
     fig = plt.figure(figsize=(7, 7))
     ax = fig.add_subplot(111, projection="3d")
     ax.set_xlim(0, box_size[0])
