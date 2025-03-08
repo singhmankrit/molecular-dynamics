@@ -1,7 +1,9 @@
 import json
-from typing import Any
+from typing import Any, TypeIs
 import numpy as np
 import os
+
+from numpy.typing import NDArray
 
 debug = True if os.environ.get("DEBUG") is not None else False
 
@@ -57,6 +59,8 @@ def parse_config(file_path: str):
         simulator_type: list[str] = config.get("simulator_type", ["verlet"])
         plots: list[str] = config.get("plots", ["energies", "distances", "animation"])
         enable_cache: bool = config.get("do_caching", True)
+        lat_const: float = config.get("lattice_const", 1.5)
+        corner_offset: list[float] = config.get("corner_offset", [0, 0, 0])
         return (
             amount_of_particles,
             step_size,
@@ -69,4 +73,24 @@ def parse_config(file_path: str):
             simulator_type,
             plots,
             enable_cache,
+            lat_const,
+            corner_offset,
         )
+
+
+def is1d(
+    arr: NDArray[np.float64],
+) -> TypeIs[np.ndarray[tuple[int], np.dtype[np.float64]]]:
+    return len(arr.shape) == 1
+
+
+def is2d(
+    arr: NDArray[np.float64],
+) -> TypeIs[np.ndarray[tuple[int, int], np.dtype[np.float64]]]:
+    return len(arr.shape) == 2
+
+
+def is3d(
+    arr: NDArray[np.float64],
+) -> TypeIs[np.ndarray[tuple[int, int, int], np.dtype[np.float64]]]:
+    return len(arr.shape) == 3

@@ -34,8 +34,7 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim):
     )
 
     # we calculate these so we can calculate the "next step" only from now on
-    relative_positions, distances = atomic_distances(
-        current_positions, box_dim)
+    relative_positions, distances = atomic_distances(current_positions, box_dim)
     current_forces = lj_force(relative_positions, distances)
 
     kinetic_energies = [kinetic_energy(init_vel)]
@@ -57,8 +56,7 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim):
         current_positions = (current_positions + half_velocities * timestep) % box_dim
 
         # Update the positions and forces
-        relative_positions, distances = atomic_distances(
-            current_positions, box_dim)
+        relative_positions, distances = atomic_distances(current_positions, box_dim)
         current_forces = lj_force(relative_positions, distances)
 
         # Full-step velocity update
@@ -77,6 +75,7 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim):
         velocities.append(current_velocities)
 
     return positions, velocities, kinetic_energies, potential_energies, distance_list
+
 
 def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim):
     """
@@ -111,8 +110,7 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim):
     )
 
     # we calculate these so we can calculate the "next step" only from now on
-    relative_positions, distances = atomic_distances(
-        current_positions, box_dim)
+    relative_positions, distances = atomic_distances(current_positions, box_dim)
     current_forces = lj_force(relative_positions, distances)
 
     kinetic_energies = [kinetic_energy(init_vel)]
@@ -133,8 +131,7 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim):
             + current_velocities * timestep
             + current_forces * timestep * timestep / 2
         ) % box_dim
-        relative_positions, distances = atomic_distances(
-            current_positions, box_dim)
+        relative_positions, distances = atomic_distances(current_positions, box_dim)
         new_forces = lj_force(relative_positions, distances)
         current_velocities += (current_forces + new_forces) * timestep / 2
 
@@ -193,8 +190,7 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim):
             """
         )
         # create the n-by-n matrix of all the distances and the n-by-n-by-3 matrix of the relative positions
-        relative_positions, distances = atomic_distances(
-            current_positions, box_dim)
+        relative_positions, distances = atomic_distances(current_positions, box_dim)
         # get the n-by-3 matrix of all the total forces on the particles
         forces = lj_force(relative_positions, distances)
 
@@ -241,12 +237,9 @@ def atomic_distances(
     central_z, other_z = np.meshgrid(pos[:, 2], pos[:, 2])
     # moving to the coordinate frame of the central particle
     # to find the closest position of those around
-    x_dist = (central_x - other_x +
-              box_dim[0] / 2) % box_dim[0] - box_dim[0] / 2
-    y_dist = (central_y - other_y +
-              box_dim[1] / 2) % box_dim[1] - box_dim[1] / 2
-    z_dist = (central_z - other_z +
-              box_dim[2] / 2) % box_dim[2] - box_dim[2] / 2
+    x_dist = (central_x - other_x + box_dim[0] / 2) % box_dim[0] - box_dim[0] / 2
+    y_dist = (central_y - other_y + box_dim[1] / 2) % box_dim[1] - box_dim[1] / 2
+    z_dist = (central_z - other_z + box_dim[2] / 2) % box_dim[2] - box_dim[2] / 2
 
     relative_positions = np.stack([x_dist, y_dist, z_dist])
     distances = np.ma.masked_values(
