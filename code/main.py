@@ -133,11 +133,11 @@ for simulator_type in simulator_types:
     # generate plots from the results
     if "energies" in plots:
         sim_plots.plot_energy(
-            kinetic, potential, file_name=f"energies_{simulator_type}.png"
+            kinetic, potential,step_size, timesteps, eq_timestep, file_name=f"energies_{simulator_type}.png"
         )
     if "distances" in plots:
         sim_plots.plot_distances(
-            distance_list, file_name=f"distances_{simulator_type}.png"
+            distance_list, step_size, timesteps, eq_timestep, file_name=f"distances_{simulator_type}.png"
         )
     if "animation" in plots:
         sim_plots.create_animation(
