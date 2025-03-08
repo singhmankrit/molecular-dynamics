@@ -115,7 +115,7 @@ for simulator_type in simulator_types:
     else:
         # run the simulation and put the results into variables
         print(f"Starting {simulator_type} simulation")
-        pos, vel, kinetic, potential, distance_list, eq_timestep = simulator(
+        pos, vel, kinetic, potential, distance_list, eq_timestep, avg_temp = simulator(
             init_pos.copy(),
             init_vel.copy(),
             timesteps,
@@ -128,6 +128,8 @@ for simulator_type in simulator_types:
         )
         if eq_timestep == -1:
             print(f"Equilibrium not reached in simulation")
+        temp_error = np.abs(avg_temp / temperature - 1)*100
+        print(f"Average temperature after rescaling: {avg_temp.round(2)}, target: {temperature}. Error: {temp_error.round(2)}%")
         print(f"Finished {simulator_type} simulation")
 
         with open(path, "wb") as f:
