@@ -161,6 +161,7 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps,
     apply_rescale = True
     # Timestep when rescaling is stopped
     equilibrium_timestep = -1
+    temperature_list = []
 
     for step in np.arange(num_tsteps):
         dprint(
@@ -182,6 +183,8 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps,
 
         current_kinetic_energy = kinetic_energy(current_velocities)
         current_temperature = compute_temperature(current_kinetic_energy, amount_of_particles)
+        if apply_rescale == False:
+            temperature_list.append(current_temperature)
 
         # add the current statistics to the logs
         kinetic_energies.append(current_kinetic_energy)
@@ -207,7 +210,8 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps,
                 if (stable_counter > equilibrium_stable_check):
                     apply_rescale = False
                     equilibrium_timestep = step
-    return positions, velocities, kinetic_energies, potential_energies, distance_list, equilibrium_timestep
+    average_temperature = np.mean(temperature_list)
+    return positions, velocities, kinetic_energies, potential_energies, distance_list, equilibrium_timestep, average_temperature
 
 
 def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check):
