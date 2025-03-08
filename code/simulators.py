@@ -58,6 +58,7 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
     apply_rescale = True
     # Timestep when rescaling is stopped
     equilibrium_timestep = -1
+    temperature_list = []
 
     for step in np.arange(num_tsteps):
         dprint(
@@ -90,9 +91,11 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
         velocities.append(current_velocities)
 
         # we apply rescaling at half timesteps for leapfrog
+        half_kinetic_energy = kinetic_energy(half_velocities)
+        half_temperature = compute_temperature(half_kinetic_energy, amount_of_particles)
+        if apply_rescale == False:
+            temperature_list.append(half_temperature)
         if step % equilibrium_steps == 0 and apply_rescale:
-            half_kinetic_energy = kinetic_energy(half_velocities)
-            half_temperature = compute_temperature(half_kinetic_energy, amount_of_particles)
             if abs(half_temperature/target_temperature - 1) > temperature_tolerance:
                 half_velocities *= compute_rescale_factor(amount_of_particles, target_temperature, half_kinetic_energy)
                 stable_counter = 0
@@ -103,8 +106,8 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
                 if (stable_counter > equilibrium_stable_check):
                     apply_rescale = False
                     equilibrium_timestep = step
-
-    return positions, velocities, kinetic_energies, potential_energies, distance_list, equilibrium_timestep
+    average_temperature = np.mean(temperature_list)
+    return positions, velocities, kinetic_energies, potential_energies, distance_list, equilibrium_timestep, average_temperature
 
 
 def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check):
@@ -260,6 +263,8 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, 
     apply_rescale = True
     # Timestep when rescaling is stopped
     equilibrium_timestep = -1
+    temperature_list = []
+
     for step in np.arange(num_tsteps):
         dprint(
             f"""
@@ -274,6 +279,8 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, 
 
         current_kinetic_energy = kinetic_energy(current_velocities)
         current_temperature = compute_temperature(current_kinetic_energy, amount_of_particles)
+        if apply_rescale == False:
+            temperature_list.append(current_temperature)
 
         # get current energies and distances and append
         kinetic_energies.append(current_kinetic_energy)
@@ -301,8 +308,8 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, 
                 if (stable_counter > equilibrium_stable_check):
                     apply_rescale = False
                     equilibrium_timestep = step
-
-    return positions, velocities, kinetic_energies, potential_energies, distance_list, equilibrium_timestep
+    average_temperature = np.mean(temperature_list)
+    return positions, velocities, kinetic_energies, potential_energies, distance_list, equilibrium_timestep, average_temperature
 
 
 def compute_temperature(kinetic_energy, amount_of_particles):
