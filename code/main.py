@@ -166,4 +166,10 @@ for simulator_type in simulator_types:
         sim_plots.plot_MSD(
             msd, time, file_name=f"MSD_{simulator_type}.png"
         )
+
+    if "compressibility" in outputs:
+        compressibility = observables.compute_compressibility_factor(
+            temperature, amount_of_particles, distance_list, eq_timestep
+        )
+        print(f"Compressibility: {compressibility}")
     

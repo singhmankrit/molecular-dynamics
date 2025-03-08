@@ -23,7 +23,8 @@
 		"distances",
 		"animation",
         "pair_correlation",
-        "MSD"
+        "MSD",
+        "compressibility"
 	],
 	"do_caching": true
 }

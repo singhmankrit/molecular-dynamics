@@ -63,3 +63,29 @@ def compute_msd(pos, t_eq):
     # Average over particles
     msd = np.mean(squared_displacements, axis=1)  # (time_steps - t_eq,)
     return msd
+
+
+def compute_compressibility_factor(temperature, amount_of_particles, distance_list, eq_timestep):
+    """
+    Computes the compressibility factor for the given temperature and amount of particles.
+
+    Parameters:
+        temperature (float): The temperature of the system.
+        amount_of_particles (int): The number of particles in the system.
+        distance_list (numpy array): A 1D array of distances between particles.
+
+    Returns:
+        float: The compressibility factor.
+    """
+    # print(distance_list.shape)
+
+    distance_list = np.array(distance_list[eq_timestep:])
+    distance_list = np.ma.masked_values(
+        distance_list, 0.0, rtol=1e-60, atol=1e-60)
+    beta = 1.0/temperature
+    force_magnitude = 24 * (1 / distance_list) ** 7 - \
+        48 * (1 / distance_list) ** 13
+    virial = 0.5*np.sum(distance_list*force_magnitude, axis=(1, 2))
+    average_virial = np.mean(virial)
+    compressibility_factor = (1-beta/(3*amount_of_particles)*average_virial)
+    return compressibility_factor
