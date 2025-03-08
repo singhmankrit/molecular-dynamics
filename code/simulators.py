@@ -93,7 +93,7 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
     return positions, velocities, kinetic_energies, potential_energies, distance_list
 
 
-def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance):
+def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check):
     """
     Molecular dynamics simulation using the Velocity Verlet's algorithm
     to integrate the equations of motion. Calculates energies and other
@@ -117,6 +117,8 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps,
         The target temperature of the system
     temperature_tolerance : float
         The tolerated error in temperature np.abs(actual_temp/target_temp - 1)
+    equilibrium_stable_check : int
+        Number of stable steps after which we stop rescaling
 
     Returns
     -------
@@ -140,6 +142,12 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps,
     kinetic_energies = [kinetic_energy(init_vel)]
     potential_energies = [potential_energy(distances)]
     distance_list = [distances]
+
+    # Counter for equilibrium stability
+    stable_counter = 0  
+    apply_rescale = True
+    # Timestep when rescaling is stopped
+    equilibrium_timestep = -1
 
     for step in np.arange(num_tsteps):
         dprint(
@@ -175,11 +183,18 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps,
         # update the forces so n -> n+1
         current_forces = new_forces
 
-        if step % equilibrium_steps == 0:
+        if step % equilibrium_steps == 0 and apply_rescale:
             if abs(current_temperature/target_temperature - 1) > temperature_tolerance:
                 current_velocities *= compute_rescale_factor(amount_of_particles, target_temperature, current_kinetic_energy)
-
-    return positions, velocities, kinetic_energies, potential_energies, distance_list
+                stable_counter = 0
+            else:
+                # Increase stability count if temperature is stable
+                stable_counter += 1
+                # Exit rescaling if stable for longer than equilibrium_stable_check and store timestep
+                if (stable_counter > equilibrium_stable_check):
+                    apply_rescale = False
+                    equilibrium_timestep = step
+    return positions, velocities, kinetic_energies, potential_energies, distance_list, equilibrium_timestep
 
 
 def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance):
