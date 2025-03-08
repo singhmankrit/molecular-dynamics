@@ -1,5 +1,5 @@
 {
-	"particles": 3,
+	"particles": 32,
 	"box": {
 		"x": 5,
 		"y": 5,
@@ -8,15 +8,14 @@
 	"time_steps": 1000,
 	"step_size": 0.01,
 	"equilibrium_steps": 25,
-	"temperature": 0.3,
+	"temperature": 5,
 	"temperature_tolerance": 0.01,
 	"equilibrium_stable_check": 3,
-	"position_method": "uniform",
+	"position_method": "fcc",
 	"velocity_method": "mbdist",
 	"seed": 2911,
 	"simulator_type": [
-		"verlet",
-		"euler"
+		"verlet"
 	],
 	"outputs": [
 		"energies",
@@ -27,5 +26,5 @@
         "compressibility",
         "specific_heat"
 	],
-	"do_caching": true
+	"do_caching": false
 }
