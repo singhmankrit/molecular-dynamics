@@ -200,7 +200,13 @@ Mankrits reflection:
 
 #### Progress report
 
+@mankritsingh \
+I worked on initialising velocity to Maxwell-Boltzmann distribution in Merge Request: !27 \
+Then, I worked on the periodic rescaling of the velocities for target temperature in !28 and !33 \
+Also reviewed Merge Requests.
 
+Plot of velocity distribution and Maxwell-Boltzmann distribution: \
+![](images/journal_4/MB_verified.png)
 
 ## Week 5
 (due 18 March 2025, 11:00)
