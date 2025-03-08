@@ -10,6 +10,7 @@ import numpy as np
 import sim_plots
 import simulators
 import utilities
+import observables
 
 # Read the configuration file
 (
@@ -29,6 +30,7 @@ import utilities
     enable_cache,
     lat_const,
     corner_offset,
+    bin_size
 ) = utilities.parse_config("config.json")
 print(
     f"simulating {amount_of_particles} particles for {timesteps} timesteps, with a time step size of {step_size}"
@@ -102,6 +104,7 @@ for simulator_type in simulator_types:
             simulator_type,
             lat_const,
             corner_offset,
+            bin_size,
         ).encode()
     )
     path = f"cache/{hash.hexdigest()}.pkl"
@@ -142,4 +145,16 @@ for simulator_type in simulator_types:
     if "animation" in outputs:
         sim_plots.create_animation(
             pos, timesteps, step_size, eq_timestep, box_size, file_name=f"particles_{simulator_type}.mp4"
+        )
+
+    if "pair_correlation" in outputs:
+        volume = box_size[0] * box_size[1] * box_size[2]
+        # Example usage:
+        distances = np.array(distance_list)
+        max_dist = np.max(distances)
+        # Compute pair correlation
+        r_values, g_r = observables.compute_pair_correlation(
+            distances, volume, amount_of_particles, max_dist, bin_size)
+        sim_plots.plot_pair_correlation(
+            r_values, g_r, file_name=f"pair_correlation_{simulator_type}.png"
         )

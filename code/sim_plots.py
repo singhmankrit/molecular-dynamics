@@ -140,3 +140,31 @@ def create_animation(
 
     dprint(f"saving the animation to {file_name}")
     ani.save(file_name, writer="ffmpeg", fps=30)
+
+
+def plot_pair_correlation(r_values, g_r, file_name="pair_correlation.png"):
+    """
+    Plots the pair correlation function.
+
+    Parameters
+    ----------
+    r_values : list
+        List of center of bins
+    g_r : list
+        List of pair correlation function values
+    file_name : string
+        Name of file to save to
+    """
+    print("Now plotting the pair correlation function")
+
+    # Plot the results
+    _ = plt.figure(figsize=(10, 7))
+    plt.title(r"Pair Correlation Function ($g(r)$) vs Distance")
+    plt.xlabel(r"Distance ($\sigma$)")
+    plt.ylabel(r"Pair Correlation Function ($g(r)$)")
+    plt.plot(r_values, g_r, label="Pair Correlation Function")
+    plt.legend()
+    plt.tight_layout()
+    dprint(f"saving the pair correlation plot to {file_name}")
+    plt.savefig(file_name)
+    plt.close()
