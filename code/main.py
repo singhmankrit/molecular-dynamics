@@ -172,4 +172,10 @@ for simulator_type in simulator_types:
             temperature, amount_of_particles, distance_list, eq_timestep
         )
         print(f"Compressibility: {compressibility}")
+
+    if "specific_heat" in outputs:
+        specific_heat = observables.compute_specific_heat(
+            kinetic, amount_of_particles, eq_timestep
+        )
+        print(f"Specific heat: {specific_heat}")
     

@@ -89,3 +89,29 @@ def compute_compressibility_factor(temperature, amount_of_particles, distance_li
     average_virial = np.mean(virial)
     compressibility_factor = (1-beta/(3*amount_of_particles)*average_virial)
     return compressibility_factor
+
+
+def compute_specific_heat(kinetic_energy, amount_of_particles, eq_timestep):
+    """
+    Computes the specific heat for the given kinetic energy and amount of particles.
+
+    Parameters:
+        kinetic_energy (float): The total kinetic energy of the system.
+        amount_of_particles (int): The number of particles in the system.
+
+    Returns:
+        float: The specific heat.
+    """
+
+    # Consider only timesteps after equilibrium
+    ke_eq = np.array(kinetic_energy[eq_timestep:])
+
+    # Calculate mean and variance of kinetic energy
+    K_mean = np.mean(ke_eq)
+    K_sq_mean = np.mean(ke_eq**2)
+    delta_K_sq = K_sq_mean - K_mean**2
+
+    # Compute specific heat
+    c_V = 1/(2/(3*amount_of_particles) - (delta_K_sq/(K_mean**2)))
+
+    return c_V/amount_of_particles

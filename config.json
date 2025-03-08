@@ -24,7 +24,8 @@
 		"animation",
         "pair_correlation",
         "MSD",
-        "compressibility"
+        "compressibility",
+        "specific_heat"
 	],
 	"do_caching": true
 }
