@@ -17,9 +17,12 @@ The configuration file uses the json format. The options are listed below with t
 | corner_offset | `[0,0,0]` | The amount to offset the corner of the fcc lattice relative to origin, only used then using `"fcc"` initial positions |
 | time_steps | `1000` | The amount of timesteps to simulate |
 | step_size | `0.01` | The size of a single timestep in dimensionless units |
+| equilibrium_steps | `25` | Number of steps after which rescaling is applied |
 | temperature | `0.3` | The dimensionless temperature of the system |
+| temperature_tolerance | `0.01` | Tolerance level for the real vs. target temperature |
+| equilibrium_stable_check | `3` | Number of equilibrium checks after which we stop rescaling |
 | position_method | `"uniform"` | The way the starting positions of the particles get generated, can be `"uniform"`, `"fcc"` or `"static"`.
-| velocity_method | `"zero"` | The way the starting velocities of the particles get generated, can be `"zero"` for zero velocities or `"mbdist"` for a maxwell-boltzmann distribution.
+| velocity_method | `"mbdist"` | The way the starting velocities of the particles get generated, can be `"zero"` for zero velocities or `"mbdist"` for a maxwell-boltzmann distribution.
 | seed | random | The seed to use for the initial random generation.
 | simulator_type | `["verlet", "euler"]` | What integrators to use on the starting position, the simulator executes every one in the list, can be `"verlet"`, `"euler"` or `"leapfrog"`.
 | plots | `["energies", "distances", "animation"]` | The outputs the simulator should create from the simulation results.

@@ -7,9 +7,12 @@
 	},
 	"time_steps": 1000,
 	"step_size": 0.01,
+	"equilibrium_steps": 25,
 	"temperature": 0.3,
+	"temperature_tolerance": 0.01,
+	"equilibrium_stable_check": 3,
 	"position_method": "uniform",
-	"velocity_method": "zero",
+	"velocity_method": "mbdist",
 	"seed": 2911,
 	"simulator_type": [
 		"verlet",

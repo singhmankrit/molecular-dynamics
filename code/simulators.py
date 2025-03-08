@@ -2,7 +2,7 @@ import numpy as np
 from utilities import dprint
 
 
-def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim):
+def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check):
     """
     Molecular dynamics simulation using the Leapfrog algorithm
     to integrate the equations of motion.
@@ -19,11 +19,20 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim):
         Duration of a single simulation step
     box_dim : np.ndarray(float)
         Dimensions of the simulation box
+    equilibrium_steps : int
+        Number of steps after which we apply velocity rescaling (if applicable)
+    target_temperature : float
+        The target temperature of the system
+    temperature_tolerance : float
+        The tolerated error in temperature np.abs(actual_temp/target_temp - 1)
+    equilibrium_stable_check : int
+        Number of stable steps after which we stop rescaling
 
     Returns
     -------
     Any quantities or observables that you wish to study.
     """
+    amount_of_particles = len(init_pos)
     positions = [init_pos]
     velocities = [init_vel]
 
@@ -43,6 +52,12 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim):
 
     # Leapfrog starts with a half-step velocity update
     half_velocities = current_velocities + (current_forces * timestep / 2)
+
+    # Counter for equilibrium stability
+    stable_counter = 0  
+    apply_rescale = True
+    # Timestep when rescaling is stopped
+    equilibrium_timestep = -1
 
     for step in np.arange(num_tsteps):
         dprint(
@@ -74,10 +89,25 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim):
         positions.append(current_positions)
         velocities.append(current_velocities)
 
-    return positions, velocities, kinetic_energies, potential_energies, distance_list
+        # we apply rescaling at half timesteps for leapfrog
+        if step % equilibrium_steps == 0 and apply_rescale:
+            half_kinetic_energy = kinetic_energy(half_velocities)
+            half_temperature = compute_temperature(half_kinetic_energy, amount_of_particles)
+            if abs(half_temperature/target_temperature - 1) > temperature_tolerance:
+                half_velocities *= compute_rescale_factor(amount_of_particles, target_temperature, half_kinetic_energy)
+                stable_counter = 0
+            else:
+                # Increase stability count if temperature is stable
+                stable_counter += 1
+                # Exit rescaling if stable for longer than equilibrium_stable_check and store timestep
+                if (stable_counter > equilibrium_stable_check):
+                    apply_rescale = False
+                    equilibrium_timestep = step
+
+    return positions, velocities, kinetic_energies, potential_energies, distance_list, equilibrium_timestep
 
 
-def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim):
+def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check):
     """
     Molecular dynamics simulation using the Velocity Verlet's algorithm
     to integrate the equations of motion. Calculates energies and other
@@ -95,11 +125,20 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim):
         Duration of a single simulation step
     box_dim : np.ndarray(float)
         Dimensions of the simulation box
+    equilibrium_steps : int
+        Number of steps after which we apply velocity rescaling (if applicable)
+    target_temperature : float
+        The target temperature of the system
+    temperature_tolerance : float
+        The tolerated error in temperature np.abs(actual_temp/target_temp - 1)
+    equilibrium_stable_check : int
+        Number of stable steps after which we stop rescaling
 
     Returns
     -------
     Any quantities or observables that you wish to study.
     """
+    amount_of_particles = len(init_pos)
     positions = [init_pos]
     velocities = [init_vel]
 
@@ -116,6 +155,12 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim):
     kinetic_energies = [kinetic_energy(init_vel)]
     potential_energies = [potential_energy(distances)]
     distance_list = [distances]
+
+    # Counter for equilibrium stability
+    stable_counter = 0  
+    apply_rescale = True
+    # Timestep when rescaling is stopped
+    equilibrium_timestep = -1
 
     for step in np.arange(num_tsteps):
         dprint(
@@ -135,8 +180,11 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim):
         new_forces = lj_force(relative_positions, distances)
         current_velocities += (current_forces + new_forces) * timestep / 2
 
+        current_kinetic_energy = kinetic_energy(current_velocities)
+        current_temperature = compute_temperature(current_kinetic_energy, amount_of_particles)
+
         # add the current statistics to the logs
-        kinetic_energies.append(kinetic_energy(current_velocities))
+        kinetic_energies.append(current_kinetic_energy)
         potential_energies.append(potential_energy(distances))
         distance_list.append(distances)
 
@@ -147,10 +195,22 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim):
         # update the forces so n -> n+1
         current_forces = new_forces
 
-    return positions, velocities, kinetic_energies, potential_energies, distance_list
+        # rescale velocities if applicable
+        if step % equilibrium_steps == 0 and apply_rescale:
+            if abs(current_temperature/target_temperature - 1) > temperature_tolerance:
+                current_velocities *= compute_rescale_factor(amount_of_particles, target_temperature, current_kinetic_energy)
+                stable_counter = 0
+            else:
+                # Increase stability count if temperature is stable
+                stable_counter += 1
+                # Exit rescaling if stable for longer than equilibrium_stable_check and store timestep
+                if (stable_counter > equilibrium_stable_check):
+                    apply_rescale = False
+                    equilibrium_timestep = step
+    return positions, velocities, kinetic_energies, potential_energies, distance_list, equilibrium_timestep
 
 
-def euler(init_pos, init_vel, num_tsteps, timestep, box_dim):
+def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check):
     """
     Molecular dynamics simulation using the Euler algorithm
     to integrate the equations of motion. Calculates energies and other
@@ -168,11 +228,20 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim):
         Duration of a single simulation step
     box_dim : np.ndarray(float)
         Dimensions of the simulation box
+    equilibrium_steps : int
+        Number of steps after which we apply velocity rescaling (if applicable)
+    target_temperature : float
+        The target temperature of the system
+    temperature_tolerance : float
+        The tolerated error in temperature np.abs(actual_temp/target_temp - 1)
+    equilibrium_stable_check : int
+        Number of stable steps after which we stop rescaling
 
     Returns
     -------
     Any quantities or observables that you wish to study.
     """
+    amount_of_particles = len(init_pos)
     positions = [init_pos]
     velocities = [init_vel]
     kinetic_energies = []
@@ -182,6 +251,11 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim):
     current_positions = init_pos
     current_velocities = init_vel
 
+    # Counter for equilibrium stability
+    stable_counter = 0  
+    apply_rescale = True
+    # Timestep when rescaling is stopped
+    equilibrium_timestep = -1
     for step in np.arange(num_tsteps):
         dprint(
             f"""
@@ -194,8 +268,11 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim):
         # get the n-by-3 matrix of all the total forces on the particles
         forces = lj_force(relative_positions, distances)
 
+        current_kinetic_energy = kinetic_energy(current_velocities)
+        current_temperature = compute_temperature(current_kinetic_energy, amount_of_particles)
+
         # get current energies and distances and append
-        kinetic_energies.append(kinetic_energy(current_velocities))
+        kinetic_energies.append(current_kinetic_energy)
         potential_energies.append(potential_energy(distances))
         distance_list.append(distances)
         # Euler integration step, we'll have to rewrite this to improve energy conservation
@@ -208,7 +285,61 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim):
         positions.append(current_positions)
         velocities.append(current_velocities)
 
-    return positions, velocities, kinetic_energies, potential_energies, distance_list
+        # rescale velocities if applicable
+        if step % equilibrium_steps == 0 and apply_rescale:
+            if abs(current_temperature/target_temperature - 1) > temperature_tolerance:
+                current_velocities *= compute_rescale_factor(amount_of_particles, target_temperature, current_kinetic_energy)
+                stable_counter = 0
+            else:
+                # Increase stability count if temperature is stable
+                stable_counter += 1
+                # Exit rescaling if stable for longer than equilibrium_stable_check and store timestep
+                if (stable_counter > equilibrium_stable_check):
+                    apply_rescale = False
+                    equilibrium_timestep = step
+
+    return positions, velocities, kinetic_energies, potential_energies, distance_list, equilibrium_timestep
+
+
+def compute_temperature(kinetic_energy, amount_of_particles):
+    """
+    Computes the temperature of the system using the kinetic energy.
+
+    Parameters
+    ----------
+    kinetic_energy : float
+        The total kinetic energy of the system.
+    amount_of_particles : int
+        The number of particles in the system.
+
+    Returns
+    -------
+    float
+        The computed temperature of the system.
+    """
+    # Equipartition theorem
+    return (2 * kinetic_energy) / (3 * (amount_of_particles - 1))
+
+
+def compute_rescale_factor(amount_of_particles, target_temperature, kinetic_energy):
+    """
+    Returns the rescale factor for the velocities of the particles to reach a target temperature.
+
+    Parameters
+    ----------
+    amount_of_particles : int
+        The amount of particles in the system
+    target_temperature : float
+        The target temperature of the system
+    kinetic_energy : float
+        The total kinetic energy of the system.
+
+    Returns
+    -------
+    scaled_velocities : float
+        The rescale factor
+    """
+    return np.sqrt(3*(amount_of_particles-1)*target_temperature/(2*kinetic_energy))
 
 
 def atomic_distances(

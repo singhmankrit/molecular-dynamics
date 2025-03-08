@@ -16,7 +16,10 @@ import utilities
     amount_of_particles,
     step_size,
     timesteps,
+    equilibrium_steps,
     temperature,
+    temperature_tolerance,
+    equilibrium_stable_check,
     box_size,
     random_seed,
     position_init_method,
@@ -84,11 +87,14 @@ for simulator_type in simulator_types:
     pos, vel, kinetic, potential, distance_list = None, None, None, None, None
     # check if we have a cached run already
     hash = hashlib.sha1(
-        "{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}".format(
+        "{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}".format(
             amount_of_particles,
             step_size,
             timesteps,
+            equilibrium_steps,
             temperature,
+            temperature_tolerance,
+            equilibrium_stable_check,
             list(box_size),
             random_seed,
             position_init_method,
@@ -106,13 +112,19 @@ for simulator_type in simulator_types:
     else:
         # run the simulation and put the results into variables
         print(f"Starting {simulator_type} simulation")
-        pos, vel, kinetic, potential, distance_list = simulator(
+        pos, vel, kinetic, potential, distance_list, eq_timestep = simulator(
             init_pos.copy(),
             init_vel.copy(),
             timesteps,
             step_size,
             box_size,
+            equilibrium_steps,
+            temperature,
+            temperature_tolerance,
+            equilibrium_stable_check,
         )
+        if eq_timestep == -1:
+            print(f"Equilibrium not reached in simulation")
         print(f"Finished {simulator_type} simulation")
 
         with open(path, "wb") as f:

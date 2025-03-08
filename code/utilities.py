@@ -45,7 +45,10 @@ def parse_config(file_path: str):
         amount_of_particles: int = config.get("particles", 2)
         step_size: float = config.get("step_size", 0.01)
         time_steps: int = config.get("time_steps", 1000)
+        equilibrium_steps = config.get("equilibrium_steps", 10)
         temperature: float = config.get("temperature", 1)
+        temperature_tolerance: float = config.get("temperature_tolerance", 0.01)
+        equilibrium_stable_check: int = config.get("equilibrium_stable_check", 3)
         box: dict[str, float] | None = config.get("box")
         if box is not None:
             box_x: float = config["box"].get("x", 5.0)
@@ -65,7 +68,10 @@ def parse_config(file_path: str):
             amount_of_particles,
             step_size,
             time_steps,
+            equilibrium_steps,
             temperature,
+            temperature_tolerance,
+            equilibrium_stable_check,
             np.array([box_x, box_y, box_z]),
             random_seed,
             pos_method,
