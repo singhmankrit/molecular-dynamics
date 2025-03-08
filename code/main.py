@@ -4,11 +4,12 @@
 import hashlib
 import pickle
 from os.path import isfile
-import initialisation
-import simulators
-import sim_plots
-import utilities
 
+import initialisation
+import numpy as np
+import sim_plots
+import simulators
+import utilities
 
 # Read the configuration file
 (
@@ -26,20 +27,31 @@ import utilities
     simulator_types,
     plots,
     enable_cache,
+    lat_const,
+    corner_offset,
 ) = utilities.parse_config("config.json")
 print(
     f"simulating {amount_of_particles} particles for {timesteps} timesteps, with a time step size of {step_size}"
 )
 
+if not utilities.is1d(box_size):
+    raise TypeError("box_size is not 1D")
 # generate the initial positions of the particles using the specified method
 init_pos = None
 if position_init_method == "uniform":
     init_pos = initialisation.uniform_random(amount_of_particles, box_size, random_seed)
 elif position_init_method == "static":
     init_pos = initialisation.static(amount_of_particles, box_size)
+elif position_init_method == "fcc":
+    cornernp = np.array(corner_offset)
+    if not utilities.is1d(cornernp):
+        raise TypeError("corner_offet is not 1D")
+    init_pos = initialisation.fcc_lattice(
+        amount_of_particles, lat_const, cornernp
+    )  # TODO: lattice constant (array??)
 else:
     print(
-        f"Please select a valid position init method ('uniform', 'static'), currently: {position_init_method}"
+        f"Please select a valid position init method ('uniform', 'static', 'fcc'), currently: {position_init_method}"
     )
     exit(2)
 
@@ -88,6 +100,8 @@ for simulator_type in simulator_types:
             position_init_method,
             velocity_init_method,
             simulator_type,
+            lat_const,
+            corner_offset,
         ).encode()
     )
     path = f"cache/{hash.hexdigest()}.pkl"

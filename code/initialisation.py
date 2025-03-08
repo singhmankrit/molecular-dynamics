@@ -1,5 +1,7 @@
 import numpy as np
 
+from utilities import is2d
+
 ###########################
 # Position initialisation #
 ###########################
@@ -81,7 +83,11 @@ def static(amount_of_particles, box_dim):
     return particles[:amount_of_particles, :] * box_dim
 
 
-def fcc_lattice(num_atoms, lat_const):
+def fcc_lattice(
+    num_atoms: int,
+    lat_const: float,
+    corner_offset: np.ndarray[tuple[int], np.dtype[np.float64]],
+) -> np.ndarray[tuple[int, int], np.dtype[np.float64]]:
     """
     Initializes a system of atoms on an fcc lattice.
 
@@ -97,8 +103,33 @@ def fcc_lattice(num_atoms, lat_const):
     pos_vec : np.ndarray
         Array of particle coordinates
     """
+    # we can initialise only bottom corners of the fcc cubes, this means there are 4 particles per each of these positions,
+    # and the positions are spread around in 3d space.
+    layers = int(np.ceil(np.pow(num_atoms / 4, 1 / 3)))
 
-    return
+    # NOTE: I don't know if we want to do this or just start filling the grid and stop when we have enough
+    if layers**3 * 4 != num_atoms:
+        print(
+            f"Illegal amount of atoms {num_atoms}, "
+            + f"a full lattice can be constructed with {layers**3 * 4} or {(layers - 1) ** 3 * 4} instead"
+        )
+        exit(4)
+
+    positions: list[list[float]] = []
+
+    # I don't like these nested loops, but I don't think they matter that much since it'll still be O(n) while the sim is O(n^2)
+    for x in range(layers * 2):
+        for y in range(layers * 2):
+            for z in range(layers * 2):
+                if (x + y + z) % 2 == 0:
+                    positions.append([x, y, z])
+
+    nppos = np.array(positions, dtype=np.float64) * lat_const / 2 + corner_offset
+    # check if the positions are a 2d array (for typing)
+    if is2d(nppos):
+        return nppos
+    else:
+        raise TypeError("initial positions array not 2D")
 
 
 ###########################

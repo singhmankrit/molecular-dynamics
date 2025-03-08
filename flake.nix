@@ -20,7 +20,7 @@
       devShells = forAllSystems (system: {
         default = pkgs.${system}.mkShellNoCC {
           packages = with pkgs.${system}; [
-            (python3.withPackages (ppkgs: [
+            (python313.withPackages (ppkgs: [
               ppkgs.numpy
               ppkgs.matplotlib
             ]))
