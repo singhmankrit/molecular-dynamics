@@ -2,7 +2,7 @@ import numpy as np
 from utilities import dprint
 
 
-def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance):
+def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check):
     """
     Molecular dynamics simulation using the Leapfrog algorithm
     to integrate the equations of motion.
@@ -25,6 +25,8 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
         The target temperature of the system
     temperature_tolerance : float
         The tolerated error in temperature np.abs(actual_temp/target_temp - 1)
+    equilibrium_stable_check : int
+        Number of stable steps after which we stop rescaling
 
     Returns
     -------
@@ -51,6 +53,12 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
 
     # Leapfrog starts with a half-step velocity update
     half_velocities = current_velocities + (current_forces * timestep / 2)
+
+    # Counter for equilibrium stability
+    stable_counter = 0  
+    apply_rescale = True
+    # Timestep when rescaling is stopped
+    equilibrium_timestep = -1
 
     for step in np.arange(num_tsteps):
         dprint(
@@ -84,13 +92,21 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
         velocities.append(current_velocities)
 
         # we apply rescaling at half timesteps for leapfrog
-        if step % equilibrium_steps == 0:
+        if step % equilibrium_steps == 0 and apply_rescale:
             half_kinetic_energy = kinetic_energy(half_velocities)
             half_temperature = compute_temperature(half_kinetic_energy, amount_of_particles)
             if abs(half_temperature/target_temperature - 1) > temperature_tolerance:
                 half_velocities *= compute_rescale_factor(amount_of_particles, target_temperature, half_kinetic_energy)
+                stable_counter = 0
+            else:
+                # Increase stability count if temperature is stable
+                stable_counter += 1
+                # Exit rescaling if stable for longer than equilibrium_stable_check and store timestep
+                if (stable_counter > equilibrium_stable_check):
+                    apply_rescale = False
+                    equilibrium_timestep = step
 
-    return positions, velocities, kinetic_energies, potential_energies, distance_list
+    return positions, velocities, kinetic_energies, potential_energies, distance_list, equilibrium_timestep
 
 
 def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check):
@@ -183,6 +199,7 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps,
         # update the forces so n -> n+1
         current_forces = new_forces
 
+        # rescale velocities if applicable
         if step % equilibrium_steps == 0 and apply_rescale:
             if abs(current_temperature/target_temperature - 1) > temperature_tolerance:
                 current_velocities *= compute_rescale_factor(amount_of_particles, target_temperature, current_kinetic_energy)
@@ -197,7 +214,7 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps,
     return positions, velocities, kinetic_energies, potential_energies, distance_list, equilibrium_timestep
 
 
-def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance):
+def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check):
     """
     Molecular dynamics simulation using the Euler algorithm
     to integrate the equations of motion. Calculates energies and other
@@ -221,6 +238,8 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, 
         The target temperature of the system
     temperature_tolerance : float
         The tolerated error in temperature np.abs(actual_temp/target_temp - 1)
+    equilibrium_stable_check : int
+        Number of stable steps after which we stop rescaling
 
     Returns
     -------
@@ -236,6 +255,11 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, 
     current_positions = init_pos
     current_velocities = init_vel
 
+    # Counter for equilibrium stability
+    stable_counter = 0  
+    apply_rescale = True
+    # Timestep when rescaling is stopped
+    equilibrium_timestep = -1
     for step in np.arange(num_tsteps):
         dprint(
             f"""
@@ -266,11 +290,20 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, 
         positions.append(current_positions)
         velocities.append(current_velocities)
 
-        if step % equilibrium_steps == 0:
+        # rescale velocities if applicable
+        if step % equilibrium_steps == 0 and apply_rescale:
             if abs(current_temperature/target_temperature - 1) > temperature_tolerance:
                 current_velocities *= compute_rescale_factor(amount_of_particles, target_temperature, current_kinetic_energy)
+                stable_counter = 0
+            else:
+                # Increase stability count if temperature is stable
+                stable_counter += 1
+                # Exit rescaling if stable for longer than equilibrium_stable_check and store timestep
+                if (stable_counter > equilibrium_stable_check):
+                    apply_rescale = False
+                    equilibrium_timestep = step
 
-    return positions, velocities, kinetic_energies, potential_energies, distance_list
+    return positions, velocities, kinetic_energies, potential_energies, distance_list, equilibrium_timestep
 
 
 def compute_temperature(kinetic_energy, amount_of_particles):
@@ -315,8 +348,8 @@ def compute_rescale_factor(amount_of_particles, target_temperature, kinetic_ener
 
 
 def atomic_distances(
-    pos: np._typing.NDArray[np.float64], box_dim: np._typing.NDArray[np.float64]
-) -> np._typing.NDArray[np.float64]:
+    pos: np.typing.NDArray[np.float64], box_dim: np.typing.NDArray[np.float64]
+) -> np.typing.NDArray[np.float64]:
     """
     Calculates relative positions and distances between particles.
 
