@@ -42,13 +42,13 @@ def parse_config(file_path: str):
     """
     with open(file_path) as file:
         config: dict[str, Any] = json.load(file)
-        amount_of_particles: int = config.get("particles", 2)
+        amount_of_particles: int = config.get("particles", 108)
         step_size: float = config.get("step_size", 0.01)
         time_steps: int = config.get("time_steps", 1000)
-        equilibrium_steps = config.get("equilibrium_steps", 10)
+        equilibrium_steps = config.get("equilibrium_steps", 25)
         temperature: float = config.get("temperature", 1)
-        temperature_tolerance: float = config.get("temperature_tolerance", 0.01)
-        equilibrium_stable_check: int = config.get("equilibrium_stable_check", 3)
+        temperature_tolerance: float = config.get("temperature_tolerance", 0.2)
+        equilibrium_stable_check: int = config.get("equilibrium_stable_check", 2)
         box: dict[str, float] | None = config.get("box")
         if box is not None:
             box_x: float = config["box"].get("x", 5.0)
@@ -57,7 +57,7 @@ def parse_config(file_path: str):
         else:
             box_x, box_y, box_z = 5.0, 5.0, 5.0
         random_seed: int = config.get("seed", np.random.randint(0, 1000000000))
-        pos_method: str = config.get("position_method", "uniform")
+        pos_method: str = config.get("position_method", "fcc")
         vel_method: str = config.get("velocity_method", "mbdist")
         simulator_type: list[str] = config.get("simulator_type", ["verlet"])
         outputs: list[str] = config.get("outputs", ["energies", "distances", "animation","pair_correlation","MSD","compressibility","specific_heat"])
