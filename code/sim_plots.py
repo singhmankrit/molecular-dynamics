@@ -83,7 +83,7 @@ def plot_distances(distance_list, step_size, timesteps, eq_timestep, particle=0,
 
 
 def create_animation(
-    positions, timesteps, box_size, selected=0, file_name="particles.mp4"
+    positions, timesteps, step_size, eq_timestep, box_size, selected=0, file_name="particles.mp4"
 ):
     """
     Creates an animation of the system.
@@ -94,6 +94,10 @@ def create_animation(
         List of positions
     timesteps : int
         Number of timesteps
+    step_size : float
+        Step size of simulation
+    eq_timestep : int
+        Equilibrium timestep
     box_size : np.ndarray
         Size of the simulation box
     name : str
@@ -114,15 +118,22 @@ def create_animation(
         positions[0, :, 2],
         c=["r" if i == selected else "b" for i in range(n_particles)],
     )
-
+    title = ax.set_title("Time = 0.00")
     # Update function for animation
+
     def update(frame):
+        time = frame * step_size
         particles._offsets3d = (
             positions[frame, :, 1],
             positions[frame, :, 0],
             positions[frame, :, 2],
         )
-        return (particles,)
+        if frame < eq_timestep:
+            title.set_text(f"Time = {time:.2f}")
+        else:
+            title.set_text(
+                f"Time = {time:.2f} \n Reached Equilibrium at Time = {eq_timestep * step_size:.2f}")
+        return particles, title
 
     # Create animation
     ani = animation.FuncAnimation(fig, update, frames=timesteps, blit=True)

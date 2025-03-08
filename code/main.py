@@ -141,5 +141,5 @@ for simulator_type in simulator_types:
         )
     if "animation" in plots:
         sim_plots.create_animation(
-            pos, timesteps, box_size, file_name=f"particles_{simulator_type}.mp4"
+            pos, timesteps, step_size, eq_timestep, box_size, file_name=f"particles_{simulator_type}.mp4"
         )
