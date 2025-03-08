@@ -22,7 +22,8 @@
 		"energies",
 		"distances",
 		"animation",
-        "pair_correlation"
+        "pair_correlation",
+        "MSD"
 	],
 	"do_caching": true
 }

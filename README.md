@@ -25,7 +25,7 @@ The configuration file uses the json format. The options are listed below with t
 | velocity_method | `"mbdist"` | The way the starting velocities of the particles get generated, can be `"zero"` for zero velocities or `"mbdist"` for a maxwell-boltzmann distribution.
 | seed | random | The seed to use for the initial random generation.
 | simulator_type | `["verlet", "euler"]` | What integrators to use on the starting position, the simulator executes every one in the list, can be `"verlet"`, `"euler"` or `"leapfrog"`.
-| outputs | `["energies", "distances", "animation","pair_correlation"]` | The outputs the simulator should create from the simulation results.
+| outputs | `["energies", "distances", "animation","pair_correlation","MSD"]` | The outputs the simulator should create from the simulation results.
 | do_caching | `true` | The simulator will cache simulations in `./cache/` if this is `true`, changing the code does **not** wipe this cache, changing relevant configuration sections should create their own entries.
 
 

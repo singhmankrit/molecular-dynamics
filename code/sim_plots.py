@@ -168,3 +168,30 @@ def plot_pair_correlation(r_values, g_r, file_name="pair_correlation.png"):
     dprint(f"saving the pair correlation plot to {file_name}")
     plt.savefig(file_name)
     plt.close()
+
+
+def plot_MSD(msd, time, file_name="MSD.png"):
+    """
+    Plots the mean square displacement.
+
+    Parameters
+    ----------
+    msd : list
+        List of mean square displacements
+    time : list
+        List of time passed
+    file_name : string
+        Name of file to save to
+    """
+    print("Now plotting the Mean Square Displacement (MSD)")
+
+    _ = plt.figure(figsize=(10, 7))
+    plt.title("MSD vs Time")
+    plt.xlabel(r"Time  $\left ( \sqrt{\frac{m\sigma^2}{\epsilon}}\right )$ ")
+    plt.ylabel(r"MSD ($\sigma^2$)")
+    plt.plot(time, msd, label="MSD")
+    plt.legend()
+    plt.tight_layout()
+    dprint(f"saving the MSD plot to {file_name}")
+    plt.savefig(file_name)
+    plt.close()

@@ -33,3 +33,33 @@ def compute_pair_correlation(distances, volume, num_particles, r_max, delta_r):
     norm_factor = (2 * volume) / (num_particles * (num_particles - 1))
     g_r = norm_factor * avg_hist / shell_volumes
     return r_values, g_r
+
+
+def compute_msd(pos, t_eq):
+    """
+    Computes the mean squared displacement (MSD) given a 3D array of
+    particle positions, starting from a given equilibrium time step.
+
+    Parameters:
+        pos (numpy array): A 3D array of shape (time_steps, num_particles, 3)
+            containing the positions of particles at each time step.
+        t_eq (int): The time step at which to start computing the MSD.
+
+    Returns:
+        msd (numpy array): A 1D array of shape (time_steps - t_eq,)
+            containing the mean squared displacement at each time step.
+    """
+
+    pos_eq = pos[t_eq:]  # shape: (time_steps - t_eq, num_particles, 3)
+    pos_0 = pos_eq[0]    # reference positions at t_eq
+
+    # Compute displacements
+    displacements = pos_eq - pos_0  # (time_steps - t_eq, num_particles, 3)
+
+    # Square displacements and sum over x, y, z
+    # (time_steps - t_eq, num_particles)
+    squared_displacements = np.sum(displacements**2, axis=2)
+
+    # Average over particles
+    msd = np.mean(squared_displacements, axis=1)  # (time_steps - t_eq,)
+    return msd

@@ -158,3 +158,12 @@ for simulator_type in simulator_types:
         sim_plots.plot_pair_correlation(
             r_values, g_r, file_name=f"pair_correlation_{simulator_type}.png"
         )
+
+    if "MSD" in outputs:
+        msd = observables.compute_msd(pos, eq_timestep)
+        time = np.arange(eq_timestep, timesteps+1, 1)*step_size
+        eq_time = eq_timestep * step_size
+        sim_plots.plot_MSD(
+            msd, time, file_name=f"MSD_{simulator_type}.png"
+        )
+    
