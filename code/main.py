@@ -25,7 +25,7 @@ import utilities
     position_init_method,
     velocity_init_method,
     simulator_types,
-    plots,
+    outputs,
     enable_cache,
     lat_const,
     corner_offset,
@@ -131,15 +131,15 @@ for simulator_type in simulator_types:
             pickle.dump((pos, vel, kinetic, potential, distance_list), f)
 
     # generate plots from the results
-    if "energies" in plots:
+    if "energies" in outputs:
         sim_plots.plot_energy(
             kinetic, potential,step_size, timesteps, eq_timestep, file_name=f"energies_{simulator_type}.png"
         )
-    if "distances" in plots:
+    if "distances" in outputs:
         sim_plots.plot_distances(
             distance_list, step_size, timesteps, eq_timestep, file_name=f"distances_{simulator_type}.png"
         )
-    if "animation" in plots:
+    if "animation" in outputs:
         sim_plots.create_animation(
             pos, timesteps, step_size, eq_timestep, box_size, file_name=f"particles_{simulator_type}.mp4"
         )
