@@ -1,6 +1,9 @@
 import numpy as np
 
 from utilities import is2d
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import maxwell
 
 ###########################
 # Position initialisation #
@@ -136,6 +139,43 @@ def fcc_lattice(
 # Velocity initialisation #
 ###########################
 
+
+def check_maxwell_boltzmann(num_atoms, temp, seed=None):
+    """
+    Generates initial velocities and checks if they follow the Maxwell-Boltzmann distribution.
+
+    Parameters
+    ----------
+    num_atoms : int
+        Number of particles in the system.
+    temp : float
+        Temperature of the system.
+    seed : int, optional
+        Random seed for reproducibility.
+
+    Returns
+    -------
+    None (Displays histogram and theoretical curve)
+    """
+    # Generate velocities
+    velocities = init_velocity(num_atoms, temp, seed)
+    
+    # Compute speed (v = sqrt(vx^2 + vy^2 + vz^2))
+    speeds = np.linalg.norm(velocities, axis=1)
+
+    # Plot histogram of speeds
+    plt.hist(speeds, bins=30, density=True, alpha=0.6, label="Simulated Speeds")
+
+    # Theoretical Maxwell-Boltzmann distribution
+    v_range = np.linspace(0, np.max(speeds), 100)
+    mb_distribution = maxwell.pdf(v_range, scale=np.sqrt(temp))
+
+    plt.plot(v_range, mb_distribution, 'r-', label="Maxwell-Boltzmann Fit")
+    plt.xlabel("Speed (v)")
+    plt.ylabel("Probability Density")
+    plt.title("Velocity Distribution vs. Maxwell-Boltzmann")
+    plt.legend()
+    plt.show()
 
 def zero_speed(amount_of_particles):
     """

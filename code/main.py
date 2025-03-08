@@ -65,6 +65,7 @@ elif velocity_init_method == "mbdist":
     init_vel = initialisation.init_velocity(
         amount_of_particles, temperature, random_seed
     )
+    initialisation.check_maxwell_boltzmann(amount_of_particles, temperature, random_seed)
 else:
     print(
         f"Please select a valid velocity init method ('zero', 'mbdist'), currently: {velocity_init_method}"
