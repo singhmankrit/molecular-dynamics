@@ -1,21 +1,23 @@
 import numpy as np
 
 
-def compute_pair_correlation(distances, volume, num_particles, r_max, delta_r):
+def compute_pair_correlation(box_size, distance_list, num_particles, delta_r):
     """
     Computes the time-averaged pair correlation function g(r) given a distance matrix.
 
     Parameters:
-        distances (numpy array): A (num_particles, num_timesteps) array of pairwise distances.
-        volume (float): The total volume of the simulation cell.
+        box_size (tuple): The size of the simulation box.
+        distance_list (list): A list of distance matrices for each time step.
         num_particles (int): The total number of particles in the system.
-        r_max (float): The maximum distance to consider for g(r).
         delta_r (float): The bin size for the histogram.
 
     Returns:
         r_values (numpy array): The midpoints of the histogram bins.
         g_r (numpy array): The time-averaged pair correlation function values.
     """
+    volume = box_size[0] * box_size[1] * box_size[2]
+    distances = np.array(distance_list)
+    r_max = np.max(distances)
     time_steps = distances.shape[0]
     bins = np.arange(0, r_max, delta_r)
     histograms = np.zeros((time_steps, len(bins) - 1))
@@ -77,7 +79,6 @@ def compute_compressibility_factor(temperature, amount_of_particles, distance_li
     Returns:
         float: The compressibility factor.
     """
-    # print(distance_list.shape)
 
     distance_list = np.array(distance_list[eq_timestep:])
     distance_list = np.ma.masked_values(

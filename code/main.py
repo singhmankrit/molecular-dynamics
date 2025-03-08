@@ -148,13 +148,9 @@ for simulator_type in simulator_types:
         )
 
     if "pair_correlation" in outputs:
-        volume = box_size[0] * box_size[1] * box_size[2]
-        # Example usage:
-        distances = np.array(distance_list)
-        max_dist = np.max(distances)
         # Compute pair correlation
         r_values, g_r = observables.compute_pair_correlation(
-            distances, volume, amount_of_particles, max_dist, bin_size)
+            box_size, distance_list, amount_of_particles, bin_size)
         sim_plots.plot_pair_correlation(
             r_values, g_r, file_name=f"pair_correlation_{simulator_type}.png"
         )
