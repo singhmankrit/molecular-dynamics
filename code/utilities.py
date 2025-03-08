@@ -60,10 +60,11 @@ def parse_config(file_path: str):
         pos_method: str = config.get("position_method", "uniform")
         vel_method: str = config.get("velocity_method", "mbdist")
         simulator_type: list[str] = config.get("simulator_type", ["verlet"])
-        plots: list[str] = config.get("plots", ["energies", "distances", "animation"])
+        outputs: list[str] = config.get("outputs", ["energies", "distances", "animation","pair_correlation","MSD","compressibility","specific_heat"])
         enable_cache: bool = config.get("do_caching", True)
         lat_const: float = config.get("lattice_const", 1.5)
         corner_offset: list[float] = config.get("corner_offset", [0, 0, 0])
+        bin_size: float = config.get("bin_size", 0.1)
         return (
             amount_of_particles,
             step_size,
@@ -77,10 +78,11 @@ def parse_config(file_path: str):
             pos_method,
             vel_method,
             simulator_type,
-            plots,
+            outputs,
             enable_cache,
             lat_const,
             corner_offset,
+            bin_size,
         )
 
 

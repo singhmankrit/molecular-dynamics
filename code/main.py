@@ -10,6 +10,7 @@ import numpy as np
 import sim_plots
 import simulators
 import utilities
+import observables
 
 # Read the configuration file
 (
@@ -25,10 +26,11 @@ import utilities
     position_init_method,
     velocity_init_method,
     simulator_types,
-    plots,
+    outputs,
     enable_cache,
     lat_const,
     corner_offset,
+    bin_size
 ) = utilities.parse_config("config.json")
 print(
     f"simulating {amount_of_particles} particles for {timesteps} timesteps, with a time step size of {step_size}"
@@ -102,6 +104,7 @@ for simulator_type in simulator_types:
             simulator_type,
             lat_const,
             corner_offset,
+            bin_size,
         ).encode()
     )
     path = f"cache/{hash.hexdigest()}.pkl"
@@ -131,15 +134,44 @@ for simulator_type in simulator_types:
             pickle.dump((pos, vel, kinetic, potential, distance_list), f)
 
     # generate plots from the results
-    if "energies" in plots:
+    if "energies" in outputs:
         sim_plots.plot_energy(
             kinetic, potential,step_size, timesteps, eq_timestep, file_name=f"energies_{simulator_type}.png"
         )
-    if "distances" in plots:
+    if "distances" in outputs:
         sim_plots.plot_distances(
             distance_list, step_size, timesteps, eq_timestep, file_name=f"distances_{simulator_type}.png"
         )
-    if "animation" in plots:
+    if "animation" in outputs:
         sim_plots.create_animation(
             pos, timesteps, step_size, eq_timestep, box_size, file_name=f"particles_{simulator_type}.mp4"
         )
+
+    if "pair_correlation" in outputs:
+        # Compute pair correlation
+        r_values, g_r = observables.compute_pair_correlation(
+            box_size, distance_list, amount_of_particles, bin_size)
+        sim_plots.plot_pair_correlation(
+            r_values, g_r, file_name=f"pair_correlation_{simulator_type}.png"
+        )
+
+    if "MSD" in outputs:
+        msd = observables.compute_msd(pos, eq_timestep)
+        time = np.arange(eq_timestep, timesteps+1, 1)*step_size
+        eq_time = eq_timestep * step_size
+        sim_plots.plot_MSD(
+            msd, time, file_name=f"MSD_{simulator_type}.png"
+        )
+
+    if "compressibility" in outputs:
+        compressibility = observables.compute_compressibility_factor(
+            temperature, amount_of_particles, distance_list, eq_timestep
+        )
+        print(f"Compressibility: {compressibility}")
+
+    if "specific_heat" in outputs:
+        specific_heat = observables.compute_specific_heat(
+            kinetic, amount_of_particles, eq_timestep
+        )
+        print(f"Specific heat: {specific_heat}")
+    

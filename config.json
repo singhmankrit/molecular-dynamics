@@ -18,10 +18,14 @@
 		"verlet",
 		"euler"
 	],
-	"plots": [
+	"outputs": [
 		"energies",
 		"distances",
-		"animation"
+		"animation",
+        "pair_correlation",
+        "MSD",
+        "compressibility",
+        "specific_heat"
 	],
 	"do_caching": true
 }
