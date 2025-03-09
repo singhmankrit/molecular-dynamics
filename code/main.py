@@ -111,7 +111,9 @@ for simulator_type in simulator_types:
     if isfile(path) and enable_cache:
         print(f"found cached results at {path}")
         with open(path, "rb") as f:
-            pos, vel, kinetic, potential, distance_list = pickle.load(f)
+            pos, vel, kinetic, potential, distance_list, eq_timestep, avg_temp = (
+                pickle.load(f)
+            )
     else:
         # run the simulation and put the results into variables
         print(f"Starting {simulator_type} simulation")
@@ -133,7 +135,9 @@ for simulator_type in simulator_types:
         print(f"Finished {simulator_type} simulation")
 
         with open(path, "wb") as f:
-            pickle.dump((pos, vel, kinetic, potential, distance_list), f)
+            pickle.dump(
+                (pos, vel, kinetic, potential, distance_list, eq_timestep, avg_temp), f
+            )
 
     # generate plots from the results
     if "energies" in outputs:
