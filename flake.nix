@@ -15,21 +15,38 @@
       ];
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
       pkgs = forAllSystems (system: nixpkgs.legacyPackages.${system});
+
     in
     {
-      devShells = forAllSystems (system: {
-        default = pkgs.${system}.mkShellNoCC {
-          packages = with pkgs.${system}; [
-            (python313.withPackages (ppkgs: [
-              ppkgs.numpy
-              ppkgs.matplotlib
-            ]))
-            ffmpeg-headless # needed to make the animations
-            mpv # for watching the generated videos
-          ];
+      devShells = forAllSystems (
+        system:
+        let
+          sps = pkgs.${system};
+          pyflame = sps.python313Packages.buildPythonPackage rec {
+            pname = "pyflame";
+            version = "0.3.2";
+            src = sps.fetchPypi {
+              inherit pname version;
+              hash = "sha256-j15RRngb3e84ezMXCyfPxb6Qf64BeVFttWSnI/MOUSE=";
+            };
+          };
+        in
+        {
+          default = pkgs.${system}.mkShellNoCC {
+            packages = with pkgs.${system}; [
+              (python313.withPackages (ppkgs: [
+                ppkgs.numpy
+                ppkgs.matplotlib
+                pyflame
+              ]))
+              ffmpeg-headless # needed to make the animations
+              mpv # for watching the generated videos
+              flamegraph
+            ];
 
-          LD_LIBRARY_PATH = "${pkgs.${system}.libGL}/lib";
-        };
-      });
+            LD_LIBRARY_PATH = "${pkgs.${system}.libGL}/lib";
+          };
+        }
+      );
     };
 }
