@@ -21,10 +21,10 @@
 		"energies",
 		"distances",
 		"animation",
-        "pair_correlation",
-        "MSD",
-        "compressibility",
-        "specific_heat"
+		"pair_correlation",
+		"MSD",
+		"compressibility",
+		"specific_heat"
 	],
 	"do_caching": true
 }
