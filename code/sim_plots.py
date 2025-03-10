@@ -69,11 +69,11 @@ def plot_distances(distance_list, step_size, timesteps, eq_timestep, particle=0,
     plt.title(f"Distances between particle {particle} and other particles")
     plt.xlabel(r"Time  $\left ( \sqrt{\frac{m\sigma^2}{\epsilon}}\right )$ ")
     plt.ylabel(r"Distance ($\sigma$)")
-    for i in range(0, len(distance_list[0])):
+    reduced = np.array(distance_list)[:, particle, :]
+    for i in range(0, len(reduced[0])):
         if i == particle:
             continue
-        plt.plot(time, np.array(distance_list)[
-                 :, particle, i], label=f"Particle {i}")
+        plt.plot(time, reduced[:, i], label=f"Particle {i}")
     plt.axvline(eq_time, color="green", linestyle="--", label="equilibrium")
     plt.tight_layout()
     plt.legend()
