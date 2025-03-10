@@ -213,6 +213,33 @@ Temperature is updated periodically and error after equilibrium is noted as foll
 
 Since rescaling requires convergence, the logic we have used is this: rescale after every "equilibrium_steps" timesteps in case the current temperature is outside the "temperature_tolerance". Once the temperature is not rescaled for "equilibrium_stable_check" number of times, we stop rescaling for all future timesteps. All the quoted quantities can be varied through the configuration file.
 
+@rjuyal 
+
+
+I worked on implementing the functions for the observables(!32) and reviewed merge requests. 
+
+
+Comparing observable to literature:
+
+
+Pair Correlation \
+Using the values provided by the Computational Physics book by J.M. Thijssen, for $\rho = 1.06$, 500 particles and temperature = 1, we get: \
+![](images/journal_4/pair_correlation_verlet.png)  \
+This has a similar shape to the graph provided in the book but the x axis and y values are quite different: \
+![](images/journal_4/pair_correlation_chapter7.png) 
+
+Mean Square Displacement: \
+For the same values as above, we get the mean square distance graph to increase suddenly at the beginning and then plateaus which is the expected behaviour for solids. \
+![](images/journal_4/MSD_verlet.png) 
+
+Specific Heat: \
+For the same values as above, we get the specific heat to be 2.985689304164882 which is pretty close to what is predicted by Dulong-Petit law($3k_B T = 3$).
+
+Compressability: \
+For this we faced a lot of errors. Using $\rho$ as 0.88 and 500 particles from the values provided by the same book:
+![](images/journal_4/observable_comparison_1.png) \
+We get 0.16723744434606735 which is very far from what is expected. For some reason, it changes quite a lot. When we tried 108 particles and slightly different density (~0.86) we got the compressability as ~ 2.18.
+
 ## Week 5
 (due 18 March 2025, 11:00)
 
