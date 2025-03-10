@@ -208,6 +208,9 @@ Also reviewed Merge Requests.
 Plot of velocity distribution and Maxwell-Boltzmann distribution: \
 ![](images/journal_4/MB_verified.png)
 
+Temperature is updated periodically and error after equilibrium is noted as follows: \
+![](images/journal_4/temp_error.png)
+
 ## Week 5
 (due 18 March 2025, 11:00)
 
