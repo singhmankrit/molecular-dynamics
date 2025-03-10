@@ -211,6 +211,8 @@ Plot of velocity distribution and Maxwell-Boltzmann distribution: \
 Temperature is updated periodically and error after equilibrium is noted as follows: \
 ![](images/journal_4/temp_error.png)
 
+Since rescaling requires convergence, the logic we have used is this: rescale after every "equilibrium_steps" timesteps in case the current temperature is outside the "temperature_tolerance". Once the temperature is not rescaled for "equilibrium_stable_check" number of times, we stop rescaling for all future timesteps. All the quoted quantities can be varied through the configuration file.
+
 ## Week 5
 (due 18 March 2025, 11:00)
 
