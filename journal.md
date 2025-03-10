@@ -240,6 +240,75 @@ For this we faced a lot of errors. Using $\rho$ as 0.88 and 500 particles from t
 ![](images/journal_4/observable_comparison_1.png) \
 We get 0.16723744434606735 which is very far from what is expected. For some reason, it changes quite a lot. When we tried 108 particles and slightly different density (~0.86) we got the compressability as ~ 2.18.
 
+@npaarts
+
+I started by fixing the problems we found in the fcc lattice initialisation code we discussed after the lecture.
+This didn't take too long which was good because I had a lot to do and not that much time.
+
+I did find a bug which got into the program with respect to the caching, so I fixed it in ff6bd600f703cfb403e6fd0bb5683d4ffb30af79.
+
+I also worked on profiling the code we created, for this I used pyflame, since I've used flamegraphs before for
+profiling code and think they are a good visualisation method.
+In flamegraphs the time spent in a certain function block is displayed as a block where the width is representative for
+the time spent. If a block is on top of another block this means that it was called from the block it's on.
+If you open the file in a compatible viewer you should be able to click the blocks to zoom in.
+
+Before I started optimising I ran the profiler to see that a lot of time is spent creating the animation.
+![](images/journal_4/pre_optimisations.svg) \
+I also noticed that a suprising amount of time was spent in `plot_distances`.
+When I took a look at [the code](https://gitlab.kwant-project.org/computational_physics/projects/Project1_mankritsingh_npaarts_rjuyal/-/blob/ff6bd600f703cfb403e6fd0bb5683d4ffb30af79/code/sim_plots.py#L46-L82)
+I could see that we were creating a numpy array from the distance list inside of the loop.
+```python
+    for i in range(0, len(distance_list[0])):
+        if i == particle:
+            continue
+        plt.plot(time, np.array(distance_list)[
+                 :, particle, i], label=f"Particle {i}")
+```
+Due to how memory is laid out differently by python and numpy this was creating a lot of overhead,
+I decided to create a numpy array only once and then used that one in the loop:
+```python
+    reduced = np.array(distance_list)[:, particle, :]
+    for i in range(0, len(reduced[0])):
+        if i == particle:
+            continue
+        plt.plot(time, reduced[:, i], label=f"Particle {i}")
+```
+This improved the time used by the `plot_distances` function body itself significantly.
+![](images/journal_4/plot_distances.svg) \
+The biggest cost function that's left and in our control is `atomic_distances`. 
+It already uses numpy for most things, but it's still taking quite long.
+You can see [the code](https://gitlab.kwant-project.org/computational_physics/projects/Project1_mankritsingh_npaarts_rjuyal/-/blob/1eafc7e61657c99c6ad3c082fdd975e312defab9/code/simulators.py#L356-L396), but the important part
+is
+```python
+    central_x, other_x = np.meshgrid(pos[:, 0], pos[:, 0])
+    central_y, other_y = np.meshgrid(pos[:, 1], pos[:, 1])
+    central_z, other_z = np.meshgrid(pos[:, 2], pos[:, 2])
+    # moving to the coordinate frame of the central particle
+    # to find the closest position of those around
+    x_dist = (central_x - other_x + box_dim[0] / 2) % box_dim[0] - box_dim[0] / 2
+    y_dist = (central_y - other_y + box_dim[1] / 2) % box_dim[1] - box_dim[1] / 2
+    z_dist = (central_z - other_z + box_dim[2] / 2) % box_dim[2] - box_dim[2] / 2
+
+    relative_positions = np.stack([x_dist, y_dist, z_dist])
+    distances = np.ma.masked_values(
+        np.sqrt(x_dist * x_dist + y_dist * y_dist + z_dist * z_dist),
+        0.0,
+        rtol=1e-60,
+        atol=1e-60,
+    )
+```
+Since all these calls happened in the same function body the flamegraph didn't display them seperately,
+to find out what the slow part was I took each of the three main blocks out into a seperate function
+and created another flamegraph. What I found was that the `x_dist`, `y_dist` and `z_dist` calls
+were taking the longest by far, these are already using fully vectorised numpy functions so we
+can't optimise them any more. I did however see a small improvement by only indexing `pos` once
+for each of the central/other calls, and going further and using `np.unstack` for it.
+This produced [the new code](https://gitlab.kwant-project.org/computational_physics/projects/Project1_mankritsingh_npaarts_rjuyal/-/blob/0eb62f926c9b96821cf6ffeac704a588d66ee41d/code/simulators.py#L356-L398) and a new flamegraph.
+![](images/journal_4/np_unstack.svg) \
+No more easy performance wins are visible anymore, nearly all of the execution time is inside of
+matplotlib or numpy.
+
 ## Week 5
 (due 18 March 2025, 11:00)
 
