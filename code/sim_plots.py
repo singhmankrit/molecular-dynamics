@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from alive_progress import alive_bar
 
 from utilities import dprint
 
@@ -120,26 +121,27 @@ def create_animation(
     )
     title = ax.set_title("Time = 0.00")
     # Update function for animation
+    with alive_bar(timesteps+2) as bar:
+        def update(frame):
+            time = frame * step_size
+            particles._offsets3d = (
+                positions[frame, :, 1],
+                positions[frame, :, 0],
+                positions[frame, :, 2],
+            )
+            if frame < eq_timestep:
+                title.set_text(f"Time = {time:.2f}")
+            else:
+                title.set_text(
+                    f"Time = {time:.2f} \n Reached Equilibrium at Time = {eq_timestep * step_size:.2f}")
+            bar()
+            return particles, title
 
-    def update(frame):
-        time = frame * step_size
-        particles._offsets3d = (
-            positions[frame, :, 1],
-            positions[frame, :, 0],
-            positions[frame, :, 2],
-        )
-        if frame < eq_timestep:
-            title.set_text(f"Time = {time:.2f}")
-        else:
-            title.set_text(
-                f"Time = {time:.2f} \n Reached Equilibrium at Time = {eq_timestep * step_size:.2f}")
-        return particles, title
+        # Create animation
+        ani = animation.FuncAnimation(fig, update, frames=timesteps, blit=True)
 
-    # Create animation
-    ani = animation.FuncAnimation(fig, update, frames=timesteps, blit=True)
-
-    dprint(f"saving the animation to {file_name}")
-    ani.save(file_name, writer="ffmpeg", fps=30)
+        dprint(f"saving the animation to {file_name}")
+        ani.save(file_name, writer="ffmpeg", fps=30)
 
 
 def plot_pair_correlation(r_values, g_r, file_name="pair_correlation.png"):
