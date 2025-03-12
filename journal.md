@@ -316,6 +316,8 @@ matplotlib or numpy.
 
 Mankrit:
 - split out the simulator step to reduce code duplication
+- export printed observables/data in the terminal to a csv file that can be useful for the final report
+- think of what we will finally show in the report (vary which parameters or compare simulators etc.)
 
 Noa:
 - Add progress bars to enable larger scale simulations
