@@ -30,7 +30,7 @@ import observables
     enable_cache,
     lat_const,
     corner_offset,
-    bin_size
+    bin_size,
 ) = utilities.parse_config("config.json")
 print(
     f"simulating {amount_of_particles} particles for {timesteps} timesteps, with a time step size of {step_size}"
@@ -152,6 +152,10 @@ for simulator_type in simulator_types:
         sim_plots.create_animation(
             pos, timesteps, step_size, eq_timestep, box_size, file_name=f"particles_{simulator_type}.mp4"
         )
+
+    if eq_timestep < 0:
+        print(f"simulation did not converge, not computing observables")
+        continue
 
     if "pair_correlation" in outputs:
         # Compute pair correlation

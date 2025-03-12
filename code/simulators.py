@@ -34,8 +34,10 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
     Any quantities or observables that you wish to study.
     """
     amount_of_particles = len(init_pos)
-    positions = [init_pos]
-    velocities = [init_vel]
+    positions = np.zeros((num_tsteps+1, amount_of_particles, 3))
+    positions[0,:,:] = init_pos
+    velocities = np.zeros((num_tsteps+1, amount_of_particles, 3))
+    velocities[0,:,:] = init_vel
 
     current_positions = init_pos
     current_velocities = init_vel
@@ -47,22 +49,25 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
     relative_positions, distances = atomic_distances(current_positions, box_dim)
     current_forces = lj_force(relative_positions, distances)
 
-    kinetic_energies = [kinetic_energy(init_vel)]
-    potential_energies = [potential_energy(distances)]
-    distance_list = [distances]
+    kinetic_energies = np.zeros((num_tsteps+1))
+    kinetic_energies[0] = kinetic_energy(init_vel)
+    potential_energies = np.zeros((num_tsteps+1))
+    potential_energies[0] = potential_energy(distances)
+    distance_list = np.zeros((num_tsteps+1, amount_of_particles, amount_of_particles))
+    distance_list[0,:,:] = distances
 
-    # Leapfrog starts with a half-step velocity update
-    half_velocities = current_velocities + (current_forces * timestep / 2)
+    # Leapfrog starts with a half-step
+    half_velocities = current_velocities + (current_forces*timestep/2)
 
     # Counter for equilibrium stability
     stable_counter = 0  
     apply_rescale = True
     # Timestep when rescaling is stopped
     equilibrium_timestep = -1
-    temperature_list = []
+    temperature_list = np.array([])
 
     with alive_bar(num_tsteps) as bar:
-        for step in np.arange(num_tsteps):
+        for step in np.arange(1,num_tsteps+1):
             dprint(
                 f"""
                 at step {step} the particles are at {current_positions}
@@ -84,19 +89,19 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
             half_velocities += current_forces * timestep
 
             # add the current statistics to the logs
-            kinetic_energies.append(kinetic_energy(current_velocities))
-            potential_energies.append(potential_energy(distances))
-            distance_list.append(distances)
+            kinetic_energies[step] = kinetic_energy(current_velocities)
+            potential_energies[step]=potential_energy(distances)
+            distance_list[step,:,:] = distances
 
             # keep track of the positions and velocities
-            positions.append(current_positions)
-            velocities.append(current_velocities)
+            positions[step,:,:] = current_positions
+            velocities[step,:,:] = current_velocities
 
             # we apply rescaling at half timesteps for leapfrog
             half_kinetic_energy = kinetic_energy(half_velocities)
             half_temperature = compute_temperature(half_kinetic_energy, amount_of_particles)
             if apply_rescale == False:
-                temperature_list.append(half_temperature)
+                temperature_list[step-equilibrium_timestep-1] = half_temperature
             if step % equilibrium_steps == 0 and apply_rescale:
                 if abs(half_temperature/target_temperature - 1) > temperature_tolerance:
                     half_velocities *= compute_rescale_factor(amount_of_particles, target_temperature, half_kinetic_energy)
@@ -108,6 +113,7 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
                     if (stable_counter > equilibrium_stable_check):
                         apply_rescale = False
                         equilibrium_timestep = step
+                        temperature_list = np.zeros((num_tsteps - step))
             bar()
     average_temperature = np.mean(temperature_list)
     return positions, velocities, kinetic_energies, potential_energies, distance_list, equilibrium_timestep, average_temperature
@@ -145,8 +151,10 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps,
     Any quantities or observables that you wish to study.
     """
     amount_of_particles = len(init_pos)
-    positions = [init_pos]
-    velocities = [init_vel]
+    positions = np.zeros((num_tsteps+1, amount_of_particles, 3))
+    positions[0,:,:] = init_pos
+    velocities = np.zeros((num_tsteps+1, amount_of_particles, 3))
+    velocities[0,:,:] = init_vel
 
     current_positions = init_pos
     current_velocities = init_vel
@@ -158,19 +166,22 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps,
     relative_positions, distances = atomic_distances(current_positions, box_dim)
     current_forces = lj_force(relative_positions, distances)
 
-    kinetic_energies = [kinetic_energy(init_vel)]
-    potential_energies = [potential_energy(distances)]
-    distance_list = [distances]
+    kinetic_energies = np.zeros((num_tsteps+1))
+    kinetic_energies[0] = kinetic_energy(init_vel)
+    potential_energies = np.zeros((num_tsteps+1))
+    potential_energies[0] = potential_energy(distances)
+    distance_list = np.zeros((num_tsteps+1, amount_of_particles, amount_of_particles))
+    distance_list[0,:,:] = distances
 
     # Counter for equilibrium stability
     stable_counter = 0  
     apply_rescale = True
     # Timestep when rescaling is stopped
     equilibrium_timestep = -1
-    temperature_list = []
+    temperature_list = np.array([])
 
     with alive_bar(num_tsteps) as bar:
-        for step in np.arange(num_tsteps):
+        for step in np.arange(1,num_tsteps+1):
             dprint(
                 f"""
                 at step {step} the particles are at {current_positions}
@@ -189,23 +200,23 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps,
             current_velocities += (current_forces + new_forces) * timestep / 2
 
             current_kinetic_energy = kinetic_energy(current_velocities)
-            current_temperature = compute_temperature(current_kinetic_energy, amount_of_particles)
-            if apply_rescale == False:
-                temperature_list.append(current_temperature)
 
             # add the current statistics to the logs
-            kinetic_energies.append(current_kinetic_energy)
-            potential_energies.append(potential_energy(distances))
-            distance_list.append(distances)
+            kinetic_energies[step] = current_kinetic_energy
+            potential_energies[step] = potential_energy(distances)
+            distance_list[step,:,:] = distances
 
             # keep track of the positions and velocities
-            positions.append(current_positions)
-            velocities.append(current_velocities)
+            positions[step,:,:] = current_positions
+            velocities[step,:,:] = current_velocities
 
             # update the forces so n -> n+1
             current_forces = new_forces
 
+            current_temperature = compute_temperature(current_kinetic_energy, amount_of_particles)
             # rescale velocities if applicable
+            if apply_rescale == False:
+                temperature_list[step-equilibrium_timestep-1] = current_temperature
             if step % equilibrium_steps == 0 and apply_rescale:
                 if abs(current_temperature/target_temperature - 1) > temperature_tolerance:
                     current_velocities *= compute_rescale_factor(amount_of_particles, target_temperature, current_kinetic_energy)
@@ -217,6 +228,7 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps,
                     if (stable_counter > equilibrium_stable_check):
                         apply_rescale = False
                         equilibrium_timestep = step
+                        temperature_list = np.zeros((num_tsteps - step))
             bar()
     average_temperature = np.mean(temperature_list)
     return positions, velocities, kinetic_energies, potential_energies, distance_list, equilibrium_timestep, average_temperature
@@ -254,55 +266,65 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, 
     Any quantities or observables that you wish to study.
     """
     amount_of_particles = len(init_pos)
-    positions = [init_pos]
-    velocities = [init_vel]
-    kinetic_energies = []
-    potential_energies = []
-
-    distance_list = []
+    positions = np.zeros((num_tsteps+1, amount_of_particles, 3))
+    positions[0,:,:] = init_pos
+    velocities = np.zeros((num_tsteps+1, amount_of_particles, 3))
+    velocities[0,:,:] = init_vel
     current_positions = init_pos
     current_velocities = init_vel
+
+    relative_positions, distances = atomic_distances(current_positions, box_dim)
+
+    # we calculate these so we can calculate the "next step" only from now on
+    kinetic_energies = np.zeros((num_tsteps+1))
+    kinetic_energies[0] = kinetic_energy(current_velocities)
+    potential_energies = np.zeros((num_tsteps+1))
+    potential_energies[0] = potential_energy(distances)
+    distance_list = np.zeros((num_tsteps+1, amount_of_particles, amount_of_particles))
+    distance_list[0,:,:] = distances
 
     # Counter for equilibrium stability
     stable_counter = 0  
     apply_rescale = True
     # Timestep when rescaling is stopped
     equilibrium_timestep = -1
-    temperature_list = []
+    temperature_list = np.array([])
 
     with alive_bar(num_tsteps) as bar:
-        for step in np.arange(num_tsteps):
+        for step in np.arange(1,num_tsteps+1):
             dprint(
                 f"""
                 at step {step} the particles are at {current_positions}
                 the particles have velocities {current_velocities}
                 """
             )
-            # create the n-by-n matrix of all the distances and the n-by-n-by-3 matrix of the relative positions
-            relative_positions, distances = atomic_distances(current_positions, box_dim)
             # get the n-by-3 matrix of all the total forces on the particles
             forces = lj_force(relative_positions, distances)
 
             current_kinetic_energy = kinetic_energy(current_velocities)
-            current_temperature = compute_temperature(current_kinetic_energy, amount_of_particles)
-            if apply_rescale == False:
-                temperature_list.append(current_temperature)
 
-            # get current energies and distances and append
-            kinetic_energies.append(current_kinetic_energy)
-            potential_energies.append(potential_energy(distances))
-            distance_list.append(distances)
             # Euler integration step, we'll have to rewrite this to improve energy conservation
             current_positions = (
                 current_positions + current_velocities * timestep
             ) % box_dim
             current_velocities += forces * timestep
 
+            # create the n-by-n matrix of all the distances and the n-by-n-by-3 matrix of the relative positions
+            relative_positions, distances = atomic_distances(current_positions, box_dim)
+
+            # get current energies and distances and append
+            kinetic_energies[step]=current_kinetic_energy
+            potential_energies[step]=(potential_energy(distances))
+            distance_list[step,:,:] =(distances)
+
             # append the new positions and velocities to the arrays
-            positions.append(current_positions)
-            velocities.append(current_velocities)
+            positions[step,:,:] = current_positions
+            velocities[step,:,:] = current_velocities
 
             # rescale velocities if applicable
+            current_temperature = compute_temperature(current_kinetic_energy, amount_of_particles)
+            if apply_rescale == False:
+                temperature_list[step-equilibrium_timestep-1] = current_temperature
             if step % equilibrium_steps == 0 and apply_rescale:
                 if abs(current_temperature/target_temperature - 1) > temperature_tolerance:
                     current_velocities *= compute_rescale_factor(amount_of_particles, target_temperature, current_kinetic_energy)
@@ -314,6 +336,7 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, 
                     if (stable_counter > equilibrium_stable_check):
                         apply_rescale = False
                         equilibrium_timestep = step
+                        temperature_list = np.zeros((num_tsteps - step -1))
             bar()
     average_temperature = np.mean(temperature_list)
     return positions, velocities, kinetic_energies, potential_energies, distance_list, equilibrium_timestep, average_temperature
