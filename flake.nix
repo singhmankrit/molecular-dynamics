@@ -37,6 +37,7 @@
               (python313.withPackages (ppkgs: [
                 ppkgs.numpy
                 ppkgs.matplotlib
+                self.packages.${system}.alive
                 pyflame
               ]))
               ffmpeg-headless # needed to make the animations
@@ -46,6 +47,18 @@
 
             LD_LIBRARY_PATH = "${pkgs.${system}.libGL}/lib";
           };
+
+        }
+      );
+      packages = forAllSystems (
+        system:
+        let
+          sps = pkgs.${system};
+        in
+        {
+          alive = sps.python313Packages.alive-progress.overrideAttrs ({
+            postInstall = ''rm $out/LICENSE'';
+          });
         }
       );
     };
