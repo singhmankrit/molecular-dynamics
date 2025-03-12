@@ -37,6 +37,7 @@
               (python313.withPackages (ppkgs: [
                 ppkgs.numpy
                 ppkgs.matplotlib
+                ppkgs.tqdm
                 pyflame
               ]))
               ffmpeg-headless # needed to make the animations

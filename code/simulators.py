@@ -1,5 +1,6 @@
 import numpy as np
 from utilities import dprint
+from tqdm.auto import tqdm
 
 
 def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check):
@@ -60,7 +61,7 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
     equilibrium_timestep = -1
     temperature_list = []
 
-    for step in np.arange(num_tsteps):
+    for step in tqdm(np.arange(num_tsteps)):
         dprint(
             f"""
             at step {step} the particles are at {current_positions}
@@ -166,7 +167,7 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps,
     equilibrium_timestep = -1
     temperature_list = []
 
-    for step in np.arange(num_tsteps):
+    for step in tqdm(np.arange(num_tsteps)):
         dprint(
             f"""
             at step {step} the particles are at {current_positions}
@@ -265,7 +266,7 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, 
     equilibrium_timestep = -1
     temperature_list = []
 
-    for step in np.arange(num_tsteps):
+    for step in tqdm(np.arange(num_tsteps)):
         dprint(
             f"""
             at step {step} the particles are at {current_positions}
