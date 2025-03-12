@@ -314,6 +314,18 @@ matplotlib or numpy.
 
 #### Planning
 
+Mankrit:
+- split out the simulator step to reduce code duplication
+
+Noa:
+- Add progress bars to enable larger scale simulations
+- Possibly get cupy working for faster sims on CUDA
+- Add a scipy integrator for correct baseline to compare against
+- Try to improve memory usage
+
+Ragi:
+- Make adjustments to improve plot quality of observables.
+- Compute the errors for observables
 
 #### Progress report
 
