@@ -72,20 +72,6 @@ else:
     exit(3)
 
 for simulator_type in simulator_types:
-    # select the simulator to use
-    simulator = None
-    if simulator_type == "verlet":
-        simulator = simulators.verlet
-    elif simulator_type == "euler":
-        simulator = simulators.euler
-    elif simulator_type == "leapfrog":
-        simulator = simulators.leapfrog
-    else:
-        print(
-            f"Please select a valid simulator ('leapfrog', 'verlet', 'euler'), currently: {simulator_type}"
-        )
-        exit(4)
-
     pos, vel, kinetic, potential, distance_list = None, None, None, None, None
     # check if we have a cached run already
     hash = hashlib.sha1(
@@ -117,7 +103,7 @@ for simulator_type in simulator_types:
     else:
         # run the simulation and put the results into variables
         print(f"Starting {simulator_type} simulation")
-        pos, vel, kinetic, potential, distance_list, eq_timestep, avg_temp = simulator(
+        pos, vel, kinetic, potential, distance_list, eq_timestep, avg_temp = simulators.simulate(
             init_pos.copy(),
             init_vel.copy(),
             timesteps,
@@ -127,6 +113,7 @@ for simulator_type in simulator_types:
             temperature,
             temperature_tolerance,
             equilibrium_stable_check,
+            simulator_type,
         )
         if eq_timestep == -1:
             print(f"Equilibrium not reached in simulation")
