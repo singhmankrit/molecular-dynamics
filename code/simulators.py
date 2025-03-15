@@ -117,8 +117,8 @@ def verlet_step(positions, velocities, forces, timestep, box_dim):
     ) % box_dim
     relative_positions, new_distances = atomic_distances(new_positions, box_dim)
     new_forces = lj_force(relative_positions, new_distances)
-    new_velocities += (forces + new_forces) * timestep / 2
-    return new_positions, new_velocities, new_forces, new_distances
+    velocities += (forces + new_forces) * timestep / 2
+    return new_positions, velocities, new_forces, new_distances
 
 def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check):
     """
