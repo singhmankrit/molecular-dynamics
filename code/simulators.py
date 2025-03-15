@@ -47,7 +47,8 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
     )
 
     relative_positions, distances = atomic_distances(current_positions, box_dim)
-    current_forces = lj_force(relative_positions, distances) # used in verlet
+    current_forces = lj_force(relative_positions, distances) # used in verlet and leapfrog
+    half_velocities = current_velocities + (current_forces*timestep/2) # used in leapfrog
 
     kinetic_energies_list = np.zeros((num_tsteps+1))
     kinetic_energies_list[0] = kinetic_energy(init_vel)
@@ -62,6 +63,7 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
     # Timestep when rescaling is stopped
     equilibrium_timestep = -1
     temperature_list = np.array([])
+    is_leapfrog = False
 
     with alive_bar(num_tsteps) as bar:
         for step in np.arange(1, num_tsteps+1):
@@ -78,6 +80,14 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
                 current_forces = lj_force(relative_positions, distances)
                 current_positions, current_velocities = euler_step(current_positions, current_velocities, current_forces, timestep, box_dim)
                 relative_positions, distances = atomic_distances(current_positions, box_dim)
+            elif integrator == "leapfrog":
+                is_leapfrog = True
+                current_positions, half_velocities, current_velocities, distances = leapfrog_step(current_positions, half_velocities, timestep, box_dim)
+            else:
+                print(
+                    f"Please select a valid integrator ('leapfrog', 'verlet', 'euler'), currently: {integrator}"
+                )
+                exit(4)
 
             current_kinetic_energy = kinetic_energy(current_velocities)
 
@@ -91,12 +101,19 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
             velocities_list[step, :, :] = current_velocities
 
             current_temperature = compute_temperature(current_kinetic_energy, amount_of_particles)
+            if is_leapfrog:
+                # refer to half step temperature and velocities for scaling
+                current_temperature = compute_temperature(kinetic_energy(half_velocities), amount_of_particles)
             # rescale velocities if applicable
             if apply_rescale == False:
                 temperature_list[step-equilibrium_timestep-1] = current_temperature
             if step % equilibrium_steps == 0 and apply_rescale:
                 if abs(current_temperature/target_temperature - 1) > temperature_tolerance:
-                    current_velocities *= compute_rescale_factor(amount_of_particles, target_temperature, current_kinetic_energy)
+                    rescale_factor = compute_rescale_factor(amount_of_particles, target_temperature, current_kinetic_energy)
+                    if is_leapfrog:
+                        half_velocities *= rescale_factor
+                    else:
+                        current_velocities *= rescale_factor
                     stable_counter = 0
                 else:
                     # Increase stability count if temperature is stable
@@ -180,6 +197,22 @@ def euler_step(positions, velocities, forces, timestep, box_dim):
     velocities += forces * timestep
     return new_positions, velocities
 
+
+def leapfrog_step(positions, half_velocities, timestep, box_dim):
+    # Position update using half-step velocities
+    new_positions = (positions + half_velocities * timestep) % box_dim
+
+    # Update the positions and forces
+    relative_positions, distances = atomic_distances(new_positions, box_dim)
+    forces = lj_force(relative_positions, distances)
+
+    # Full-step velocity update
+    current_velocities = half_velocities + (forces * timestep / 2)
+
+    # Half-step velocity update for the next step
+    half_velocities += forces * timestep
+
+    return new_positions, half_velocities, current_velocities, distances
 
 def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check):
     """
