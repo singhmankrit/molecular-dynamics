@@ -1,5 +1,5 @@
 import json
-from typing import Any, Type
+from typing import Any, TypeIs
 import numpy as np
 import os
 
@@ -88,17 +88,17 @@ def parse_config(file_path: str):
 
 def is1d(
     arr: NDArray[np.float64],
-) -> Type[np.ndarray[tuple[int], np.dtype[np.float64]]]:
+) -> TypeIs[np.ndarray[tuple[int], np.dtype[np.float64]]]:
     return len(arr.shape) == 1
 
 
 def is2d(
     arr: NDArray[np.float64],
-) -> Type[np.ndarray[tuple[int, int], np.dtype[np.float64]]]:
+) -> TypeIs[np.ndarray[tuple[int, int], np.dtype[np.float64]]]:
     return len(arr.shape) == 2
 
 
 def is3d(
     arr: NDArray[np.float64],
-) -> Type[np.ndarray[tuple[int, int, int], np.dtype[np.float64]]]:
+) -> TypeIs[np.ndarray[tuple[int, int, int], np.dtype[np.float64]]]:
     return len(arr.shape) == 3
