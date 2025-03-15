@@ -101,84 +101,6 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
     average_temperature = np.mean(temperature_list)
     return positions, velocities, kinetic_energies, potential_energies, distance_list, equilibrium_timestep, average_temperature
 
-def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check):
-    """
-    Molecular dynamics simulation using the Leapfrog algorithm
-    to integrate the equations of motion.
-
-    Parameters
-    ----------
-    init_pos : np.ndarray
-        The initial positions of the atoms in Cartesian space
-    init_vel : np.ndarray
-        The initial velocities of the atoms in Cartesian space
-    num_tsteps : int
-        The total number of simulation steps
-    timestep : float
-        Duration of a single simulation step
-    box_dim : np.ndarray(float)
-        Dimensions of the simulation box
-    equilibrium_steps : int
-        Number of steps after which we apply velocity rescaling (if applicable)
-    target_temperature : float
-        The target temperature of the system
-    temperature_tolerance : float
-        The tolerated error in temperature np.abs(actual_temp/target_temp - 1)
-    equilibrium_stable_check : int
-        Number of stable steps after which we stop rescaling
-
-    Returns
-    -------
-    Any quantities or observables that you wish to study.
-    """
-
-    # Leapfrog starts with a half-step
-    half_velocities = current_velocities + (current_forces*timestep/2)
-
-            # Position update using half-step velocities
-            current_positions = (current_positions + half_velocities * timestep) % box_dim
-
-            # Update the positions and forces
-            relative_positions, distances = atomic_distances(current_positions, box_dim)
-            current_forces = lj_force(relative_positions, distances)
-
-            # Full-step velocity update
-            current_velocities = half_velocities + (current_forces * timestep / 2)
-
-            # Half-step velocity update for the next step
-            half_velocities += current_forces * timestep
-
-            # add the current statistics to the logs
-            kinetic_energies[step] = kinetic_energy(current_velocities)
-            potential_energies[step]=potential_energy(distances)
-            distance_list[step,:,:] = distances
-
-            # keep track of the positions and velocities
-            positions[step,:,:] = current_positions
-            velocities[step,:,:] = current_velocities
-
-            # we apply rescaling at half timesteps for leapfrog
-            half_kinetic_energy = kinetic_energy(half_velocities)
-            half_temperature = compute_temperature(half_kinetic_energy, amount_of_particles)
-            if apply_rescale == False:
-                temperature_list[step-equilibrium_timestep-1] = half_temperature
-            if step % equilibrium_steps == 0 and apply_rescale:
-                if abs(half_temperature/target_temperature - 1) > temperature_tolerance:
-                    half_velocities *= compute_rescale_factor(amount_of_particles, target_temperature, half_kinetic_energy)
-                    stable_counter = 0
-                else:
-                    # Increase stability count if temperature is stable
-                    stable_counter += 1
-                    # Exit rescaling if stable for longer than equilibrium_stable_check and store timestep
-                    if (stable_counter > equilibrium_stable_check):
-                        apply_rescale = False
-                        equilibrium_timestep = step
-                        temperature_list = np.zeros((num_tsteps - step))
-            bar()
-    average_temperature = np.mean(temperature_list)
-    return positions, velocities, kinetic_energies, potential_energies, distance_list, equilibrium_timestep, average_temperature
-
-
 def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check):
     """
     Molecular dynamics simulation using the Velocity Verlet's algorithm
@@ -288,6 +210,83 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, 
             # append the new positions and velocities to the arrays
             positions[step,:,:] = current_positions
             velocities[step,:,:] = current_velocities
+
+def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check):
+    """
+    Molecular dynamics simulation using the Leapfrog algorithm
+    to integrate the equations of motion.
+
+    Parameters
+    ----------
+    init_pos : np.ndarray
+        The initial positions of the atoms in Cartesian space
+    init_vel : np.ndarray
+        The initial velocities of the atoms in Cartesian space
+    num_tsteps : int
+        The total number of simulation steps
+    timestep : float
+        Duration of a single simulation step
+    box_dim : np.ndarray(float)
+        Dimensions of the simulation box
+    equilibrium_steps : int
+        Number of steps after which we apply velocity rescaling (if applicable)
+    target_temperature : float
+        The target temperature of the system
+    temperature_tolerance : float
+        The tolerated error in temperature np.abs(actual_temp/target_temp - 1)
+    equilibrium_stable_check : int
+        Number of stable steps after which we stop rescaling
+
+    Returns
+    -------
+    Any quantities or observables that you wish to study.
+    """
+
+    # Leapfrog starts with a half-step
+    half_velocities = current_velocities + (current_forces*timestep/2)
+
+            # Position update using half-step velocities
+            current_positions = (current_positions + half_velocities * timestep) % box_dim
+
+            # Update the positions and forces
+            relative_positions, distances = atomic_distances(current_positions, box_dim)
+            current_forces = lj_force(relative_positions, distances)
+
+            # Full-step velocity update
+            current_velocities = half_velocities + (current_forces * timestep / 2)
+
+            # Half-step velocity update for the next step
+            half_velocities += current_forces * timestep
+
+            # add the current statistics to the logs
+            kinetic_energies[step] = kinetic_energy(current_velocities)
+            potential_energies[step]=potential_energy(distances)
+            distance_list[step,:,:] = distances
+
+            # keep track of the positions and velocities
+            positions[step,:,:] = current_positions
+            velocities[step,:,:] = current_velocities
+
+            # we apply rescaling at half timesteps for leapfrog
+            half_kinetic_energy = kinetic_energy(half_velocities)
+            half_temperature = compute_temperature(half_kinetic_energy, amount_of_particles)
+            if apply_rescale == False:
+                temperature_list[step-equilibrium_timestep-1] = half_temperature
+            if step % equilibrium_steps == 0 and apply_rescale:
+                if abs(half_temperature/target_temperature - 1) > temperature_tolerance:
+                    half_velocities *= compute_rescale_factor(amount_of_particles, target_temperature, half_kinetic_energy)
+                    stable_counter = 0
+                else:
+                    # Increase stability count if temperature is stable
+                    stable_counter += 1
+                    # Exit rescaling if stable for longer than equilibrium_stable_check and store timestep
+                    if (stable_counter > equilibrium_stable_check):
+                        apply_rescale = False
+                        equilibrium_timestep = step
+                        temperature_list = np.zeros((num_tsteps - step))
+            bar()
+    average_temperature = np.mean(temperature_list)
+    return positions, velocities, kinetic_energies, potential_energies, distance_list, equilibrium_timestep, average_temperature
 
 
 def compute_temperature(kinetic_energy, amount_of_particles):
