@@ -47,6 +47,17 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
         f"starting positions are {current_positions} and starting velocities are {current_velocities}"
     )
 
+    # we calculate these so we can calculate the "next step" only from now on
+    relative_positions, distances = atomic_distances(current_positions, box_dim)
+    current_forces = lj_force(relative_positions, distances)
+
+    kinetic_energies = np.zeros((num_tsteps+1))
+    kinetic_energies[0] = kinetic_energy(init_vel)
+    potential_energies = np.zeros((num_tsteps+1))
+    potential_energies[0] = potential_energy(distances)
+    distance_list = np.zeros((num_tsteps+1, amount_of_particles, amount_of_particles))
+    distance_list[0,:,:] = distances
+
 
     if integrator == "leapfrog":
         return leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check)
@@ -85,16 +96,6 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
     -------
     Any quantities or observables that you wish to study.
     """
-    # we calculate these so we can calculate the "next step" only from now on
-    relative_positions, distances = atomic_distances(current_positions, box_dim)
-    current_forces = lj_force(relative_positions, distances)
-
-    kinetic_energies = np.zeros((num_tsteps+1))
-    kinetic_energies[0] = kinetic_energy(init_vel)
-    potential_energies = np.zeros((num_tsteps+1))
-    potential_energies[0] = potential_energy(distances)
-    distance_list = np.zeros((num_tsteps+1, amount_of_particles, amount_of_particles))
-    distance_list[0,:,:] = distances
 
     # Leapfrog starts with a half-step
     half_velocities = current_velocities + (current_forces*timestep/2)
@@ -190,16 +191,6 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps,
     -------
     Any quantities or observables that you wish to study.
     """
-    # we calculate these so we can calculate the "next step" only from now on
-    relative_positions, distances = atomic_distances(current_positions, box_dim)
-    current_forces = lj_force(relative_positions, distances)
-
-    kinetic_energies = np.zeros((num_tsteps+1))
-    kinetic_energies[0] = kinetic_energy(init_vel)
-    potential_energies = np.zeros((num_tsteps+1))
-    potential_energies[0] = potential_energy(distances)
-    distance_list = np.zeros((num_tsteps+1, amount_of_particles, amount_of_particles))
-    distance_list[0,:,:] = distances
 
     # Counter for equilibrium stability
     stable_counter = 0  
@@ -293,16 +284,6 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, 
     -------
     Any quantities or observables that you wish to study.
     """
-    relative_positions, distances = atomic_distances(current_positions, box_dim)
-
-    # we calculate these so we can calculate the "next step" only from now on
-    kinetic_energies = np.zeros((num_tsteps+1))
-    kinetic_energies[0] = kinetic_energy(current_velocities)
-    potential_energies = np.zeros((num_tsteps+1))
-    potential_energies[0] = potential_energy(distances)
-    distance_list = np.zeros((num_tsteps+1, amount_of_particles, amount_of_particles))
-    distance_list[0,:,:] = distances
-
     # Counter for equilibrium stability
     stable_counter = 0  
     apply_rescale = True
