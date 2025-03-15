@@ -3,6 +3,46 @@ from utilities import dprint
 from alive_progress import alive_bar
 
 
+def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check, integrator):
+    """
+    Molecular dynamics simulation using the selected integrator to
+    integrate the equations of motion.
+
+    Parameters
+    ----------
+    init_pos : np.ndarray
+        The initial positions of the atoms in Cartesian space
+    init_vel : np.ndarray
+        The initial velocities of the atoms in Cartesian space
+    num_tsteps : int
+        The total number of simulation steps
+    timestep : float
+        Duration of a single simulation step
+    box_dim : np.ndarray(float)
+        Dimensions of the simulation box
+    equilibrium_steps : int
+        Number of steps after which we apply velocity rescaling (if applicable)
+    target_temperature : float
+        The target temperature of the system
+    temperature_tolerance : float
+        The tolerated error in temperature np.abs(actual_temp/target_temp - 1)
+    equilibrium_stable_check : int
+        Number of stable steps after which we stop rescaling
+    integrator : str
+        The integrator to use (leapfrog/verlet/euler)
+
+    Returns
+    -------
+    Any quantities or observables that you wish to study.
+    """
+
+    if integrator == "leapfrog":
+        return leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check)
+    if integrator == "euler":
+        return euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check)
+    if integrator == "verlet":
+        return verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check)
+
 def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check):
     """
     Molecular dynamics simulation using the Leapfrog algorithm
