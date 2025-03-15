@@ -35,6 +35,18 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
     -------
     Any quantities or observables that you wish to study.
     """
+    amount_of_particles = len(init_pos)
+    positions = np.zeros((num_tsteps+1, amount_of_particles, 3))
+    positions[0, :, :] = init_pos
+    velocities = np.zeros((num_tsteps+1, amount_of_particles, 3))
+    velocities[0, :, :] = init_vel
+
+    current_positions = init_pos
+    current_velocities = init_vel
+    dprint(
+        f"starting positions are {current_positions} and starting velocities are {current_velocities}"
+    )
+
 
     if integrator == "leapfrog":
         return leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check)
@@ -73,18 +85,6 @@ def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
     -------
     Any quantities or observables that you wish to study.
     """
-    amount_of_particles = len(init_pos)
-    positions = np.zeros((num_tsteps+1, amount_of_particles, 3))
-    positions[0,:,:] = init_pos
-    velocities = np.zeros((num_tsteps+1, amount_of_particles, 3))
-    velocities[0,:,:] = init_vel
-
-    current_positions = init_pos
-    current_velocities = init_vel
-    dprint(
-        f"starting positions are {current_positions} and starting velocities are {current_velocities}"
-    )
-
     # we calculate these so we can calculate the "next step" only from now on
     relative_positions, distances = atomic_distances(current_positions, box_dim)
     current_forces = lj_force(relative_positions, distances)
@@ -190,18 +190,6 @@ def verlet(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps,
     -------
     Any quantities or observables that you wish to study.
     """
-    amount_of_particles = len(init_pos)
-    positions = np.zeros((num_tsteps+1, amount_of_particles, 3))
-    positions[0,:,:] = init_pos
-    velocities = np.zeros((num_tsteps+1, amount_of_particles, 3))
-    velocities[0,:,:] = init_vel
-
-    current_positions = init_pos
-    current_velocities = init_vel
-    dprint(
-        f"starting positions are {current_positions} and starting velocities are {current_velocities}"
-    )
-
     # we calculate these so we can calculate the "next step" only from now on
     relative_positions, distances = atomic_distances(current_positions, box_dim)
     current_forces = lj_force(relative_positions, distances)
@@ -305,14 +293,6 @@ def euler(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, 
     -------
     Any quantities or observables that you wish to study.
     """
-    amount_of_particles = len(init_pos)
-    positions = np.zeros((num_tsteps+1, amount_of_particles, 3))
-    positions[0,:,:] = init_pos
-    velocities = np.zeros((num_tsteps+1, amount_of_particles, 3))
-    velocities[0,:,:] = init_vel
-    current_positions = init_pos
-    current_velocities = init_vel
-
     relative_positions, distances = atomic_distances(current_positions, box_dim)
 
     # we calculate these so we can calculate the "next step" only from now on
