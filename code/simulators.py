@@ -75,7 +75,11 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
 
             if integrator == "verlet":
                 current_positions, current_velocities, current_forces, distances = verlet_step(current_positions, current_velocities, current_forces, timestep, box_dim)
-                
+            elif integrator == "euler":
+                current_forces = lj_force(relative_positions, distances)
+                current_positions, current_velocities = euler_step(current_positions, current_velocities, current_forces, timestep, box_dim)
+                relative_positions, distances = atomic_distances(current_positions, box_dim)
+
             current_kinetic_energy = kinetic_energy(current_velocities)
 
             # add the current statistics to the logs
@@ -145,6 +149,38 @@ def verlet_step(positions, velocities, forces, timestep, box_dim):
     new_forces = lj_force(relative_positions, new_distances)
     velocities += (forces + new_forces) * timestep / 2
     return new_positions, velocities, new_forces, new_distances
+
+
+def euler_step(positions, velocities, forces, timestep, box_dim):
+    """
+    Uses the Euler method to integrate the equations of motion.
+
+    Parameters
+    ----------
+    positions : np.ndarray
+        The current positions of the particles in Cartesian space
+    velocities : np.ndarray
+        The current velocities of the particles in Cartesian space
+    forces : np.ndarray
+        The current forces acting on the particles
+    timestep : float
+        The duration of a single simulation step
+    box_dim : np.ndarray(float)
+        Dimensions of the simulation box
+
+    Returns
+    -------
+    new_positions : np.ndarray
+        The updated positions of the particles in Cartesian space
+    velocities : np.ndarray
+        The updated velocities of the particles in Cartesian space
+    """
+    new_positions = (
+        positions + velocities * timestep
+    ) % box_dim
+    velocities += forces * timestep
+    return new_positions, velocities
+
 
 def leapfrog(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check):
     """
