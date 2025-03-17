@@ -139,7 +139,7 @@ for simulator_type in simulator_types:
                 (pos, vel, kinetic, potential, distance_list, eq_timestep, avg_temp), f
             )
     temp_error = np.abs(avg_temp / temperature - 1)*100
-    variables["Average Temperature (after equilibrium)"] = avg_temp
+    variables["Average Temperature (after equilibrium)"] = avg_temp.round(2)
     variables["Temperature Error"] = f"{temp_error.round(2)}%"
     variables["Equilibrium achieved at Timestep"] = eq_timestep
 
@@ -189,13 +189,19 @@ for simulator_type in simulator_types:
         )
         variables["Specific Heat"] = specific_heat.round(4)
     
+    # Program Outputs
     if export_csv:
         with open(f"results_{simulator_type}.csv", mode='w', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(["Variable", "Value"])
             for key, value in variables.items():
                 writer.writerow([key, value])
-    
-    # Print as a table in terminal
-    # table = [[key, value] for key, value in variables.items()]
-    # print(tabulate(table, headers=["Variable", "Value"], tablefmt="grid"))
+    print_table = []
+    for key, value in variables.items():
+        if isinstance(value, (list, np.ndarray)):
+            value_str = str(value)
+            print_table.append([key, value_str])
+        else:
+            print_table.append([key, value])
+
+    print(tabulate(print_table, headers=["Variable", "Value"], tablefmt="grid"))
