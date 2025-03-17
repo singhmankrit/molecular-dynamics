@@ -28,5 +28,5 @@ The configuration file uses the json format. The options are listed below with t
 | outputs | `["energies", "distances", "animation","pair_correlation","MSD","compressibility","specific_heat"]` | The outputs the simulator should create from the simulation results.
 | bin_size | `0.1` | The size of bins for histograms. Only used for pair correlation calculation |
 | do_caching | `true` | The simulator will cache simulations in `./cache/` if this is `true`, changing the code does **not** wipe this cache, changing relevant configuration sections should create their own entries.
-
+| export_csv | `false` | This exports the input parameters and measured observables into a CSV file for report/analysis.
 

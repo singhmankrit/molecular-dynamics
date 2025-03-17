@@ -5,6 +5,7 @@ import hashlib
 import pickle
 from os.path import isfile
 
+import csv
 import initialisation
 import numpy as np
 import sim_plots
@@ -31,10 +32,13 @@ import observables
     lat_const,
     corner_offset,
     bin_size,
+    export_csv,
 ) = utilities.parse_config("config.json")
 print(
     f"simulating {amount_of_particles} particles for {timesteps} timesteps, with a time step size of {step_size}"
 )
+
+variables = {}
 
 if not utilities.is1d(box_size):
     raise TypeError("box_size is not 1D")
