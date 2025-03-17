@@ -4,3 +4,4 @@ __pycache__
 # ignore generated pictures and video's in the root directory
 /*.png
 /*.mp4
+/*.csv

@@ -10,6 +10,7 @@ import initialisation
 import numpy as np
 import sim_plots
 import simulators
+from tabulate import tabulate
 import utilities
 import observables
 
@@ -34,11 +35,21 @@ import observables
     bin_size,
     export_csv,
 ) = utilities.parse_config("config.json")
-print(
+utilities.dprint(
     f"simulating {amount_of_particles} particles for {timesteps} timesteps, with a time step size of {step_size}"
 )
 
-variables = {}
+variables = {
+    "Number of Particles": amount_of_particles,
+    "Step Size": step_size,
+    "Number of Timesteps": timesteps,
+    "Box Size": box_size,
+    "Lattice Constant": lat_const,
+    "Position Initialisation": position_init_method,
+    "Velocity Initialisation": velocity_init_method,
+    "Simulator Types": simulator_types,
+    "Target Temperature": temperature,
+}
 
 if not utilities.is1d(box_size):
     raise TypeError("box_size is not 1D")
@@ -106,7 +117,7 @@ for simulator_type in simulator_types:
             )
     else:
         # run the simulation and put the results into variables
-        print(f"Starting {simulator_type} simulation")
+        utilities.dprint(f"Starting {simulator_type} simulation")
         pos, vel, kinetic, potential, distance_list, eq_timestep, avg_temp = simulators.simulate(
             init_pos.copy(),
             init_vel.copy(),
@@ -121,14 +132,16 @@ for simulator_type in simulator_types:
         )
         if eq_timestep == -1:
             print(f"Equilibrium not reached in simulation")
-        temp_error = np.abs(avg_temp / temperature - 1)*100
-        print(f"Average temperature after rescaling: {avg_temp.round(2)}, target: {temperature}. Error: {temp_error.round(2)}%")
         print(f"Finished {simulator_type} simulation")
 
         with open(path, "wb") as f:
             pickle.dump(
                 (pos, vel, kinetic, potential, distance_list, eq_timestep, avg_temp), f
             )
+    temp_error = np.abs(avg_temp / temperature - 1)*100
+    variables["Average Temperature (after equilibrium)"] = avg_temp
+    variables["Temperature Error"] = f"{temp_error.round(2)}%"
+    variables["Equilibrium achieved at Timestep"] = eq_timestep
 
     # generate plots from the results
     if "energies" in outputs:
@@ -168,11 +181,21 @@ for simulator_type in simulator_types:
         compressibility = observables.compute_compressibility_factor(
             temperature, amount_of_particles, distance_list, eq_timestep
         )
-        print(f"Compressibility: {compressibility}")
+        variables["Compressibility Factor"] = compressibility.round(4)
 
     if "specific_heat" in outputs:
         specific_heat = observables.compute_specific_heat(
             kinetic, amount_of_particles, eq_timestep
         )
-        print(f"Specific heat: {specific_heat}")
+        variables["Specific Heat"] = specific_heat.round(4)
     
+    if export_csv:
+        with open(f"results_{simulator_type}.csv", mode='w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(["Variable", "Value"])
+            for key, value in variables.items():
+                writer.writerow([key, value])
+    
+    # Print as a table in terminal
+    # table = [[key, value] for key, value in variables.items()]
+    # print(tabulate(table, headers=["Variable", "Value"], tablefmt="grid"))
