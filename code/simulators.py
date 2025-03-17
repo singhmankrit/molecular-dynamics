@@ -1,6 +1,7 @@
 import numpy as np
 from utilities import dprint
 from alive_progress import alive_bar
+from scipy.integrate import solve_ivp
 
 
 def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check, integrator):
@@ -83,9 +84,12 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
             elif integrator == "leapfrog":
                 is_leapfrog = True
                 current_positions, half_velocities, current_velocities, distances = leapfrog_step(current_positions, half_velocities, timestep, box_dim)
+            elif integrator == "scipy_rk45":
+                current_positions, current_velocities, current_forces, distances = scipy_rk45_step(
+                    current_positions, current_velocities, timestep, box_dim)
             else:
                 print(
-                    f"Please select a valid integrator ('leapfrog', 'verlet', 'euler'), currently: {integrator}"
+                    f"Please select a valid integrator ('leapfrog', 'verlet', 'euler', 'scipy_rk45'), currently: {integrator}"
                 )
                 exit(4)
 
@@ -238,6 +242,91 @@ def leapfrog_step(positions, half_velocities, timestep, box_dim):
     half_velocities += forces * timestep
 
     return new_positions, half_velocities, current_velocities, distances
+
+
+def scipy_rk45_step(positions, velocities, timestep, box_dim):
+    """
+    Uses the scipy.integrate.solve_ivp method to integrate the equations of motion.
+
+    Parameters
+    ----------
+    positions : np.ndarray
+        The current positions of the particles in Cartesian space
+    velocities : np.ndarray
+        The current velocities of the particles in Cartesian space
+    timestep : float
+        The duration of a single simulation step
+    box_dim : np.ndarray(float)
+        Dimensions of the simulation box
+
+    Returns
+    -------
+    new_positions : np.ndarray
+        The updated positions of the particles in Cartesian space
+    new_velocities : np.ndarray
+        The updated velocities of the particles in Cartesian space
+    """
+    amount_of_particles = len(positions)
+    y0 = np.concatenate(
+        [positions.flatten(), velocities.flatten()])
+
+    t_span = (0, timestep)
+    t_eval = np.array([timestep])
+
+    sol = solve_ivp(
+        fun=molecular_dynamics_rhs,
+        t_span=t_span,
+        y0=y0,
+        t_eval=t_eval,
+        args=(box_dim,),
+        method="RK45"  # Runge-Kutta 4th/5th order
+    )
+
+    # Reshape solution: extract positions and velocities
+    current_positions = sol.y[:3 * amount_of_particles].reshape(
+        amount_of_particles, 3, -1).transpose(2, 0, 1).squeeze()
+    current_velocities = sol.y[3 * amount_of_particles:].reshape(
+        amount_of_particles, 3, -1).transpose(2, 0, 1).squeeze()
+    relative_positions, distances = atomic_distances(
+        current_positions, box_dim
+    )
+    current_forces = lj_force(relative_positions, distances)
+    return current_positions, current_velocities, current_forces, distances
+
+
+def molecular_dynamics_rhs(t, y, box_dim):
+    """
+    Compute derivatives for the molecular dynamics ODE system.
+
+    Parameters
+    ----------
+    t : float
+        Current time (not used explicitly, but required by solve_ivp).
+    y : np.ndarray
+        Flattened array containing both positions and velocities.
+    box_dim : np.ndarray
+        Dimensions of the simulation box.
+
+    Returns
+    -------
+    dydt : np.ndarray
+        Flattened derivative array containing velocity and acceleration.
+    """
+    amount_of_particles = len(y) // 6  # 3 for positions, 3 for velocities
+    positions = y[:3 * amount_of_particles].reshape(amount_of_particles, 3)
+    velocities = y[3 * amount_of_particles:].reshape(amount_of_particles, 3)
+
+    # Compute distances and forces
+    relative_positions, distances = atomic_distances(positions, box_dim)
+    forces = lj_force(relative_positions, distances)
+
+    # First derivatives (velocities)
+    dpdt = velocities.flatten()
+
+    # Second derivatives (accelerations)
+    dvdt = forces.flatten()  # Assuming unit mass
+
+    return np.concatenate([dpdt, dvdt])
 
 
 def compute_temperature(kinetic_energy, amount_of_particles):
