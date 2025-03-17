@@ -188,7 +188,7 @@ for simulator_type in simulator_types:
         variables["Specific Heat"] = specific_heat.round(4)
         cV_mean, cV_error = observables.bootstrap_specific_heat(
         kinetic[eq_timestep+1:], amount_of_particles)
-        print(f"Specific heat: {cV_mean} +/- {cV_error}")
+        variables["Specific Heat (Bootstrap)"] = f"{cV_mean.round(4)} ± {cV_error.round(4)}"
 
     # Program Outputs
     sim_plots.print_outputs(variables, simulator_type, export_csv)

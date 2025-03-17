@@ -21,7 +21,7 @@
 		"energies",
 		"specific_heat"
 	],
-	"do_caching": false,
+	"do_caching": true,
 	"lattice_const": 1.556,
 	"export_csv": false
 }

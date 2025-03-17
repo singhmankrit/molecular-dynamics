@@ -118,6 +118,17 @@ def compute_specific_heat(kinetic_energy, amount_of_particles, eq_timestep):
     return c_V/amount_of_particles
 
 def bootstrap_specific_heat(kinetic_energy, N, num_samples=10000, block_size=100):
+    """
+    Computes the error in the specific heat for the given kinetic energy and amount of particles.
+
+    Parameters:
+        kinetic_energy (float): The total kinetic energy of the system.
+        amount_of_particles (int): The number of particles in the system.
+
+    Returns:
+        float: The specific heat.
+    """
+    
     kinetic_energy = np.array(kinetic_energy)
     num_blocks = len(kinetic_energy) // block_size
     block_averages_1 = np.array([np.mean(
@@ -137,14 +148,6 @@ def bootstrap_specific_heat(kinetic_energy, N, num_samples=10000, block_size=100
         K2_mean_bs = np.mean(block_averages_2[bootstrap_indices])
         delta_K_sq = K2_mean_bs - K_mean_bs**2
 
-        # resampled_data_1 = np.random.choice(
-        #     block_averages_1, size=num_blocks, replace=True, seed=1)
-        # resampled_data_2 = np.random.choice(
-        #     block_averages_2, size=num_blocks, replace=True, seed=1)
-        # K_mean = np.mean(resampled_data_1)
-        # K_sq_mean = np.mean(resampled_data_2)
-        # delta_K_sq = K_sq_mean - K_mean**2
-
         # Compute specific heat
         c_V = 3/(2*(1-(3*N*delta_K_sq)/(2*K_mean_bs**2)))
         bootstrap_values.append(c_V)
@@ -156,36 +159,3 @@ def bootstrap_specific_heat(kinetic_energy, N, num_samples=10000, block_size=100
     return cV_mean, cV_error
 
 
-        # def data_blocking(A, max_block_size=None):
-        #     N = len(A)
-        #     if max_block_size is None:
-        #         max_block_size = N // 10  # Default max block size to N/10
-
-        #     block_sizes = np.arange(1, max_block_size + 1)
-        #     errors = []
-
-        #     for b in block_sizes:
-        #         Nb = N // b  # Number of blocks
-        #         block_averages = np.array(
-        #             [np.mean(A[i * b:(i + 1) * b]) for i in range(Nb)])
-
-        #         sigma_A_b = np.std(block_averages, ddof=0) / \
-        #             np.sqrt(Nb - 1)  # Compute error
-        #         errors.append(sigma_A_b)
-
-        #     return block_sizes, np.array(errors)
-        # block_sizes, errors = data_blocking(
-        #     kinetic[eq_timestep+1:], max_block_size=500)
-        # plt.plot(block_sizes, errors, linestyle='-')
-        # plt.xlabel("Block Size")
-        # plt.ylabel("Error")
-        # plt.title("Error Convergence with Data Blocking")
-        # plt.savefig("error_convergence.png")
-        # plt.close()
-        # block_sizes, errors = data_blocking(
-        #     kinetic[eq_timestep+1:]**2, max_block_size=500)
-        # plt.plot(block_sizes, errors, linestyle='-')
-        # plt.xlabel("Block Size")
-        # plt.ylabel("Error")
-        # plt.title("Error Convergence with Data Blocking")
-        # plt.savefig("error_convergence_2.png")
