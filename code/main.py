@@ -5,12 +5,10 @@ import hashlib
 import pickle
 from os.path import isfile
 
-import csv
 import initialisation
 import numpy as np
 import sim_plots
 import simulators
-from tabulate import tabulate
 import utilities
 import observables
 
@@ -38,18 +36,6 @@ import observables
 utilities.dprint(
     f"simulating {amount_of_particles} particles for {timesteps} timesteps, with a time step size of {step_size}"
 )
-
-variables = {
-    "Number of Particles": amount_of_particles,
-    "Step Size": step_size,
-    "Number of Timesteps": timesteps,
-    "Box Size": box_size,
-    "Lattice Constant": lat_const,
-    "Position Initialisation": position_init_method,
-    "Velocity Initialisation": velocity_init_method,
-    "Simulator Types": simulator_types,
-    "Target Temperature": temperature,
-}
 
 if not utilities.is1d(box_size):
     raise TypeError("box_size is not 1D")
@@ -117,7 +103,7 @@ for simulator_type in simulator_types:
             )
     else:
         # run the simulation and put the results into variables
-        utilities.dprint(f"Starting {simulator_type} simulation")
+        print(f"Starting {simulator_type} simulation")
         pos, vel, kinetic, potential, distance_list, eq_timestep, avg_temp = simulators.simulate(
             init_pos.copy(),
             init_vel.copy(),
@@ -139,9 +125,20 @@ for simulator_type in simulator_types:
                 (pos, vel, kinetic, potential, distance_list, eq_timestep, avg_temp), f
             )
     temp_error = np.abs(avg_temp / temperature - 1)*100
-    variables["Average Temperature (after equilibrium)"] = avg_temp.round(2)
-    variables["Temperature Error"] = f"{temp_error.round(2)}%"
-    variables["Equilibrium achieved at Timestep"] = eq_timestep
+    variables = {
+        "Number of Particles": amount_of_particles,
+        "Step Size": step_size,
+        "Number of Timesteps": timesteps,
+        "Box Size": box_size,
+        "Lattice Constant": lat_const,
+        "Position Initialisation": position_init_method,
+        "Velocity Initialisation": velocity_init_method,
+        "Simulator Type": simulator_type,
+        "Target Temperature": temperature,
+        "Average Temperature (after equilibrium)": avg_temp.round(2),
+        "Temperature Error": f"{temp_error.round(2)}%",
+        "Equilibrium achieved at Timestep": eq_timestep
+    }
 
     # generate plots from the results
     if "energies" in outputs:
@@ -159,6 +156,7 @@ for simulator_type in simulator_types:
 
     if eq_timestep < 0:
         print(f"simulation did not converge, not computing observables")
+        sim_plots.print_outputs(variables, simulator_type, export_csv)
         continue
 
     if "pair_correlation" in outputs:
@@ -190,18 +188,4 @@ for simulator_type in simulator_types:
         variables["Specific Heat"] = specific_heat.round(4)
     
     # Program Outputs
-    if export_csv:
-        with open(f"results_{simulator_type}.csv", mode='w', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(["Variable", "Value"])
-            for key, value in variables.items():
-                writer.writerow([key, value])
-    print_table = []
-    for key, value in variables.items():
-        if isinstance(value, (list, np.ndarray)):
-            value_str = str(value)
-            print_table.append([key, value_str])
-        else:
-            print_table.append([key, value])
-
-    print(tabulate(print_table, headers=["Variable", "Value"], tablefmt="grid"))
+    sim_plots.print_outputs(variables, simulator_type, export_csv)
