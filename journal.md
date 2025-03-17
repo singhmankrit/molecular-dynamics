@@ -346,7 +346,18 @@ Regarding the final report, we currently plan to do the following:
 - Observables noted would be specific heat and MSD
 - Add some metrics on the performance of the simulation.
 
+@rjuyal \
+I worked on computing the error for specific heat and adding the scipy integrator(!40). 
+When using the data given:
+![](images/journal_5/data_for_error.png)
+Using data blocking we get: Final error: 0.05950864858496442
+![](images/journal_5/data_blocking.png)
+And using autocorrelation we get: \
+Estimated correlation time τ: 44.052 \
+Estimated error using autocorrelation: 0.065
+![](images/journal_5/autocorrelation.png)
 
+We compute specific heat as 2.7465 and using block bootstrap we get 2.7223 ± 0.1932
 ## Reminder final deadline
 
 The deadline for project 1 is **25 March, 23:59**. By then, you must have uploaded the report to the repository, and the repository must contain the latest version of the code.
