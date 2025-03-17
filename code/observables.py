@@ -117,7 +117,7 @@ def compute_specific_heat(kinetic_energy, amount_of_particles, eq_timestep):
 
     return c_V/amount_of_particles
 
-def bootstrap_specific_heat(kinetic_energy, N, num_samples=1000, block_size=200):
+def bootstrap_specific_heat(kinetic_energy, N, num_samples=10000, block_size=100):
     kinetic_energy = np.array(kinetic_energy)
     num_blocks = len(kinetic_energy) // block_size
     block_averages_1 = np.array([np.mean(
@@ -127,18 +127,26 @@ def bootstrap_specific_heat(kinetic_energy, N, num_samples=1000, block_size=200)
         kinetic_energy[i * block_size: (i + 1) * block_size]**2) for i in range(num_blocks)])
 
     bootstrap_values = []
-
+    
     for _ in range(num_samples):
-        resampled_data_1 = np.random.choice(
-            block_averages_1, size=num_blocks, replace=True)
-        resampled_data_2 = np.random.choice(
-            block_averages_2, size=num_blocks, replace=True)
-        K_mean = np.mean(resampled_data_1)
-        K_sq_mean = np.mean(resampled_data_2**2)
-        delta_K_sq = K_sq_mean - K_mean**2
+        # check seed stuff
+        bootstrap_indices = np.random.randint(0, len(block_averages_1), size=num_blocks)
+        
+        # Compute bootstrap averages
+        K_mean_bs = np.mean(block_averages_1[bootstrap_indices])
+        K2_mean_bs = np.mean(block_averages_2[bootstrap_indices])
+        delta_K_sq = K2_mean_bs - K_mean_bs**2
+
+        # resampled_data_1 = np.random.choice(
+        #     block_averages_1, size=num_blocks, replace=True, seed=1)
+        # resampled_data_2 = np.random.choice(
+        #     block_averages_2, size=num_blocks, replace=True, seed=1)
+        # K_mean = np.mean(resampled_data_1)
+        # K_sq_mean = np.mean(resampled_data_2)
+        # delta_K_sq = K_sq_mean - K_mean**2
 
         # Compute specific heat
-        c_V = 3/(2*(1-(3*N*delta_K_sq)/(2*K_mean**2)))
+        c_V = 3/(2*(1-(3*N*delta_K_sq)/(2*K_mean_bs**2)))
         bootstrap_values.append(c_V)
 
     cV_mean = np.mean(bootstrap_values)
