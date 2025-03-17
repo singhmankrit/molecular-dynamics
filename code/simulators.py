@@ -301,19 +301,16 @@ def atomic_distances(
     rel_dist : np.ndarray
         The distance between particles
     """
-    xpos, ypos, zpos = np.unstack(pos, axis=-1)
+    central_x, other_x = np.meshgrid(pos[:, 0], pos[:, 0])
+    central_y, other_y = np.meshgrid(pos[:, 1], pos[:, 1])
+    central_z, other_z = np.meshgrid(pos[:, 2], pos[:, 2])
+    # moving to the coordinate frame of the central particle
+    # to find the closest position of those around
+    x_dist = (central_x - other_x + box_dim[0] / 2) % box_dim[0] - box_dim[0] / 2
+    y_dist = (central_y - other_y + box_dim[1] / 2) % box_dim[1] - box_dim[1] / 2
+    z_dist = (central_z - other_z + box_dim[2] / 2) % box_dim[2] - box_dim[2] / 2
 
-    # create meshgrids to make an n-by-n matrix of distances
-    central_x, other_x = np.meshgrid(xpos, xpos, sparse=True, copy=False)
-    central_y, other_y = np.meshgrid(ypos, ypos, sparse=True, copy=False)
-    central_z, other_z = np.meshgrid(zpos, zpos, sparse=True, copy=False)
-
-    # below (3 lines) is the part that takes long but it's already optimised
-    x_dist = (central_x - other_x + box_dim[0] * 0.5) % box_dim[0] - box_dim[0] * 0.5
-    y_dist = (central_y - other_y + box_dim[1] * 0.5) % box_dim[1] - box_dim[1] * 0.5
-    z_dist = (central_z - other_z + box_dim[2] * 0.5) % box_dim[2] - box_dim[2] * 0.5
-
-    relative_positions = np.stack((x_dist, y_dist, z_dist))
+    relative_positions = np.stack([x_dist, y_dist, z_dist])
     distances = np.ma.masked_values(
         np.sqrt(x_dist * x_dist + y_dist * y_dist + z_dist * z_dist),
         0.0,

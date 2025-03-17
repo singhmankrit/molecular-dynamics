@@ -105,7 +105,7 @@ def fcc_lattice(
     """
     # we can initialise only bottom corners of the fcc cubes, this means there are 4 particles per each of these positions,
     # and the positions are spread around in 3d space.
-    layers = int(np.ceil(np.pow(num_atoms / 4, 1 / 3)))
+    layers = int(np.ceil(np.power(num_atoms / 4, 1 / 3)))
 
     # NOTE: I don't know if we want to do this or just start filling the grid and stop when we have enough
     if layers**3 * 4 != num_atoms:
