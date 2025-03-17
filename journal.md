@@ -331,6 +331,21 @@ Ragi:
 
 #### Progress report
 
+@mankritsingh \
+I worked on cleaning up of the simulator code so that it is more logically structured in !38. We had a lot of duplicate code with velocity rescaling etc. for our simulators (verlet, leapfrog and euler) which was getting hard to keep a track of, and it is now much cleaner. \
+
+Then, I worked on exporting parameters to a CSV file in !39 (and also printing out the parameters cleanly) which should assist us with the report writing and presenting. \
+
+![](images/journal_5/clean_print.png) 
+
+Lastly spent a bit of time on error calculations (discussions/debugging). \
+
+Regarding the final report, we currently plan to do the following:
+- Compare different temperatures for the Argon simulation, do we see a phase transition-like trend in our specific heat?
+- Compare simulators for the same set of parameters - verlet, leapfrog and euler
+- Observables noted would be specific heat and MSD
+- Add some metrics on the performance of the simulation.
+
 
 ## Reminder final deadline
 
