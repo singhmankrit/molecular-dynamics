@@ -31,8 +31,9 @@ import observables
     lat_const,
     corner_offset,
     bin_size,
+    export_csv,
 ) = utilities.parse_config("config.json")
-print(
+utilities.dprint(
     f"simulating {amount_of_particles} particles for {timesteps} timesteps, with a time step size of {step_size}"
 )
 
@@ -117,14 +118,27 @@ for simulator_type in simulator_types:
         )
         if eq_timestep == -1:
             print(f"Equilibrium not reached in simulation")
-        temp_error = np.abs(avg_temp / temperature - 1)*100
-        print(f"Average temperature after rescaling: {avg_temp.round(2)}, target: {temperature}. Error: {temp_error.round(2)}%")
         print(f"Finished {simulator_type} simulation")
 
         with open(path, "wb") as f:
             pickle.dump(
                 (pos, vel, kinetic, potential, distance_list, eq_timestep, avg_temp), f
             )
+    temp_error = np.abs(avg_temp / temperature - 1)*100
+    variables = {
+        "Number of Particles": amount_of_particles,
+        "Step Size": step_size,
+        "Number of Timesteps": timesteps,
+        "Box Size": box_size,
+        "Lattice Constant": lat_const,
+        "Position Initialisation": position_init_method,
+        "Velocity Initialisation": velocity_init_method,
+        "Simulator Type": simulator_type,
+        "Target Temperature": temperature,
+        "Average Temperature (after equilibrium)": avg_temp.round(2),
+        "Temperature Error": f"{temp_error.round(2)}%",
+        "Equilibrium achieved at Timestep": eq_timestep
+    }
 
     # generate plots from the results
     if "energies" in outputs:
@@ -142,6 +156,7 @@ for simulator_type in simulator_types:
 
     if eq_timestep < 0:
         print(f"simulation did not converge, not computing observables")
+        sim_plots.print_outputs(variables, simulator_type, export_csv)
         continue
 
     if "pair_correlation" in outputs:
@@ -164,11 +179,13 @@ for simulator_type in simulator_types:
         compressibility = observables.compute_compressibility_factor(
             temperature, amount_of_particles, distance_list, eq_timestep
         )
-        print(f"Compressibility: {compressibility}")
+        variables["Compressibility Factor"] = compressibility.round(4)
 
     if "specific_heat" in outputs:
         specific_heat = observables.compute_specific_heat(
             kinetic, amount_of_particles, eq_timestep
         )
-        print(f"Specific heat: {specific_heat}")
+        variables["Specific Heat"] = specific_heat.round(4)
     
+    # Program Outputs
+    sim_plots.print_outputs(variables, simulator_type, export_csv)

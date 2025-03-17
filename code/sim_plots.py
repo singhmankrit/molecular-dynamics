@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from alive_progress import alive_bar
+import csv
+from tabulate import tabulate
 
 from utilities import dprint
 
@@ -197,3 +199,37 @@ def plot_MSD(msd, time, file_name="MSD.png"):
     dprint(f"saving the MSD plot to {file_name}")
     plt.savefig(file_name)
     plt.close()
+
+
+def print_outputs(variables, simulator_type, export_csv):
+    """
+    Prints the simulation results and optionally exports them to a CSV file.
+
+    Parameters
+    ----------
+    variables : dict
+        A dictionary containing the simulation variables and their values.
+    simulator_type : str
+        The type of simulator used, utilized in the CSV filename if exporting.
+    export_csv : bool
+        If True, exports the variables to a CSV file named `results_<simulator_type>.csv`.
+
+    Outputs
+    -------
+    Prints a formatted table of the variables and their values to the console.
+    """
+    if export_csv:
+        with open(f"results_{simulator_type}.csv", mode='w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(["Variable", "Value"])
+            for key, value in variables.items():
+                writer.writerow([key, value])
+    print_table = []
+    for key, value in variables.items():
+        if isinstance(value, (list, np.ndarray)):
+            value_str = str(value)
+            print_table.append([key, value_str])
+        else:
+            print_table.append([key, value])
+
+    print(tabulate(print_table, headers=["Variable", "Value"], tablefmt="grid"))

@@ -65,6 +65,7 @@ def parse_config(file_path: str):
         lat_const: float = config.get("lattice_const", 1.5)
         corner_offset: list[float] = config.get("corner_offset", [0, 0, 0])
         bin_size: float = config.get("bin_size", 0.1)
+        export_csv: bool = config.get("export_csv", False)
         return (
             amount_of_particles,
             step_size,
@@ -83,6 +84,7 @@ def parse_config(file_path: str):
             lat_const,
             corner_offset,
             bin_size,
+            export_csv
         )
 
 

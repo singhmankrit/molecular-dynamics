@@ -26,5 +26,6 @@
 		"compressibility",
 		"specific_heat"
 	],
-	"do_caching": true
+	"do_caching": true,
+	"export_csv": true
 }
