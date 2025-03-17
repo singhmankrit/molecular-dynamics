@@ -1,9 +1,9 @@
 {
-	"particles": 108,
+	"particles": 500,
 	"box": {
-		"x": 5,
-		"y": 5,
-		"z": 5
+		"x": 7.78,
+		"y": 7.78,
+		"z": 7.78
 	},
 	"time_steps": 1000,
 	"step_size": 0.01,
@@ -19,13 +19,9 @@
 	],
 	"outputs": [
 		"energies",
-		"distances",
-		"animation",
-		"pair_correlation",
-		"MSD",
-		"compressibility",
 		"specific_heat"
 	],
-	"do_caching": true,
-	"export_csv": true
+	"do_caching": false,
+	"lattice_const": 1.556,
+	"export_csv": false
 }
