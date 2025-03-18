@@ -76,7 +76,7 @@ for simulator_type in simulator_types:
     pos, vel, kinetic, potential, distance_list = None, None, None, None, None
     # check if we have a cached run already
     hash = hashlib.sha1(
-        "{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}".format(
+        "{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}".format(
             amount_of_particles,
             step_size,
             timesteps,
@@ -98,7 +98,7 @@ for simulator_type in simulator_types:
     if isfile(path) and enable_cache:
         print(f"found cached results at {path}")
         with open(path, "rb") as f:
-            pos, vel, kinetic, potential, distance_list, eq_timestep, avg_temp = (
+            pos, vel, kinetic, potential, virials, histograms, eq_timestep, avg_temp = (
                 pickle.load(f)
             )
     else:
@@ -123,7 +123,7 @@ for simulator_type in simulator_types:
 
         with open(path, "wb") as f:
             pickle.dump(
-                (pos, vel, kinetic, potential, distance_list, eq_timestep, avg_temp), f
+                (pos, vel, kinetic, potential, virials, histograms, eq_timestep, avg_temp), f
             )
     temp_error = np.abs(avg_temp / temperature - 1)*100
     variables = {
