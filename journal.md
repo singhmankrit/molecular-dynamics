@@ -357,6 +357,20 @@ Estimated correlation time τ: 44.052 \
 Estimated error using autocorrelation: 0.065 \
 ![](images/journal_5/autocorrelation.png) 
 
+@npaarts \
+I started by making all the simulations pre-allocate a significant part their memory by creating numpy arrays at the
+beginning. This ment that we wouldn't have to copy it all near the end of the simulations.
+We also decided that we wanted progress bars for longer running processes, this way we could estimate how long
+the simulation would take and get a sense of progress.
+
+I wanted to add the integrator from scipy as well, but a different course we're all following had a broken homework
+so @rjuyal picked this up for me so I had time to go to the TA and try to find out how to make it work for the class.
+I am very thankful for this.
+
+I don't know if I'll have done it when you're looking at this but I'm planning on removing the `distance_list` from the
+various simulator codes, this would improve the memory consumption by an order of `O(n)` (since its `O(n*n*tsteps)` now)
+so we would be able to run larger simulations for the report.
+
 We compute specific heat as 2.7465 and using block bootstrap we get 2.7223 ± 0.1932
 ## Reminder final deadline
 
