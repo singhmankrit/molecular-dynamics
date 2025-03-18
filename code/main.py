@@ -104,7 +104,7 @@ for simulator_type in simulator_types:
     else:
         # run the simulation and put the results into variables
         print(f"Starting {simulator_type} simulation")
-        pos, vel, kinetic, potential, distance_list, eq_timestep, avg_temp = simulators.simulate(
+        pos, vel, kinetic, potential, virials, histograms, eq_timestep, avg_temp = simulators.simulate(
             init_pos.copy(),
             init_vel.copy(),
             timesteps,
@@ -115,6 +115,7 @@ for simulator_type in simulator_types:
             temperature_tolerance,
             equilibrium_stable_check,
             simulator_type,
+            bin_size
         )
         if eq_timestep == -1:
             print(f"Equilibrium not reached in simulation")
@@ -146,9 +147,7 @@ for simulator_type in simulator_types:
             kinetic, potential,step_size, timesteps, eq_timestep, file_name=f"energies_{simulator_type}.png"
         )
     if "distances" in outputs:
-        sim_plots.plot_distances(
-            distance_list, step_size, timesteps, eq_timestep, file_name=f"distances_{simulator_type}.png"
-        )
+        print("distance output is deprecated, please remove it from your config")
     if "animation" in outputs:
         sim_plots.create_animation(
             pos, timesteps, step_size, eq_timestep, box_size, file_name=f"particles_{simulator_type}.mp4"
@@ -162,7 +161,7 @@ for simulator_type in simulator_types:
     if "pair_correlation" in outputs:
         # Compute pair correlation
         r_values, g_r = observables.compute_pair_correlation(
-            box_size, distance_list, amount_of_particles, bin_size)
+            box_size, histograms, amount_of_particles, bin_size)
         sim_plots.plot_pair_correlation(
             r_values, g_r, file_name=f"pair_correlation_{simulator_type}.png"
         )
@@ -177,7 +176,7 @@ for simulator_type in simulator_types:
 
     if "compressibility" in outputs:
         compressibility = observables.compute_compressibility_factor(
-            temperature, amount_of_particles, distance_list, eq_timestep
+            temperature, amount_of_particles, virials, eq_timestep
         )
         variables["Compressibility Factor"] = compressibility.round(4)
 

@@ -4,7 +4,19 @@ from alive_progress import alive_bar
 from scipy.integrate import solve_ivp
 
 
-def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_steps, target_temperature, temperature_tolerance, equilibrium_stable_check, integrator):
+def simulate(
+    init_pos,
+    init_vel,
+    num_tsteps,
+    timestep,
+    box_dim,
+    equilibrium_steps,
+    target_temperature,
+    temperature_tolerance,
+    equilibrium_stable_check,
+    integrator,
+    delta_r,
+):
     """
     Molecular dynamics simulation based on the specified integrator
 
@@ -30,15 +42,17 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
         Number of stable steps after which we stop rescaling
     integrator : str
         The integrator based on which we want to simulate
+    delta_r : float
+        The bin size for the pair_correlation graph
 
     Returns
     -------
     Any quantities or observables that you wish to study.
     """
     amount_of_particles = len(init_pos)
-    positions_list = np.zeros((num_tsteps+1, amount_of_particles, 3))
+    positions_list = np.zeros((num_tsteps + 1, amount_of_particles, 3))
     positions_list[0, :, :] = init_pos
-    velocities_list = np.zeros((num_tsteps+1, amount_of_particles, 3))
+    velocities_list = np.zeros((num_tsteps + 1, amount_of_particles, 3))
     velocities_list[0, :, :] = init_vel
 
     current_positions = init_pos
@@ -48,26 +62,39 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
     )
 
     relative_positions, distances = atomic_distances(current_positions, box_dim)
-    current_forces = lj_force(relative_positions, distances) # used in verlet and leapfrog
-    half_velocities = current_velocities + (current_forces*timestep/2) # used in leapfrog
+    force_magnitudes, current_forces = lj_force(
+        relative_positions, distances
+    )  # used in verlet and leapfrog
+    half_velocities = current_velocities + (
+        current_forces * timestep / 2
+    )  # used in leapfrog
 
-    kinetic_energies_list = np.zeros((num_tsteps+1))
+    kinetic_energies_list = np.zeros((num_tsteps + 1))
     kinetic_energies_list[0] = kinetic_energy(init_vel)
-    potential_energies_list = np.zeros((num_tsteps+1))
+    potential_energies_list = np.zeros((num_tsteps + 1))
     potential_energies_list[0] = potential_energy(distances)
-    distance_list = np.zeros((num_tsteps+1, amount_of_particles, amount_of_particles))
-    distance_list[0, :, :] = distances
+
+    # For pair_correlation
+    r_max = np.sqrt(box_dim[0] ** 2 * box_dim[1] ** 2 * box_dim[2] ** 2) /2
+    bins = np.arange(0, r_max, delta_r)
+    histograms = np.zeros((num_tsteps + 1, len(bins)-1))
+    pairwise_dist = distances[np.triu_indices(amount_of_particles, k=1)]
+    histograms[0], _ = np.histogram(pairwise_dist, bins=bins)
+
 
     # Counter for equilibrium stability
-    stable_counter = 0  
+    stable_counter = 0
     apply_rescale = True
     # Timestep when rescaling is stopped
     equilibrium_timestep = -1
     temperature_list = np.array([])
     is_leapfrog = False
 
+    virials = np.zeros((num_tsteps + 1))
+    virials[0] = 0.5 * np.sum(distances * force_magnitudes, axis=(0, 1))
+
     with alive_bar(num_tsteps) as bar:
-        for step in np.arange(1, num_tsteps+1):
+        for step in np.arange(1, num_tsteps + 1):
             dprint(
                 f"""
                 at step {step} the particles are at {current_positions}
@@ -76,17 +103,52 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
             )
 
             if integrator == "verlet":
-                current_positions, current_velocities, current_forces, distances = verlet_step(current_positions, current_velocities, current_forces, timestep, box_dim)
+                (
+                    current_positions,
+                    current_velocities,
+                    current_forces,
+                    distances,
+                    force_magnitudes,
+                ) = verlet_step(
+                    current_positions,
+                    current_velocities,
+                    current_forces,
+                    timestep,
+                    box_dim,
+                )
             elif integrator == "euler":
-                current_forces = lj_force(relative_positions, distances)
-                current_positions, current_velocities = euler_step(current_positions, current_velocities, current_forces, timestep, box_dim)
-                relative_positions, distances = atomic_distances(current_positions, box_dim)
+                force_magnitudes, current_forces = lj_force(
+                    relative_positions, distances
+                )
+                current_positions, current_velocities = euler_step(
+                    current_positions,
+                    current_velocities,
+                    current_forces,
+                    timestep,
+                    box_dim,
+                )
+                relative_positions, distances = atomic_distances(
+                    current_positions, box_dim
+                )
             elif integrator == "leapfrog":
                 is_leapfrog = True
-                current_positions, half_velocities, current_velocities, distances = leapfrog_step(current_positions, half_velocities, timestep, box_dim)
+                (
+                    current_positions,
+                    half_velocities,
+                    current_velocities,
+                    distances,
+                    force_magnitudes,
+                ) = leapfrog_step(current_positions, half_velocities, timestep, box_dim)
             elif integrator == "scipy_rk45":
-                current_positions, current_velocities, current_forces, distances = scipy_rk45_step(
-                    current_positions, current_velocities, timestep, box_dim)
+                (
+                    current_positions,
+                    current_velocities,
+                    current_forces,
+                    distances,
+                    force_magnitudes,
+                ) = scipy_rk45_step(
+                    current_positions, current_velocities, timestep, box_dim
+                )
             else:
                 print(
                     f"Please select a valid integrator ('leapfrog', 'verlet', 'euler', 'scipy_rk45'), currently: {integrator}"
@@ -98,13 +160,19 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
             # add the current statistics to the logs
             kinetic_energies_list[step] = current_kinetic_energy
             potential_energies_list[step] = potential_energy(distances)
-            distance_list[step, :, :] = distances
+            virials[step] = 0.5 * np.sum(distances * force_magnitudes, axis=(0, 1))
 
             # keep track of the positions and velocities
             positions_list[step, :, :] = current_positions
             velocities_list[step, :, :] = current_velocities
 
-            current_temperature = compute_temperature(current_kinetic_energy, amount_of_particles)
+            # For pairwise correlation
+            pairwise_dist = distances[np.triu_indices(amount_of_particles, k=1)]
+            histograms[step], _ = np.histogram(pairwise_dist, bins=bins)
+
+            current_temperature = compute_temperature(
+                current_kinetic_energy, amount_of_particles
+            )
             if is_leapfrog:
                 # refer to half step temperature and velocities for scaling
                 current_temperature = compute_temperature(kinetic_energy(half_velocities), amount_of_particles)
@@ -129,7 +197,16 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, equilibrium_step
                         temperature_list = np.zeros((num_tsteps - step))
             bar()
     average_temperature = np.mean(temperature_list)
-    return positions_list, velocities_list, kinetic_energies_list, potential_energies_list, distance_list, equilibrium_timestep, average_temperature
+    return (
+        positions_list,
+        velocities_list,
+        kinetic_energies_list,
+        potential_energies_list,
+        virials,
+        histograms,
+        equilibrium_timestep,
+        average_temperature,
+    )
 
 
 def verlet_step(positions, velocities, forces, timestep, box_dim):
@@ -159,16 +236,16 @@ def verlet_step(positions, velocities, forces, timestep, box_dim):
         The new forces on the particles in Cartesian space
     new_distances : np.ndarray
         The new distances between the particles
+    new_magnitudes : np.ndarray
+        The new forces between the particles
     """
     new_positions = (
-        positions
-        + velocities * timestep
-        + forces * timestep * timestep / 2
+        positions + velocities * timestep + forces * timestep * timestep / 2
     ) % box_dim
     relative_positions, new_distances = atomic_distances(new_positions, box_dim)
-    new_forces = lj_force(relative_positions, new_distances)
+    new_magnitudes, new_forces = lj_force(relative_positions, new_distances)
     velocities += (forces + new_forces) * timestep / 2
-    return new_positions, velocities, new_forces, new_distances
+    return new_positions, velocities, new_forces, new_distances, new_magnitudes
 
 
 def euler_step(positions, velocities, forces, timestep, box_dim):
@@ -195,9 +272,7 @@ def euler_step(positions, velocities, forces, timestep, box_dim):
     velocities : np.ndarray
         The updated velocities of the particles in Cartesian space
     """
-    new_positions = (
-        positions + velocities * timestep
-    ) % box_dim
+    new_positions = (positions + velocities * timestep) % box_dim
     velocities += forces * timestep
     return new_positions, velocities
 
@@ -267,8 +342,7 @@ def scipy_rk45_step(positions, velocities, timestep, box_dim):
         The updated velocities of the particles in Cartesian space
     """
     amount_of_particles = len(positions)
-    y0 = np.concatenate(
-        [positions.flatten(), velocities.flatten()])
+    y0 = np.concatenate([positions.flatten(), velocities.flatten()])
 
     t_span = (0, timestep)
     t_eval = np.array([timestep])
@@ -429,6 +503,8 @@ def lj_force(rel_pos, rel_dist):  # units of epsilon/sigma
     Returns
     -------
     np.ndarray
+        nxn array having the magnitudes of the forces acting on particle i due to all other particles
+    np.ndarray
         nx3 array having the net vector force acting on particle i due to all other particles
     """
     # Compute force magnitude using the Lennard-Jones force formula
@@ -445,7 +521,7 @@ def lj_force(rel_pos, rel_dist):  # units of epsilon/sigma
     # Sum forces acting on each particle
     net_force = -np.sum(force_matrix, axis=1)
 
-    return net_force.T
+    return (force_magnitude, net_force.T)
 
 
 def kinetic_energy(vel):  # units of epsilon
