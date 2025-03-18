@@ -75,7 +75,7 @@ def simulate(
     potential_energies_list[0] = potential_energy(distances)
 
     # For pair_correlation
-    r_max = np.sqrt(box_dim[0] ** 2 * box_dim[1] ** 2 * box_dim[2] ** 2) /2
+    r_max = np.sqrt(box_dim[0] ** 2 + box_dim[1] ** 2 + box_dim[2] ** 2) /2
     bins = np.arange(0, r_max, delta_r)
     histograms = np.zeros((num_tsteps + 1, len(bins)-1))
     pairwise_dist = distances[np.triu_indices(amount_of_particles, k=1)]

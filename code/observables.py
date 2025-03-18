@@ -16,7 +16,7 @@ def compute_pair_correlation(box_size, histograms, num_particles, delta_r):
         g_r (numpy array): The time-averaged pair correlation function values.
     """
     volume = box_size[0] * box_size[1] * box_size[2]
-    r_max = np.sqrt(box_size[0]**2 * box_size[1]**2 * box_size[2]**2)/2
+    r_max = np.sqrt(box_size[0]**2 + box_size[1]**2 + box_size[2]**2)/2
     bins = np.arange(0, r_max, delta_r)
 
     # Time-averaged histogram
