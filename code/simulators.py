@@ -308,7 +308,7 @@ def leapfrog_step(positions, half_velocities, timestep, box_dim):
 
     # Update the positions and forces
     relative_positions, distances = atomic_distances(new_positions, box_dim)
-    forces = lj_force(relative_positions, distances)
+    force_magnitudes, forces = lj_force(relative_positions, distances)
 
     # Full-step velocity update
     current_velocities = half_velocities + (forces * timestep / 2)
@@ -316,7 +316,7 @@ def leapfrog_step(positions, half_velocities, timestep, box_dim):
     # Half-step velocity update for the next step
     half_velocities += forces * timestep
 
-    return new_positions, half_velocities, current_velocities, distances
+    return new_positions, half_velocities, current_velocities, distances, force_magnitudes
 
 
 def scipy_rk45_step(positions, velocities, timestep, box_dim):
@@ -364,8 +364,8 @@ def scipy_rk45_step(positions, velocities, timestep, box_dim):
     relative_positions, distances = atomic_distances(
         current_positions, box_dim
     )
-    current_forces = lj_force(relative_positions, distances)
-    return current_positions, current_velocities, current_forces, distances
+    force_magnitudes,current_forces = lj_force(relative_positions, distances)
+    return current_positions, current_velocities, current_forces, distances,force_magnitudes
 
 
 def molecular_dynamics_rhs(t, y, box_dim):
