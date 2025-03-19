@@ -5,12 +5,8 @@ import hashlib
 import pickle
 from os.path import isfile
 
-import initialisation
 import numpy as np
-import sim_plots
-import simulators
-import utilities
-import observables
+from . import initialisation, sim_plots, simulators, utilities, observables
 
 # Read the configuration file
 (

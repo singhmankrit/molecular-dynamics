@@ -5,7 +5,7 @@ from alive_progress import alive_bar
 import csv
 from tabulate import tabulate
 
-from utilities import dprint
+from .utilities import dprint
 
 
 def plot_energy(kinetic, potential, step_size, timesteps, eq_timestep, file_name="energies.png"):

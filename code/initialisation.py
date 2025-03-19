@@ -1,6 +1,6 @@
 import numpy as np
 
-from utilities import is2d
+from .utilities import is2d
 
 ###########################
 # Position initialisation #

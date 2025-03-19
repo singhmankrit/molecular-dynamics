@@ -1,5 +1,5 @@
 import numpy as np
-from utilities import dprint
+from .utilities import dprint
 from alive_progress import alive_bar
 from scipy.integrate import solve_ivp
 
