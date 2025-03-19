@@ -16,6 +16,7 @@ def simulate(
     equilibrium_stable_check,
     integrator,
     delta_r,
+    alive_params={},
 ):
     """
     Molecular dynamics simulation based on the specified integrator
@@ -93,7 +94,7 @@ def simulate(
     virials = np.zeros((num_tsteps + 1))
     virials[0] = 0.5 * np.sum(distances * force_magnitudes, axis=(0, 1))
 
-    with alive_bar(num_tsteps) as bar:
+    with alive_bar(num_tsteps, **alive_params) as bar:
         for step in np.arange(1, num_tsteps + 1):
             dprint(
                 f"""

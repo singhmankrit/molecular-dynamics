@@ -41,6 +41,7 @@ def do_simulation(inputs):
             equilibrium_stable_check,
             simulator_type,
             bin_size,
+            alive_params={"force_tty": False},
         )
     )
     print(f"The simulation for {vol_per_particle}, {temp} finished")
