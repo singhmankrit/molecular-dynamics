@@ -19,7 +19,6 @@
 	],
 	"outputs": [
 		"energies",
-		"distances",
 		"animation",
 		"pair_correlation",
 		"MSD",

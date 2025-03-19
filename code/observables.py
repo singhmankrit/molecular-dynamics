@@ -1,13 +1,13 @@
 import numpy as np
 
 
-def compute_pair_correlation(box_size, distance_list, num_particles, delta_r):
+def compute_pair_correlation(box_size, histograms, num_particles, delta_r):
     """
     Computes the time-averaged pair correlation function g(r) given a distance matrix.
 
     Parameters:
         box_size (tuple): The size of the simulation box.
-        distance_list (list): A list of distance matrices for each time step.
+        histograms (np.ndarray): A list of distance histograms for each timestep.
         num_particles (int): The total number of particles in the system.
         delta_r (float): The bin size for the histogram.
 
@@ -16,16 +16,8 @@ def compute_pair_correlation(box_size, distance_list, num_particles, delta_r):
         g_r (numpy array): The time-averaged pair correlation function values.
     """
     volume = box_size[0] * box_size[1] * box_size[2]
-    distances = np.array(distance_list)
-    r_max = np.max(distances)
-    time_steps = distances.shape[0]
+    r_max = np.sqrt(box_size[0]**2 + box_size[1]**2 + box_size[2]**2)/2
     bins = np.arange(0, r_max, delta_r)
-    histograms = np.zeros((time_steps, len(bins) - 1))
-    # Compute histograms for all time steps
-    for t in range(time_steps):
-        # Get upper triangle without diagonal (pairwise distances)
-        pairwise_distances = distances[t][np.triu_indices(num_particles, k=1)]
-        histograms[t], _ = np.histogram(pairwise_distances, bins=bins)
 
     # Time-averaged histogram
     avg_hist = np.mean(histograms, axis=0)[:, np.newaxis]
@@ -67,27 +59,21 @@ def compute_msd(pos, t_eq):
     return msd
 
 
-def compute_compressibility_factor(temperature, amount_of_particles, distance_list, eq_timestep):
+def compute_compressibility_factor(temperature, amount_of_particles, virials, eq_timestep):
     """
     Computes the compressibility factor for the given temperature and amount of particles.
 
     Parameters:
         temperature (float): The temperature of the system.
         amount_of_particles (int): The number of particles in the system.
-        distance_list (numpy array): A 1D array of distances between particles.
+        virials (numpy array): A 1D array of the virial at each timestep.
 
     Returns:
         float: The compressibility factor.
     """
 
-    distance_list = np.array(distance_list[eq_timestep:])
-    distance_list = np.ma.masked_values(
-        distance_list, 0.0, rtol=1e-60, atol=1e-60)
     beta = 1.0/temperature
-    force_magnitude = 24 * (1 / distance_list) ** 7 - \
-        48 * (1 / distance_list) ** 13
-    virial = 0.5*np.sum(distance_list*force_magnitude, axis=(1, 2))
-    average_virial = np.mean(virial)
+    average_virial = np.mean(virials[eq_timestep:])
     compressibility_factor = (1-beta/(3*amount_of_particles)*average_virial)
     return compressibility_factor
 

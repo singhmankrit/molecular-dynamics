@@ -127,9 +127,9 @@ def create_animation(
         def update(frame):
             time = frame * step_size
             particles._offsets3d = (
-                positions[frame, :, 1],
-                positions[frame, :, 0],
-                positions[frame, :, 2],
+                positions[frame, :, 0] % box_size[0],
+                positions[frame, :, 1] % box_size[1],
+                positions[frame, :, 2] % box_size[2],
             )
             if frame < eq_timestep:
                 title.set_text(f"Time = {time:.2f}")

@@ -40,6 +40,7 @@
                 self.packages.${system}.alive
                 pyflame
                 ppkgs.tabulate
+                ppkgs.scipy
               ]))
               ffmpeg-headless # needed to make the animations
               mpv # for watching the generated videos
