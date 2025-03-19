@@ -289,4 +289,4 @@ def best_fit(msd, t):
     # plt.savefig("best_fit.png")
     # plt.close()
 
-    return best_fit
+    return best_fit, r2_lin, r2_quad, r2_const
