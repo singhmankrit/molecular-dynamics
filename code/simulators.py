@@ -241,7 +241,7 @@ def verlet_step(positions, velocities, forces, timestep, box_dim):
     """
     new_positions = (
         positions + velocities * timestep + forces * timestep * timestep / 2
-    ) % box_dim
+    ) 
     relative_positions, new_distances = atomic_distances(new_positions, box_dim)
     new_magnitudes, new_forces = lj_force(relative_positions, new_distances)
     velocities += (forces + new_forces) * timestep / 2
@@ -272,7 +272,7 @@ def euler_step(positions, velocities, forces, timestep, box_dim):
     velocities : np.ndarray
         The updated velocities of the particles in Cartesian space
     """
-    new_positions = (positions + velocities * timestep) % box_dim
+    new_positions = (positions + velocities * timestep)
     velocities += forces * timestep
     return new_positions, velocities
 
@@ -304,7 +304,7 @@ def leapfrog_step(positions, half_velocities, timestep, box_dim):
         The distances between all particles in Cartesian space
     """
     # Position update using half-step velocities
-    new_positions = (positions + half_velocities * timestep) % box_dim
+    new_positions = (positions + half_velocities * timestep)
 
     # Update the positions and forces
     relative_positions, distances = atomic_distances(new_positions, box_dim)
