@@ -180,12 +180,12 @@ def simulate(
             if apply_rescale == False:
                 temperature_list[step-equilibrium_timestep-1] = current_temperature
             if step % equilibrium_steps == 0 and apply_rescale:
+                rescale_factor = compute_rescale_factor(amount_of_particles, target_temperature, current_kinetic_energy)
+                if is_leapfrog:
+                    half_velocities *= rescale_factor
+                else:
+                    current_velocities *= rescale_factor
                 if abs(current_temperature/target_temperature - 1) > temperature_tolerance:
-                    rescale_factor = compute_rescale_factor(amount_of_particles, target_temperature, current_kinetic_energy)
-                    if is_leapfrog:
-                        half_velocities *= rescale_factor
-                    else:
-                        current_velocities *= rescale_factor
                     stable_counter = 0
                 else:
                     # Increase stability count if temperature is stable
