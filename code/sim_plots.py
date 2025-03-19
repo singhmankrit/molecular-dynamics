@@ -233,3 +233,60 @@ def print_outputs(variables, simulator_type, export_csv):
             print_table.append([key, value])
 
     print(tabulate(print_table, headers=["Variable", "Value"], tablefmt="grid"))
+
+
+def linear_model(t, D):  # Diffusive (liquid)
+    return D * t
+
+
+def quadratic_model(t, A):  # Ballistic (gas)
+    return A * t**2
+
+
+def constant_model(t, C):  # Localized (solid)
+    return C * np.ones_like(t)
+
+
+def r_squared(y, y_fit):
+    ss_res = np.sum((y - y_fit) ** 2)
+    ss_tot = np.sum((y - np.mean(y)) ** 2)
+    return 1 - (ss_res / ss_tot)
+
+
+def best_fit(msd, t):
+    popt_lin, _ = opt.curve_fit(linear_model, t, msd)
+    popt_quad, _ = opt.curve_fit(quadratic_model, t, msd)
+    popt_const, _ = opt.curve_fit(constant_model, t, msd)
+    msd_fit_lin = linear_model(t, *popt_lin)
+    msd_fit_quad = quadratic_model(t, *popt_quad)
+    msd_fit_const = constant_model(t, *popt_const)
+
+    r2_lin = r_squared(msd, msd_fit_lin)
+    r2_quad = r_squared(msd, msd_fit_quad)
+    r2_const = r_squared(msd, msd_fit_const)
+    # # Print results
+    # print(f"Linear Fit (Liquid): D = {popt_lin[0]:.5f}, R² = {r2_lin:.5f}")
+    # print(f"Quadratic Fit (Gas): A = {popt_quad[0]:.5f}, R² = {r2_quad:.5f}")
+    # print(
+    #     f"Constant Fit (Solid): C = {popt_const[0]:.5f}, R² = {r2_const:.5f}")
+
+    # Determine best fit
+    best_fit = max((r2_lin, "Liquid"), (r2_quad, "Gas"),
+                   (r2_const, "Solid"))[1]
+    # print(f"Best fit suggests the system behaves as a {best_fit}")
+
+    # # Plot results
+    # plt.scatter(t, msd, label="MSD Data", color="black", s=10)
+    # plt.plot(t, msd_fit_lin,
+    #          label=f"Linear Fit (R²={r2_lin:.2f})", linestyle="--")
+    # plt.plot(t, msd_fit_quad,
+    #          label=f"Quadratic Fit (R²={r2_quad:.2f})", linestyle=":")
+    # plt.plot(t, msd_fit_const,
+    #          label=f"Constant Fit (R²={r2_const:.2f})", linestyle="-.")
+    # plt.xlabel("Time")
+    # plt.ylabel("MSD")
+    # plt.legend()
+    # plt.savefig("best_fit.png")
+    # plt.close()
+
+    return best_fit

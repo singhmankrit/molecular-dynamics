@@ -169,6 +169,8 @@ for simulator_type in simulator_types:
         sim_plots.plot_MSD(
             msd, time, file_name=f"MSD_{simulator_type}.png"
         )
+        state = sim_plots.best_fit(msd, time)
+        variables["State of Matter"] = state
 
     if "compressibility" in outputs:
         compressibility = observables.compute_compressibility_factor(
