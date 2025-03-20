@@ -121,10 +121,10 @@ for simulator_type in simulator_types:
             print(f"Equilibrium not reached in simulation")
         print(f"Finished {simulator_type} simulation")
 
-        with open(path, "wb") as f:
-            pickle.dump(
-                (pos, vel, kinetic, potential, virials, histograms, eq_timestep, avg_temp), f
-            )
+        # with open(path, "wb") as f:
+        #     pickle.dump(
+        #         (pos, vel, kinetic, potential, distance_list, eq_timestep, avg_temp), f
+        #     )
     temp_error = np.abs(avg_temp / temperature - 1)*100
     variables = {
         "Number of Particles": amount_of_particles,

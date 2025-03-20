@@ -1,14 +1,14 @@
 {
-	"particles": 108,
+	"particles": 256,
 	"box": {
-		"x": 5,
-		"y": 5,
-		"z": 5
+		"x": 7.78,
+		"y": 7.78,
+		"z": 7.78
 	},
 	"time_steps": 1000,
-	"step_size": 0.01,
+	"step_size": 0.001,
 	"equilibrium_steps": 25,
-	"temperature": 1,
+	"temperature": 50,
 	"temperature_tolerance": 0.2,
 	"equilibrium_stable_check": 2,
 	"position_method": "fcc",
@@ -25,6 +25,7 @@
 		"compressibility",
 		"specific_heat"
 	],
-	"do_caching": true,
-	"export_csv": true
+	"do_caching": false,
+	"export_csv": true,
+	"lattice_const": 1.556
 }
