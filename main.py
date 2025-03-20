@@ -6,7 +6,7 @@ import pickle
 from os.path import isfile
 
 import numpy as np
-from . import initialisation, sim_plots, simulators, utilities, observables
+from code import initialisation, sim_plots, simulators, utilities, observables
 
 # Read the configuration file
 (
@@ -100,18 +100,20 @@ for simulator_type in simulator_types:
     else:
         # run the simulation and put the results into variables
         print(f"Starting {simulator_type} simulation")
-        pos, vel, kinetic, potential, virials, histograms, eq_timestep, avg_temp = simulators.simulate(
-            init_pos.copy(),
-            init_vel.copy(),
-            timesteps,
-            step_size,
-            box_size,
-            equilibrium_steps,
-            temperature,
-            temperature_tolerance,
-            equilibrium_stable_check,
-            simulator_type,
-            bin_size
+        pos, vel, kinetic, potential, virials, histograms, eq_timestep, avg_temp = (
+            simulators.simulate(
+                init_pos.copy(),
+                init_vel.copy(),
+                timesteps,
+                step_size,
+                box_size,
+                equilibrium_steps,
+                temperature,
+                temperature_tolerance,
+                equilibrium_stable_check,
+                simulator_type,
+                bin_size,
+            )
         )
         if eq_timestep == -1:
             print(f"Equilibrium not reached in simulation")
@@ -119,9 +121,19 @@ for simulator_type in simulator_types:
 
         with open(path, "wb") as f:
             pickle.dump(
-                (pos, vel, kinetic, potential, virials, histograms, eq_timestep, avg_temp), f
+                (
+                    pos,
+                    vel,
+                    kinetic,
+                    potential,
+                    virials,
+                    histograms,
+                    eq_timestep,
+                    avg_temp,
+                ),
+                f,
             )
-    temp_error = np.abs(avg_temp / temperature - 1)*100
+    temp_error = np.abs(avg_temp / temperature - 1) * 100
     variables = {
         "Number of Particles": amount_of_particles,
         "Step Size": step_size,
@@ -134,19 +146,29 @@ for simulator_type in simulator_types:
         "Target Temperature": temperature,
         "Average Temperature (after equilibrium)": avg_temp.round(2),
         "Temperature Error": f"{temp_error.round(2)}%",
-        "Equilibrium achieved at Timestep": eq_timestep
+        "Equilibrium achieved at Timestep": eq_timestep,
     }
 
     # generate plots from the results
     if "energies" in outputs:
         sim_plots.plot_energy(
-            kinetic, potential,step_size, timesteps, eq_timestep, file_name=f"energies_{simulator_type}.png"
+            kinetic,
+            potential,
+            step_size,
+            timesteps,
+            eq_timestep,
+            file_name=f"energies_{simulator_type}.png",
         )
     if "distances" in outputs:
         print("distance output is deprecated, please remove it from your config")
     if "animation" in outputs:
         sim_plots.create_animation(
-            pos, timesteps, step_size, eq_timestep, box_size, file_name=f"particles_{simulator_type}.mp4"
+            pos,
+            timesteps,
+            step_size,
+            eq_timestep,
+            box_size,
+            file_name=f"particles_{simulator_type}.mp4",
         )
 
     if eq_timestep < 0:
@@ -157,18 +179,17 @@ for simulator_type in simulator_types:
     if "pair_correlation" in outputs:
         # Compute pair correlation
         r_values, g_r = observables.compute_pair_correlation(
-            box_size, histograms, amount_of_particles, bin_size)
+            box_size, histograms, amount_of_particles, bin_size
+        )
         sim_plots.plot_pair_correlation(
             r_values, g_r, file_name=f"pair_correlation_{simulator_type}.png"
         )
 
     if "MSD" in outputs:
         msd = observables.compute_msd(pos, eq_timestep)
-        time = np.arange(eq_timestep, timesteps+1, 1)*step_size
+        time = np.arange(eq_timestep, timesteps + 1, 1) * step_size
         eq_time = eq_timestep * step_size
-        sim_plots.plot_MSD(
-            msd, time, file_name=f"MSD_{simulator_type}.png"
-        )
+        sim_plots.plot_MSD(msd, time, file_name=f"MSD_{simulator_type}.png")
         state, r2_liquid, r2_gas, r2_solid = sim_plots.best_fit(msd, time)
         variables["State of Matter"] = state
 
@@ -184,8 +205,11 @@ for simulator_type in simulator_types:
         )
         variables["Specific Heat"] = specific_heat.round(4)
         cV_mean, cV_error = observables.bootstrap_specific_heat(
-        kinetic[eq_timestep+1:], amount_of_particles)
-        variables["Specific Heat (Bootstrap)"] = f"{cV_mean.round(4)} ± {cV_error.round(4)}"
+            kinetic[eq_timestep + 1 :], amount_of_particles
+        )
+        variables["Specific Heat (Bootstrap)"] = (
+            f"{cV_mean.round(4)} ± {cV_error.round(4)}"
+        )
 
     # Program Outputs
     sim_plots.print_outputs(variables, simulator_type, export_csv)

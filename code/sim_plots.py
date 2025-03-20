@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from alive_progress import alive_bar
+from scipy import optimize as opt
 import csv
 from tabulate import tabulate
 
