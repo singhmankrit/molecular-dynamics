@@ -197,7 +197,12 @@ def simulate(
                         equilibrium_timestep = step
                         temperature_list = np.zeros((num_tsteps - step))
             bar()
-    average_temperature = np.mean(temperature_list)
+    # if no equilibrium, then the average temperature is undefined
+    if equilibrium_timestep > 0:
+        average_temperature = np.mean(temperature_list)
+    else:
+        dprint("simulate didn't reach equilbrium")
+        average_temperature = np.nan
     return (
         positions_list,
         velocities_list,
