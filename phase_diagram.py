@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 import multiprocessing
+from os.path import isfile
 import pickle
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from code import initialisation, sim_plots, simulators, observables
+import tqdm.contrib.concurrent as conc
 
 num_particles = 500
 seed = 21921
-timesteps = 3000
+np.random.seed(seed)
+timesteps = 4000
 step_size = 0.005
 equilibrium_steps = 25
 temperature_tolerance = 0.1
@@ -16,22 +20,40 @@ simulator_type = "verlet"
 bin_size = 0.1
 
 
-def do_simulation(inputs):
-    temp, vol_per_particle = inputs
+def save_to_cache(temp, lattice_const, to_save):
+    with open(f"cache/phase_{temp}_{lattice_const}.pkl", "wb") as file:
+        pickle.dump(to_save, file)
+
+
+def load_from_cache(temp, lattice_const):
+    path = f"cache/phase_{temp}_{lattice_const}.pkl"
+    if not isfile(path):
+        return None
+    with open(path, "rb") as file:
+        try:
+            return pickle.load(file)
+        except:
+            print(f"could not load {path}, due to {repr(sys.exception())}")
+            return None
+
+
+def do_simulation(temp, vol_per_particle):
     box_side_length = np.power(num_particles * vol_per_particle, 1 / 3)
     box_size = np.array([box_side_length, box_side_length, box_side_length])
     lattice_const = box_side_length / np.power(num_particles / 4, 1 / 3)
-    print(
-        f"am in simulation with temp {temp}, box size {box_size} and lattice constant of {lattice_const}"
-    )
     corner_offset = np.array([lattice_const, lattice_const, lattice_const]) / 2
-
-    init_pos = initialisation.fcc_lattice(
-        num_particles, lattice_const, corner_offset=corner_offset
-    )
-    init_vel = initialisation.init_velocity(num_particles, temp, seed)
-    pos, vel, kinetic, potential, virials, histograms, eq_timestep, avg_temp = (
-        simulators.simulate(
+    cached = load_from_cache(temp, lattice_const)
+    pos, eq_timestep, kinetic, potential = None, None, None, None
+    if cached is not None:
+        pos, eq_timestep, kinetic, potential = cached
+    else:
+        init_pos = initialisation.fcc_lattice(
+            num_particles, lattice_const, corner_offset=corner_offset
+        )
+        init_vel = initialisation.init_velocity(
+            num_particles, temp, np.random.randint(0, 100000)
+        )
+        pos, _, kinetic, potential, _, _, eq_timestep, _ = simulators.simulate(
             init_pos.copy(),
             init_vel.copy(),
             timesteps,
@@ -45,50 +67,71 @@ def do_simulation(inputs):
             bin_size,
             alive_params={"disable": True},
         )
-    )
-    print(
-        f"the simulation with temp {temp}, box size {box_size} and lattice constant of {lattice_const} finished"
-    )
-    if eq_timestep > 0:
-        msd = observables.compute_msd(pos, eq_timestep)
-        time = np.arange(eq_timestep, timesteps + 1, 1) * step_size
-        fit = sim_plots.best_fit(msd, time)
-        print(f"the fit for {vol_per_particle}, {temp} is {fit}")
-        return fit
-    else:
+        try:
+            save_to_cache(temp, lattice_const, (pos, eq_timestep, kinetic, potential))
+        except:
+            print(repr(sys.exception()))
+    if eq_timestep < 0:
         return ("no equilibrium", 0, 0, 0)
+    msd = observables.compute_msd(pos, eq_timestep)
+    if (
+        np.abs(
+            (kinetic[eq_timestep] + potential[eq_timestep])
+            / (kinetic[-1] + potential[-1])
+            - 1
+        )
+        > 0.1
+    ):
+        return ("Explosion", 0, 0, 0)
+    time = np.arange(eq_timestep, timesteps + 1, 1) * step_size
+    fit = sim_plots.best_fit(msd, time)
+    return fit
 
 
 if __name__ == "__main__":
-    temperatures = np.linspace(0.1, 20, 31)
-    rhos = np.logspace(-2, 1, 31)
-    vol_per_particles = 1 / rhos
+    temperatures = np.logspace(-2.5, 0.5, 41)
+    pressures = np.logspace(-2, 1, 41)
 
-    tgrid, vgrid = np.meshgrid(temperatures, vol_per_particles)
-    tgrid, rhogrid = np.meshgrid(temperatures, rhos)
+    tgrid, pressure_grid = np.meshgrid(temperatures, pressures)
+    rhogrid = pressure_grid / tgrid
+    vgrid = 1 / rhogrid
+    print(tgrid)
+    print(pressure_grid)
 
-    with multiprocessing.Pool(20) as pool:
-        fits = pool.map(do_simulation, zip(tgrid.ravel(), vgrid.ravel()))
-    print(np.array(fits)[:, 0].reshape((len(temperatures), len(vol_per_particles))))
-    print(np.array(fits)[:, 1].reshape((len(temperatures), len(vol_per_particles))))
-    print(np.array(fits)[:, 2].reshape((len(temperatures), len(vol_per_particles))))
-    print(np.array(fits)[:, 3].reshape((len(temperatures), len(vol_per_particles))))
+    fits = conc.process_map(
+        do_simulation, tgrid.ravel(), vgrid.ravel(), max_workers=20, chunksize=1
+    )
+    print(fits)
 
-    fits2d = np.array(fits)[:, 0].reshape((len(temperatures), len(vol_per_particles)))
     with open("phases.pkl", "wb") as file:
         pickle.dump((tgrid, rhogrid, vgrid, fits), file)
 
+    # with open("phases.pkl", "rb") as file:
+    #     tgrid, rhogrid, vgrid, fits = pickle.load(file)
+
+    pgrid = rhogrid * tgrid
+    fits2d = np.array(fits)[:, 0].reshape((len(temperatures), len(pressures)))
+    print(fits2d)
     fig, ax = plt.subplots()
 
     solid_idxs = np.where(fits2d == "Solid")
-    ax.scatter(tgrid[solid_idxs], rhogrid[solid_idxs], c="r", label="Solid")
+    ax.scatter(
+        tgrid[solid_idxs],
+        pgrid[solid_idxs],
+        c="r",
+        label="Solid",
+        marker="s",
+    )
     liquid_idxs = np.where(fits2d == "Liquid")
-    ax.scatter(tgrid[liquid_idxs], rhogrid[liquid_idxs], c="b", label="Liquid")
+    ax.scatter(
+        tgrid[liquid_idxs], pgrid[liquid_idxs], c="b", label="Liquid", marker="o"
+    )
     gas_idxs = np.where(fits2d == "Gas")
-    ax.scatter(tgrid[gas_idxs], rhogrid[gas_idxs], c="g", label="Gas")
+    ax.scatter(tgrid[gas_idxs], pgrid[gas_idxs], c="g", label="Gas", marker="x")
 
     ax.set_xlabel("temperature")
-    ax.set_ylabel("$rho$")
+    ax.set_ylabel(r"$\rho \dot t$")
+    ax.set_yscale("log")
     ax.set_title("phase diagram of argon")
     ax.legend()
 

@@ -41,6 +41,7 @@
                 pyflame
                 ppkgs.tabulate
                 ppkgs.scipy
+                ppkgs.tqdm
               ]))
               ffmpeg-headless # needed to make the animations
               mpv # for watching the generated videos

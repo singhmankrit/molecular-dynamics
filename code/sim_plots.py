@@ -244,8 +244,8 @@ def quadratic_model(t, A):  # Ballistic (gas)
     return A * t**2
 
 
-def constant_model(t, C):  # Localized (solid)
-    return C * np.ones_like(t)
+def constant_model(t, C, D):  # Localized (solid)
+    return C * (1-np.exp(-D*t))
 
 
 def r_squared(y, y_fit):
@@ -257,14 +257,17 @@ def r_squared(y, y_fit):
 def best_fit(msd, t):
     popt_lin, _ = opt.curve_fit(linear_model, t, msd)
     popt_quad, _ = opt.curve_fit(quadratic_model, t, msd)
-    popt_const, _ = opt.curve_fit(constant_model, t, msd)
     msd_fit_lin = linear_model(t, *popt_lin)
     msd_fit_quad = quadratic_model(t, *popt_quad)
-    msd_fit_const = constant_model(t, *popt_const)
 
     r2_lin = r_squared(msd, msd_fit_lin)
     r2_quad = r_squared(msd, msd_fit_quad)
-    r2_const = r_squared(msd, msd_fit_const)
+    try:
+        popt_const, _ = opt.curve_fit(constant_model, t, msd, p0=[2,0.1], bounds=((0,0),(np.inf,1)))
+        msd_fit_const = constant_model(t, *popt_const)
+        r2_const = r_squared(msd, msd_fit_const)
+    except:
+        r2_const = -np.inf
     # # Print results
     # print(f"Linear Fit (Liquid): D = {popt_lin[0]:.5f}, R² = {r2_lin:.5f}")
     # print(f"Quadratic Fit (Gas): A = {popt_quad[0]:.5f}, R² = {r2_quad:.5f}")
