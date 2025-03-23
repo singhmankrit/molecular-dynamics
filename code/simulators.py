@@ -444,7 +444,9 @@ def scipy_rk45_step(
     )
 
 
-def molecular_dynamics_rhs(t, y, box_dim):
+def molecular_dynamics_rhs(
+    _t: float, y: NDArray[np.float64], box_dim: NDArray[np.float64]
+):
     """
     Compute derivatives for the molecular dynamics ODE system.
 
@@ -463,12 +465,12 @@ def molecular_dynamics_rhs(t, y, box_dim):
         Flattened derivative array containing velocity and acceleration.
     """
     amount_of_particles = len(y) // 6  # 3 for positions, 3 for velocities
-    positions = y[:3 * amount_of_particles].reshape(amount_of_particles, 3)
-    velocities = y[3 * amount_of_particles:].reshape(amount_of_particles, 3)
+    positions = y[: 3 * amount_of_particles].reshape(amount_of_particles, 3)
+    velocities = y[3 * amount_of_particles :].reshape(amount_of_particles, 3)
 
     # Compute distances and forces
     relative_positions, distances = atomic_distances(positions, box_dim)
-    forces = lj_force(relative_positions, distances)
+    _, forces = lj_force(relative_positions, distances)
 
     # First derivatives (velocities)
     dpdt = velocities.flatten()
