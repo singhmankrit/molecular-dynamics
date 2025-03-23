@@ -158,7 +158,9 @@ def zero_speed(amount_of_particles: int) -> NDArray[np.float64]:
     return np.zeros((amount_of_particles, 3))
 
 
-def init_velocity(num_atoms, temp, seed=None):
+def init_velocity(
+    num_atoms: int, temp: float, seed: int | None = None
+) -> NDArray[np.float64]:
     """
     Initializes the system with Gaussian distributed velocities.
 
