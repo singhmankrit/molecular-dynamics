@@ -647,7 +647,7 @@ def lj_potential(distance: NDArray[np.float64]) -> NDArray[np.float64]:
     return 4 * ((1 / distance) ** 12 - (1 / distance) ** 6)
 
 
-def potential_energy(rel_dist):
+def potential_energy(rel_dist: NDArray[np.float64]) -> float:
     """
     Computes the potential energy of an atomic system.
 
