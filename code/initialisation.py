@@ -35,7 +35,7 @@ def uniform_random(
     return np.hstack((x_coordinates, y_coordinates, z_coordinates))
 
 
-def static(amount_of_particles, box_dim):
+def static(amount_of_particles: int, box_dim: NDArray[np.float64]):
     """
     Take the first `amount_of_particles` from a predefined array of locations
     rescaled to the size of the box.
