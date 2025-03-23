@@ -501,7 +501,9 @@ def compute_temperature(kinetic_energy: float, amount_of_particles: int):
     return (2 * kinetic_energy) / (3 * (amount_of_particles - 1))
 
 
-def compute_rescale_factor(amount_of_particles, target_temperature, kinetic_energy):
+def compute_rescale_factor(
+    amount_of_particles: int, target_temperature: float, kinetic_energy: float
+) -> float:
     """
     Returns the rescale factor for the velocities of the particles to reach a target temperature.
 
@@ -519,7 +521,9 @@ def compute_rescale_factor(amount_of_particles, target_temperature, kinetic_ener
     scaled_velocities : float
         The rescale factor
     """
-    return np.sqrt(3*(amount_of_particles-1)*target_temperature/(2*kinetic_energy))
+    return np.sqrt(
+        3 * (amount_of_particles - 1) * target_temperature / (2 * kinetic_energy)
+    )
 
 
 def atomic_distances(
