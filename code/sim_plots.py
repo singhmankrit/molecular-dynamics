@@ -275,6 +275,20 @@ def constant_model(t: float, C: float, D: float) -> float:  # Localized (solid)
 
 
 def r_squared(y, y_fit):
+    """
+    Calculates the r^2 metric for the fit y_fit relative to the original data y.
+
+    Parameters
+    ----------
+    y: list[float]
+        A list of datapoints the fit should be compared with
+    y_fit: list[float]
+        A list of estimates retrieved from the fit
+
+    Returns
+    -------
+    How good the fit is in relation to the simple mean
+    """
     ss_res = np.sum((y - y_fit) ** 2)
     ss_tot = np.sum((y - np.mean(y)) ** 2)
     return 1 - (ss_res / ss_tot)
