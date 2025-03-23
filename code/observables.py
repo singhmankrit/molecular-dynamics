@@ -77,22 +77,33 @@ def compute_msd(pos: NDArray[np.float64], t_eq: int) -> NDArray[np.float64]:
     return msd
 
 
-def compute_compressibility_factor(temperature, amount_of_particles, virials, eq_timestep):
+def compute_compressibility_factor(
+    temperature: float,
+    amount_of_particles: int,
+    virials: NDArray[np.float64],
+    eq_timestep: int,
+):
     """
     Computes the compressibility factor for the given temperature and amount of particles.
 
-    Parameters:
-        temperature (float): The temperature of the system.
-        amount_of_particles (int): The number of particles in the system.
-        virials (numpy array): A 1D array of the virial at each timestep.
+    Parameters
+    ----------
+    temperature: float
+        The temperature of the system.
+    amount_of_particles: int
+        The number of particles in the system.
+    virials: np.ndarray
+        A 1D array of the virial at each timestep.
 
-    Returns:
-        float: The compressibility factor.
+    Returns
+    -------
+    float:
+        The compressibility factor.
     """
 
-    beta = 1.0/temperature
+    beta = 1.0 / temperature
     average_virial = np.mean(virials[eq_timestep:])
-    compressibility_factor = (1-beta/(3*amount_of_particles)*average_virial)
+    compressibility_factor = 1 - beta / (3 * amount_of_particles) * average_virial
     return compressibility_factor
 
 
