@@ -144,8 +144,8 @@ for simulator_type in simulator_types:
         "Velocity Initialisation": velocity_init_method,
         "Simulator Type": simulator_type,
         "Target Temperature": temperature,
-        "Average Temperature (after equilibrium)": avg_temp.round(2),
-        "Temperature Error": f"{temp_error.round(2)}%",
+        "Average Temperature (after equilibrium)": f"{avg_temp:.02f}",
+        "Temperature Error": f"{temp_error:.02f}%",
         "Equilibrium achieved at Timestep": eq_timestep,
     }
 
