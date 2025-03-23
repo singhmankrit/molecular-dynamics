@@ -527,8 +527,8 @@ def compute_rescale_factor(
 
 
 def atomic_distances(
-    pos: np.typing.NDArray[np.float64], box_dim: np.typing.NDArray[np.float64]
-) -> np.typing.NDArray[np.float64]:
+    pos: NDArray[np.float64], box_dim: NDArray[np.float64]
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """
     Calculates relative positions and distances between particles.
 
@@ -568,7 +568,7 @@ def atomic_distances(
     dprint(f"there are {np.ma.count_masked(distances)} masked distance values")
 
     # return the full distance matrix of shape n-by-n
-    return (relative_positions, distances)
+    return relative_positions, distances
 
 
 def lj_force(rel_pos, rel_dist):  # units of epsilon/sigma
