@@ -256,8 +256,22 @@ def quadratic_model(t: float, A: float) -> float:  # Ballistic (gas)
     return A * t**2
 
 
-def constant_model(t, C, D):  # Localized (solid)
-    return C * (1-np.exp(-D*t))
+def constant_model(t: float, C: float, D: float) -> float:  # Localized (solid)
+    """
+    An exponential decay to constant fit model for fitting MSD, fits best when the MSD is Localized (solid)
+
+    Parameters
+    ----------
+    t: float
+        The time to evaluate at
+    A: float
+        The scaling factor for the quadratic model
+
+    Returns
+    -------
+    The model output at the time t
+    """
+    return C * (1 - np.exp(-D * t))
 
 
 def r_squared(y, y_fit):
