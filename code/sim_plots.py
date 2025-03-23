@@ -125,7 +125,11 @@ def create_animation(
         ani.save(file_name, writer="ffmpeg", fps=30)
 
 
-def plot_pair_correlation(r_values, g_r, file_name="pair_correlation.png"):
+def plot_pair_correlation(
+    r_values: NDArray[np.float64],
+    g_r: NDArray[np.float64],
+    file_name: str = "pair_correlation.png",
+):
     """
     Plots the pair correlation function.
 
