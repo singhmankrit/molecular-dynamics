@@ -378,7 +378,12 @@ def leapfrog_step(
     )
 
 
-def scipy_rk45_step(positions, velocities, timestep, box_dim):
+def scipy_rk45_step(
+    positions: NDArray[np.float64],
+    velocities: NDArray[np.float64],
+    timestep: float,
+    box_dim: NDArray[np.float64],
+):
     """
     Uses the scipy.integrate.solve_ivp method to integrate the equations of motion.
 
@@ -412,19 +417,31 @@ def scipy_rk45_step(positions, velocities, timestep, box_dim):
         y0=y0,
         t_eval=t_eval,
         args=(box_dim,),
-        method="RK45"  # Runge-Kutta 4th/5th order
+        method="RK45",  # Runge-Kutta 4th/5th order
     )
 
     # Reshape solution: extract positions and velocities
-    current_positions = sol.y[:3 * amount_of_particles].reshape(
-        amount_of_particles, 3, -1).transpose(2, 0, 1).squeeze()
-    current_velocities = sol.y[3 * amount_of_particles:].reshape(
-        amount_of_particles, 3, -1).transpose(2, 0, 1).squeeze()
-    relative_positions, distances = atomic_distances(
-        current_positions, box_dim
+    current_positions = (
+        sol.y[: 3 * amount_of_particles]
+        .reshape(amount_of_particles, 3, -1)
+        .transpose(2, 0, 1)
+        .squeeze()
     )
-    force_magnitudes,current_forces = lj_force(relative_positions, distances)
-    return current_positions, current_velocities, current_forces, distances,force_magnitudes
+    current_velocities = (
+        sol.y[3 * amount_of_particles :]
+        .reshape(amount_of_particles, 3, -1)
+        .transpose(2, 0, 1)
+        .squeeze()
+    )
+    relative_positions, distances = atomic_distances(current_positions, box_dim)
+    force_magnitudes, current_forces = lj_force(relative_positions, distances)
+    return (
+        current_positions,
+        current_velocities,
+        current_forces,
+        distances,
+        force_magnitudes,
+    )
 
 
 def molecular_dynamics_rhs(t, y, box_dim):
