@@ -133,18 +133,18 @@ def simulate(
                     box_dim,
                 )
             elif integrator == "euler":
-                force_magnitudes, current_forces = lj_force(
-                    relative_positions, distances
-                )
-                current_positions, current_velocities = euler_step(
+                (
+                    current_positions,
+                    current_velocities,
+                    current_forces,
+                    distances,
+                    force_magnitudes,
+                ) = euler_step(
                     current_positions,
                     current_velocities,
                     current_forces,
                     timestep,
                     box_dim,
-                )
-                relative_positions, distances = atomic_distances(
-                    current_positions, box_dim
                 )
             elif integrator == "leapfrog":
                 is_leapfrog = True
@@ -276,7 +276,13 @@ def verlet_step(positions, velocities, forces, timestep, box_dim):
     return new_positions, velocities, new_forces, new_distances, new_magnitudes
 
 
-def euler_step(positions, velocities, forces, timestep, box_dim):
+def euler_step(
+    positions: NDArray[np.float64],
+    velocities: NDArray[np.float64],
+    forces: NDArray[np.float64],
+    timestep: float,
+    box_dim: NDArray[np.float64],
+):
     """
     Uses the Euler method to integrate the equations of motion.
 
@@ -296,13 +302,21 @@ def euler_step(positions, velocities, forces, timestep, box_dim):
     Returns
     -------
     new_positions : np.ndarray
-        The updated positions of the particles in Cartesian space
+        The new positions of the particles in Cartesian space
     velocities : np.ndarray
         The updated velocities of the particles in Cartesian space
+    forces : np.ndarray
+        The new forces on the particles in Cartesian space
+    distances : np.ndarray
+        The new distances between the particles
+    new_magnitudes : np.ndarray
+        The new forces between the particles
     """
-    new_positions = (positions + velocities * timestep)
+    new_positions = positions + velocities * timestep
+    relative_positions, distances = atomic_distances(new_positions, box_dim)
+    force_magnitudes, new_forces = lj_force(relative_positions, distances)
     velocities += forces * timestep
-    return new_positions, velocities
+    return new_positions, velocities, new_forces, distances, force_magnitudes
 
 
 def leapfrog_step(positions, half_velocities, timestep, box_dim):
