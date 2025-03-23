@@ -186,7 +186,7 @@ def plot_MSD(
     plt.close()
 
 
-def print_outputs(variables, simulator_type, export_csv):
+def print_outputs(variables: dict[str, str], simulator_type: str, export_csv: bool):
     """
     Prints the simulation results and optionally exports them to a CSV file.
 
@@ -204,18 +204,18 @@ def print_outputs(variables, simulator_type, export_csv):
     Prints a formatted table of the variables and their values to the console.
     """
     if export_csv:
-        with open(f"results_{simulator_type}.csv", mode='w', newline='') as file:
+        with open(f"results_{simulator_type}.csv", mode="w", newline="") as file:
             writer = csv.writer(file)
             writer.writerow(["Variable", "Value"])
             for key, value in variables.items():
                 writer.writerow([key, value])
-    print_table = []
+    print_table: list[tuple[str, str]] = []
     for key, value in variables.items():
         if isinstance(value, (list, np.ndarray)):
             value_str = str(value)
-            print_table.append([key, value_str])
+            print_table.append((key, value_str))
         else:
-            print_table.append([key, value])
+            print_table.append((key, value))
 
     print(tabulate(print_table, headers=["Variable", "Value"], tablefmt="grid"))
 
