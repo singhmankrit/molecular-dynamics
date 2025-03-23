@@ -157,7 +157,9 @@ def plot_pair_correlation(
     plt.close()
 
 
-def plot_MSD(msd, time, file_name="MSD.png"):
+def plot_MSD(
+    msd: NDArray[np.float64], time: NDArray[np.float64], file_name: str = "MSD.png"
+):
     """
     Plots the mean square displacement.
 
