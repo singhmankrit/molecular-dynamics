@@ -60,7 +60,18 @@ def parse_config(file_path: str):
         pos_method: str = config.get("position_method", "fcc")
         vel_method: str = config.get("velocity_method", "mbdist")
         simulator_type: list[str] = config.get("simulator_type", ["verlet"])
-        outputs: list[str] = config.get("outputs", ["energies", "distances", "animation","pair_correlation","MSD","compressibility","specific_heat"])
+        outputs: list[str] = config.get(
+            "outputs",
+            [
+                "energies",
+                "distances",
+                "animation",
+                "pair_correlation",
+                "MSD",
+                "compressibility",
+                "specific_heat",
+            ],
+        )
         enable_cache: bool = config.get("do_caching", True)
         lat_const: float = config.get("lattice_const", 1.5)
         corner_offset: list[float] = config.get("corner_offset", [0, 0, 0])
@@ -84,7 +95,7 @@ def parse_config(file_path: str):
             lat_const,
             corner_offset,
             bin_size,
-            export_csv
+            export_csv,
         )
 
 
