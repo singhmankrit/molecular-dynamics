@@ -295,6 +295,27 @@ def r_squared(y, y_fit):
 
 
 def best_fit(msd, t):
+    """
+    Finds the best fit out of the three models above and returns the phase it corresponds with
+
+    Parameters
+    ----------
+    msd: list[float]
+        The mean squared displacement at time t
+    t: list[float]
+        The times t the msd's are at
+
+    Returns
+    -------
+    best_fit: str
+        The name of the best_fit
+    r2_lin: float
+        The r2 value for liquid
+    r2_quad: float
+        The r2 value for gas
+    r2_const: float
+        The r2 value for solid
+    """
     popt_lin, _ = opt.curve_fit(linear_model, t, msd)
     popt_quad, _ = opt.curve_fit(quadratic_model, t, msd)
     msd_fit_lin = linear_model(t, *popt_lin)
@@ -303,34 +324,15 @@ def best_fit(msd, t):
     r2_lin = r_squared(msd, msd_fit_lin)
     r2_quad = r_squared(msd, msd_fit_quad)
     try:
-        popt_const, _ = opt.curve_fit(constant_model, t, msd, p0=[2,0.1], bounds=((0,0),(np.inf,1)))
+        popt_const, _ = opt.curve_fit(
+            constant_model, t, msd, p0=[2, 0.1], bounds=((0, 0), (np.inf, 1))
+        )
         msd_fit_const = constant_model(t, *popt_const)
         r2_const = r_squared(msd, msd_fit_const)
     except:
         r2_const = -np.inf
-    # # Print results
-    # print(f"Linear Fit (Liquid): D = {popt_lin[0]:.5f}, R² = {r2_lin:.5f}")
-    # print(f"Quadratic Fit (Gas): A = {popt_quad[0]:.5f}, R² = {r2_quad:.5f}")
-    # print(
-    #     f"Constant Fit (Solid): C = {popt_const[0]:.5f}, R² = {r2_const:.5f}")
 
     # Determine best fit
-    best_fit = max((r2_lin, "Liquid"), (r2_quad, "Gas"),
-                   (r2_const, "Solid"))[1]
-    # print(f"Best fit suggests the system behaves as a {best_fit}")
-
-    # # Plot results
-    # plt.scatter(t, msd, label="MSD Data", color="black", s=10)
-    # plt.plot(t, msd_fit_lin,
-    #          label=f"Linear Fit (R²={r2_lin:.2f})", linestyle="--")
-    # plt.plot(t, msd_fit_quad,
-    #          label=f"Quadratic Fit (R²={r2_quad:.2f})", linestyle=":")
-    # plt.plot(t, msd_fit_const,
-    #          label=f"Constant Fit (R²={r2_const:.2f})", linestyle="-.")
-    # plt.xlabel("Time")
-    # plt.ylabel("MSD")
-    # plt.legend()
-    # plt.savefig("best_fit.png")
-    # plt.close()
+    best_fit = max((r2_lin, "Liquid"), (r2_quad, "Gas"), (r2_const, "Solid"))[1]
 
     return best_fit, r2_lin, r2_quad, r2_const
