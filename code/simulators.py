@@ -571,9 +571,12 @@ def atomic_distances(
     return relative_positions, distances
 
 
-def lj_force(rel_pos, rel_dist):  # units of epsilon/sigma
+def lj_force(
+    rel_pos: NDArray[np.float64], rel_dist: NDArray[np.float64]
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """
-    Calculates the net forces on each atom from the matrices containing the positions and distances.
+    Calculates the net forces on each atom from the matrices containing the positions and distances
+    using the Lennard-Jones potential in the units epsilon/sigma
 
     Parameters
     ----------
@@ -603,7 +606,7 @@ def lj_force(rel_pos, rel_dist):  # units of epsilon/sigma
     # Sum forces acting on each particle
     net_force = -np.sum(force_matrix, axis=1)
 
-    return (force_magnitude, net_force.T)
+    return force_magnitude, net_force.T
 
 
 def kinetic_energy(vel):  # units of epsilon
