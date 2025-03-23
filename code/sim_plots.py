@@ -47,45 +47,6 @@ def plot_energy(kinetic, potential, step_size, timesteps, eq_timestep, file_name
     plt.close()
 
 
-def plot_distances(distance_list, step_size, timesteps, eq_timestep, particle=0, file_name="distances.png"):
-    """
-    Plots the distances between particles.
-
-    Parameters
-    ----------
-    distance_list : list
-        List of distances
-    step_size : float
-        Step size of simulation
-    timesteps : int
-        Number of timesteps
-    eq_timestep : int
-        Equilibrium timestep
-    particle : int
-        Particle to plot distances from
-    file_name : string
-        Name of file to save to
-    """
-    print("Now plotting the distances")
-    time = np.arange(timesteps+1) * step_size
-    eq_time = eq_timestep * step_size
-    _ = plt.figure(figsize=(10, 7))
-    plt.title(f"Distances between particle {particle} and other particles")
-    plt.xlabel(r"Time  $\left ( \sqrt{\frac{m\sigma^2}{\epsilon}}\right )$ ")
-    plt.ylabel(r"Distance ($\sigma$)")
-    reduced = np.array(distance_list)[:, particle, :]
-    for i in range(0, len(reduced[0])):
-        if i == particle:
-            continue
-        plt.plot(time, reduced[:, i], label=f"Particle {i}")
-    plt.axvline(eq_time, color="green", linestyle="--", label="equilibrium")
-    plt.tight_layout()
-    plt.legend()
-    dprint(f"saving the distances plot to {file_name}")
-    plt.savefig(file_name)
-    plt.close()
-
-
 def create_animation(
     positions, timesteps, step_size, eq_timestep, box_size, selected=0, file_name="particles.mp4"
 ):
