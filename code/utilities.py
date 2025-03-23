@@ -33,12 +33,43 @@ def parse_config(file_path: str):
 
     Returns
     -------
-    A tuple containing:
-    - amount of particles: integer
-    - time step size: float
-    - time step amount: integer
-    - temperature: float
-    - the box size: np.ndarray
+    amount_of_particles: int
+        The amount of particles to simulate
+    step_size: float
+        The timestep size
+    time_steps: int
+        How many timesteps to simulate
+    equilibrium_steps: int
+        How often to rescale towards the target temperature
+    temperature: float
+        The target temperature
+    temperature_tolerance: float
+        A relative tolerance on how close to be to the target temperature
+    equilibrium_stable_check:
+        How many equilibrium checks the temperature needs to be within the tolerance before
+        declaring equilibrium
+    box_size: np.array([box_x, box_y, box_z])
+        The dimensions of the box
+    random_seed: int | None
+        The random seed to use for the simulation, or random if None
+    pos_method: str
+        The initialisation method for the particle positions
+    vel_method: str
+        The initialisation method for the particle velocities
+    simulator_type: list[str]
+        What simulators to simulate the initial state with
+    outputs: list[str]
+        What outputs to produce for each simulation
+    enable_cache: bool
+        Whether to use the cache or not
+    lat_const: float
+        The lattice constant for fcc lattice
+    corner_offset: np.array([offset_x, offset_y, offset_z])
+        How far to offset the corner of the fcc lattice from the box corner
+    bin_size: int
+        How big to make the bins for pair correlation
+    export_csv: bool
+        Whether to export the observable stats to csv or only print them
     """
     with open(file_path) as file:
         config: dict[str, Any] = json.load(file)
