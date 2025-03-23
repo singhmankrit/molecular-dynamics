@@ -609,7 +609,7 @@ def lj_force(
     return force_magnitude, net_force.T
 
 
-def kinetic_energy(vel):  # units of epsilon
+def kinetic_energy(vel: NDArray[np.float64]) -> float:  # units of epsilon
     """
     Computes the kinetic energy of an atomic system.
 
