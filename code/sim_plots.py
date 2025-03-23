@@ -238,7 +238,21 @@ def linear_model(t: float, D: float) -> float:
     return D * t
 
 
-def quadratic_model(t, A):  # Ballistic (gas)
+def quadratic_model(t: float, A: float) -> float:  # Ballistic (gas)
+    """
+    A quadratic fit model for fitting MSD, fits best when the MSD is Ballistic (gas)
+
+    Parameters
+    ----------
+    t: float
+        The time to evaluate at
+    A: float
+        The scaling factor for the quadratic model
+
+    Returns
+    -------
+    The model output at the time t
+    """
     return A * t**2
 
 
