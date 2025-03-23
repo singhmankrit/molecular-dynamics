@@ -237,7 +237,13 @@ def simulate(
     )
 
 
-def verlet_step(positions, velocities, forces, timestep, box_dim):
+def verlet_step(
+    positions: NDArray[np.float64],
+    velocities: NDArray[np.float64],
+    forces: NDArray[np.float64],
+    timestep: float,
+    box_dim: NDArray[np.float64],
+):
     """
     Uses the velocity-Verlet algorithm to integrate the equations of motion.
 
@@ -267,9 +273,7 @@ def verlet_step(positions, velocities, forces, timestep, box_dim):
     new_magnitudes : np.ndarray
         The new forces between the particles
     """
-    new_positions = (
-        positions + velocities * timestep + forces * timestep * timestep / 2
-    ) 
+    new_positions = positions + velocities * timestep + forces * timestep * timestep / 2
     relative_positions, new_distances = atomic_distances(new_positions, box_dim)
     new_magnitudes, new_forces = lj_force(relative_positions, new_distances)
     velocities += (forces + new_forces) * timestep / 2
