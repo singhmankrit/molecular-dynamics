@@ -323,7 +323,12 @@ def euler_step(
     return new_positions, velocities, new_forces, distances, force_magnitudes
 
 
-def leapfrog_step(positions, half_velocities, timestep, box_dim):
+def leapfrog_step(
+    positions: NDArray[np.float64],
+    half_velocities: NDArray[np.float64],
+    timestep: float,
+    box_dim: NDArray[np.float64],
+):
     """
     Uses the Leapfrog method to integrate the equations of motion.
 
@@ -348,9 +353,11 @@ def leapfrog_step(positions, half_velocities, timestep, box_dim):
         The full-step velocities of the particles in Cartesian space
     distances : np.ndarray
         The distances between all particles in Cartesian space
+    force_magnitudes : np.ndarray
+        The new forces between the particles
     """
     # Position update using half-step velocities
-    new_positions = (positions + half_velocities * timestep)
+    new_positions = positions + half_velocities * timestep
 
     # Update the positions and forces
     relative_positions, distances = atomic_distances(new_positions, box_dim)
@@ -362,7 +369,13 @@ def leapfrog_step(positions, half_velocities, timestep, box_dim):
     # Half-step velocity update for the next step
     half_velocities += forces * timestep
 
-    return new_positions, half_velocities, current_velocities, distances, force_magnitudes
+    return (
+        new_positions,
+        half_velocities,
+        current_velocities,
+        distances,
+        force_magnitudes,
+    )
 
 
 def scipy_rk45_step(positions, velocities, timestep, box_dim):
