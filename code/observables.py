@@ -107,20 +107,28 @@ def compute_compressibility_factor(
     return compressibility_factor
 
 
-def compute_specific_heat(kinetic_energy, amount_of_particles, eq_timestep):
+def compute_specific_heat(
+    kinetic_energies: NDArray[np.float64], amount_of_particles: int, eq_timestep: int
+):
     """
     Computes the specific heat for the given kinetic energy and amount of particles.
 
-    Parameters:
-        kinetic_energy (float): The total kinetic energy of the system.
-        amount_of_particles (int): The number of particles in the system.
+    Parameters
+    ----------
+    kinetic_energies: np.ndarray(float)
+        The total kinetic energy of the system at each timestep.
+    amount_of_particles: int
+        The number of particles in the system.
+    eq_timestep: int
+        The timestep were we've reached equilibrium.
 
-    Returns:
-        float: The specific heat.
+    Returns
+    -------
+    The specific heat.
     """
 
     # Consider only timesteps after equilibrium
-    ke_eq = np.array(kinetic_energy[eq_timestep:])
+    ke_eq = np.array(kinetic_energies[eq_timestep:])
 
     # Calculate mean and variance of kinetic energy
     K_mean = np.mean(ke_eq)
@@ -128,9 +136,10 @@ def compute_specific_heat(kinetic_energy, amount_of_particles, eq_timestep):
     delta_K_sq = K_sq_mean - K_mean**2
 
     # Compute specific heat
-    c_V = 1/(2/(3*amount_of_particles) - (delta_K_sq/(K_mean**2)))
+    c_V = 1 / (2 / (3 * amount_of_particles) - (delta_K_sq / (K_mean**2)))
 
-    return c_V/amount_of_particles
+    return c_V / amount_of_particles
+
 
 def bootstrap_specific_heat(kinetic_energy, N, num_samples=10000, block_size=100):
     """
