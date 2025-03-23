@@ -220,7 +220,21 @@ def print_outputs(variables: dict[str, str], simulator_type: str, export_csv: bo
     print(tabulate(print_table, headers=["Variable", "Value"], tablefmt="grid"))
 
 
-def linear_model(t, D):  # Diffusive (liquid)
+def linear_model(t: float, D: float) -> float:
+    """
+    A linear fit model for fitting MSD, fits best when the MSD is Diffusive (liquid)
+
+    Parameters
+    ----------
+    t: float
+        The time to evaluate at
+    D: float
+        The slope of the linear model
+
+    Returns
+    -------
+    The model output at the time t
+    """
     return D * t
 
 
