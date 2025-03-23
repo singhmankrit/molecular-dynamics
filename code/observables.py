@@ -141,45 +141,65 @@ def compute_specific_heat(
     return c_V / amount_of_particles
 
 
-def bootstrap_specific_heat(kinetic_energy, N, num_samples=10000, block_size=100):
+def bootstrap_specific_heat(
+    kinetic_energy: NDArray[np.float64],
+    N: int,
+    num_samples: int = 10000,
+    block_size: int = 100,
+):
     """
     Computes the error in the specific heat for the given kinetic energy and amount of particles.
 
-    Parameters:
-        kinetic_energy (float): The total kinetic energy of the system.
-        amount_of_particles (int): The number of particles in the system.
+    Parameters
+    ----------
+    kinetic_energies: np.ndarray (float)
+        The total kinetic energy of the system at each timestep.
+    N: int
+        The amount of particles
+    num_samples: int
+        The amount of samples to do for bootstrapping
+    block_size: int
+        The size of the blocks to calculate the mean from
 
-    Returns:
-        float: The specific heat.
+    Returns
+    -------
+    cV_mean: float
+        The specific heat
+    cV_error: float
+        The error in specific heat
     """
-    
-    kinetic_energy = np.array(kinetic_energy)
-    num_blocks = len(kinetic_energy) // block_size
-    block_averages_1 = np.array([np.mean(
-        kinetic_energy[i * block_size: (i + 1) * block_size]) for i in range(num_blocks)])
 
-    block_averages_2 = np.array([np.mean(
-        kinetic_energy[i * block_size: (i + 1) * block_size]**2) for i in range(num_blocks)])
+    num_blocks = len(kinetic_energy) // block_size
+    block_averages_1 = np.array(
+        [
+            np.mean(kinetic_energy[i * block_size : (i + 1) * block_size])
+            for i in range(num_blocks)
+        ]
+    )
+
+    block_averages_2 = np.array(
+        [
+            np.mean(kinetic_energy[i * block_size : (i + 1) * block_size] ** 2)
+            for i in range(num_blocks)
+        ]
+    )
 
     bootstrap_values = []
-    
+
     for _ in range(num_samples):
         # check seed stuff
         bootstrap_indices = np.random.randint(0, len(block_averages_1), size=num_blocks)
-        
+
         # Compute bootstrap averages
         K_mean_bs = np.mean(block_averages_1[bootstrap_indices])
         K2_mean_bs = np.mean(block_averages_2[bootstrap_indices])
         delta_K_sq = K2_mean_bs - K_mean_bs**2
 
         # Compute specific heat
-        c_V = 3/(2*(1-(3*N*delta_K_sq)/(2*K_mean_bs**2)))
+        c_V = 3 / (2 * (1 - (3 * N * delta_K_sq) / (2 * K_mean_bs**2)))
         bootstrap_values.append(c_V)
 
     cV_mean = np.mean(bootstrap_values)
-    cV_error = np.sqrt(
-        np.mean(np.square(bootstrap_values)) - cV_mean**2)
+    cV_error = np.sqrt(np.mean(np.square(bootstrap_values)) - cV_mean**2)
 
     return cV_mean, cV_error
-
-
