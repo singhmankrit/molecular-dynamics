@@ -1,21 +1,22 @@
 import numpy as np
+from numpy.typing import NDArray
 from .utilities import dprint
 from alive_progress import alive_bar
 from scipy.integrate import solve_ivp
 
 
 def simulate(
-    init_pos,
-    init_vel,
-    num_tsteps,
-    timestep,
-    box_dim,
-    equilibrium_steps,
-    target_temperature,
-    temperature_tolerance,
-    equilibrium_stable_check,
-    integrator,
-    delta_r,
+    init_pos: NDArray[np.float64],
+    init_vel: NDArray[np.float64],
+    num_tsteps: int,
+    timestep: float,
+    box_dim: NDArray[np.float64],
+    equilibrium_steps: int,
+    target_temperature: float,
+    temperature_tolerance: float,
+    equilibrium_stable_check: int,
+    integrator: str,
+    delta_r: float,
     alive_params={},
 ):
     """
@@ -48,7 +49,22 @@ def simulate(
 
     Returns
     -------
-    Any quantities or observables that you wish to study.
+    positions_list: np.ndarray
+        The positions of all the particles at each timestep
+    velocities_list: np.ndarray
+        The velocities of all the particles at each timestep
+    kinetic_energies_list: np.ndarray
+        The total kinetic energy at each timestep
+    potential_energies_list: np.ndarray
+        The total potential energy at each timestep
+    virials: np.ndarray
+        The virial at each timestep
+    histograms: np.ndarray
+        A histogram of the pairwise distances at each timestep
+    equilibrium_timestep: int
+        The timestep where equilibrium was reached
+    average_temperature: float
+        The calculated average temperature after equilibrium
     """
     amount_of_particles = len(init_pos)
     positions_list = np.zeros((num_tsteps + 1, amount_of_particles, 3))
@@ -76,12 +92,11 @@ def simulate(
     potential_energies_list[0] = potential_energy(distances)
 
     # For pair_correlation
-    r_max = np.sqrt(box_dim[0] ** 2 + box_dim[1] ** 2 + box_dim[2] ** 2) /2
+    r_max = np.sqrt(box_dim[0] ** 2 + box_dim[1] ** 2 + box_dim[2] ** 2) / 2
     bins = np.arange(0, r_max, delta_r)
-    histograms = np.zeros((num_tsteps + 1, len(bins)-1))
+    histograms = np.zeros((num_tsteps + 1, len(bins) - 1))
     pairwise_dist = distances[np.triu_indices(amount_of_particles, k=1)]
     histograms[0], _ = np.histogram(pairwise_dist, bins=bins)
-
 
     # Counter for equilibrium stability
     stable_counter = 0
@@ -176,23 +191,30 @@ def simulate(
             )
             if is_leapfrog:
                 # refer to half step temperature and velocities for scaling
-                current_temperature = compute_temperature(kinetic_energy(half_velocities), amount_of_particles)
+                current_temperature = compute_temperature(
+                    kinetic_energy(half_velocities), amount_of_particles
+                )
             # rescale velocities if applicable
-            if apply_rescale == False:
-                temperature_list[step-equilibrium_timestep-1] = current_temperature
+            if not apply_rescale:
+                temperature_list[step - equilibrium_timestep - 1] = current_temperature
             if step % equilibrium_steps == 0 and apply_rescale:
-                rescale_factor = compute_rescale_factor(amount_of_particles, target_temperature, current_kinetic_energy)
+                rescale_factor = compute_rescale_factor(
+                    amount_of_particles, target_temperature, current_kinetic_energy
+                )
                 if is_leapfrog:
                     half_velocities *= rescale_factor
                 else:
                     current_velocities *= rescale_factor
-                if abs(current_temperature/target_temperature - 1) > temperature_tolerance:
+                if (
+                    abs(current_temperature / target_temperature - 1)
+                    > temperature_tolerance
+                ):
                     stable_counter = 0
                 else:
                     # Increase stability count if temperature is stable
                     stable_counter += 1
                     # Exit rescaling if stable for longer than equilibrium_stable_check and store timestep
-                    if (stable_counter > equilibrium_stable_check):
+                    if stable_counter > equilibrium_stable_check:
                         apply_rescale = False
                         equilibrium_timestep = step
                         temperature_list = np.zeros((num_tsteps - step))
