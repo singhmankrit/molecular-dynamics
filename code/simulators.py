@@ -24,28 +24,30 @@ def simulate(
 
     Parameters
     ----------
-    init_pos : np.ndarray
+    init_pos: np.ndarray
         The initial positions of the atoms in Cartesian space
-    init_vel : np.ndarray
+    init_vel: np.ndarray
         The initial velocities of the atoms in Cartesian space
-    num_tsteps : int
+    num_tsteps: int
         The total number of simulation steps
-    timestep : float
+    timestep: float
         Duration of a single simulation step
-    box_dim : np.ndarray(float)
+    box_dim: np.ndarray(float)
         Dimensions of the simulation box
-    equilibrium_steps : int
+    equilibrium_steps: int
         Number of steps after which we apply velocity rescaling (if applicable)
-    target_temperature : float
+    target_temperature: float
         The target temperature of the system
-    temperature_tolerance : float
+    temperature_tolerance: float
         The tolerated error in temperature np.abs(actual_temp/target_temp - 1)
-    equilibrium_stable_check : int
+    equilibrium_stable_check: int
         Number of stable steps after which we stop rescaling
-    integrator : str
+    integrator: str
         The integrator based on which we want to simulate
-    delta_r : float
+    delta_r: float
         The bin size for the pair_correlation graph
+    alive_params: dict
+        Parameters to pass to alive_bar
 
     Returns
     -------
