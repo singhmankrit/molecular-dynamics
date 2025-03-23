@@ -630,7 +630,20 @@ def kinetic_energy(vel: NDArray[np.float64]) -> float:  # units of epsilon
     return ke
 
 
-def lj_potential(distance):  # units of epsilon
+def lj_potential(distance: NDArray[np.float64]) -> NDArray[np.float64]:
+    """
+    Computes the magnitude of the Lennard-Jones potential in units of epsilon at distance in units of sigma
+
+    Parameters
+    ----------
+    distance: float
+        The distance between two particles
+
+    Returns
+    -------
+    float
+        The potential energy between the two particles
+    """
     return 4 * ((1 / distance) ** 12 - (1 / distance) ** 6)
 
 
