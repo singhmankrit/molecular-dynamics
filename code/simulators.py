@@ -1,5 +1,5 @@
 import numpy as np
-from utilities import dprint
+from .utilities import dprint
 from alive_progress import alive_bar
 from scipy.integrate import solve_ivp
 
@@ -16,6 +16,7 @@ def simulate(
     equilibrium_stable_check,
     integrator,
     delta_r,
+    alive_params={},
 ):
     """
     Molecular dynamics simulation based on the specified integrator
@@ -93,7 +94,7 @@ def simulate(
     virials = np.zeros((num_tsteps + 1))
     virials[0] = 0.5 * np.sum(distances * force_magnitudes, axis=(0, 1))
 
-    with alive_bar(num_tsteps) as bar:
+    with alive_bar(num_tsteps, **alive_params) as bar:
         for step in np.arange(1, num_tsteps + 1):
             dprint(
                 f"""
@@ -196,7 +197,12 @@ def simulate(
                         equilibrium_timestep = step
                         temperature_list = np.zeros((num_tsteps - step))
             bar()
-    average_temperature = np.mean(temperature_list)
+    # if no equilibrium, then the average temperature is undefined
+    if equilibrium_timestep > 0:
+        average_temperature = np.mean(temperature_list)
+    else:
+        dprint("simulate didn't reach equilbrium")
+        average_temperature = np.nan
     return (
         positions_list,
         velocities_list,

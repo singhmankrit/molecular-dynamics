@@ -2,10 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from alive_progress import alive_bar
+from scipy import optimize as opt
 import csv
 from tabulate import tabulate
 
-from utilities import dprint
+from .utilities import dprint
 
 
 def plot_energy(kinetic, potential, step_size, timesteps, eq_timestep, file_name="energies.png"):
@@ -233,3 +234,63 @@ def print_outputs(variables, simulator_type, export_csv):
             print_table.append([key, value])
 
     print(tabulate(print_table, headers=["Variable", "Value"], tablefmt="grid"))
+
+
+def linear_model(t, D):  # Diffusive (liquid)
+    return D * t
+
+
+def quadratic_model(t, A):  # Ballistic (gas)
+    return A * t**2
+
+
+def constant_model(t, C, D):  # Localized (solid)
+    return C * (1-np.exp(-D*t))
+
+
+def r_squared(y, y_fit):
+    ss_res = np.sum((y - y_fit) ** 2)
+    ss_tot = np.sum((y - np.mean(y)) ** 2)
+    return 1 - (ss_res / ss_tot)
+
+
+def best_fit(msd, t):
+    popt_lin, _ = opt.curve_fit(linear_model, t, msd)
+    popt_quad, _ = opt.curve_fit(quadratic_model, t, msd)
+    msd_fit_lin = linear_model(t, *popt_lin)
+    msd_fit_quad = quadratic_model(t, *popt_quad)
+
+    r2_lin = r_squared(msd, msd_fit_lin)
+    r2_quad = r_squared(msd, msd_fit_quad)
+    try:
+        popt_const, _ = opt.curve_fit(constant_model, t, msd, p0=[2,0.1], bounds=((0,0),(np.inf,1)))
+        msd_fit_const = constant_model(t, *popt_const)
+        r2_const = r_squared(msd, msd_fit_const)
+    except:
+        r2_const = -np.inf
+    # # Print results
+    # print(f"Linear Fit (Liquid): D = {popt_lin[0]:.5f}, R² = {r2_lin:.5f}")
+    # print(f"Quadratic Fit (Gas): A = {popt_quad[0]:.5f}, R² = {r2_quad:.5f}")
+    # print(
+    #     f"Constant Fit (Solid): C = {popt_const[0]:.5f}, R² = {r2_const:.5f}")
+
+    # Determine best fit
+    best_fit = max((r2_lin, "Liquid"), (r2_quad, "Gas"),
+                   (r2_const, "Solid"))[1]
+    # print(f"Best fit suggests the system behaves as a {best_fit}")
+
+    # # Plot results
+    # plt.scatter(t, msd, label="MSD Data", color="black", s=10)
+    # plt.plot(t, msd_fit_lin,
+    #          label=f"Linear Fit (R²={r2_lin:.2f})", linestyle="--")
+    # plt.plot(t, msd_fit_quad,
+    #          label=f"Quadratic Fit (R²={r2_quad:.2f})", linestyle=":")
+    # plt.plot(t, msd_fit_const,
+    #          label=f"Constant Fit (R²={r2_const:.2f})", linestyle="-.")
+    # plt.xlabel("Time")
+    # plt.ylabel("MSD")
+    # plt.legend()
+    # plt.savefig("best_fit.png")
+    # plt.close()
+
+    return best_fit, r2_lin, r2_quad, r2_const
