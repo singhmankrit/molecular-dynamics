@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from alive_progress import alive_bar
+from numpy.typing import NDArray
 from scipy import optimize as opt
 import csv
 from tabulate import tabulate
@@ -9,7 +10,14 @@ from tabulate import tabulate
 from .utilities import dprint
 
 
-def plot_energy(kinetic, potential, step_size, timesteps, eq_timestep, file_name="energies.png"):
+def plot_energy(
+    kinetic: NDArray[np.float64],
+    potential: NDArray[np.float64],
+    step_size: float,
+    timesteps: int,
+    eq_timestep: int,
+    file_name: str = "energies.png",
+):
     """
     Plots the energy vs timesteps.
 
@@ -29,7 +37,7 @@ def plot_energy(kinetic, potential, step_size, timesteps, eq_timestep, file_name
         Name of file to save to
     """
     print("Now plotting the energies")
-    time = np.arange(timesteps+1) * step_size
+    time = np.arange(timesteps + 1) * step_size
     eq_time = eq_timestep * step_size
     _ = plt.figure(figsize=(10, 7))
     plt.title("Energy vs Time")
@@ -37,8 +45,9 @@ def plot_energy(kinetic, potential, step_size, timesteps, eq_timestep, file_name
     plt.ylabel(r"Energy ($\epsilon$)")
     plt.plot(time, kinetic, label="kinetic", color="orange")
     plt.plot(time, potential, label="potential", color="purple")
-    plt.plot(time, np.array(kinetic) + np.array(potential),
-             label="total", color="black")
+    plt.plot(
+        time, np.array(kinetic) + np.array(potential), label="total", color="black"
+    )
     plt.axvline(eq_time, color="green", linestyle="--", label="equilibrium")
     plt.legend()
     plt.tight_layout()
