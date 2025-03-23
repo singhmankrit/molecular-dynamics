@@ -140,7 +140,7 @@ def fcc_lattice(
 ###########################
 
 
-def zero_speed(amount_of_particles):
+def zero_speed(amount_of_particles: int) -> NDArray[np.float64]:
     """
     Generate `amount_of_particles` zero-velocities
 
