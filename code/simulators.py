@@ -481,7 +481,7 @@ def molecular_dynamics_rhs(
     return np.concatenate([dpdt, dvdt])
 
 
-def compute_temperature(kinetic_energy, amount_of_particles):
+def compute_temperature(kinetic_energy: float, amount_of_particles: int):
     """
     Computes the temperature of the system using the kinetic energy.
 
