@@ -1,22 +1,36 @@
 import numpy as np
+from numpy.typing import NDArray
 
 
-def compute_pair_correlation(box_size, histograms, num_particles, delta_r):
+def compute_pair_correlation(
+    box_size: NDArray[np.float64],
+    histograms: NDArray[np.float64],
+    num_particles: int,
+    delta_r: float,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """
     Computes the time-averaged pair correlation function g(r) given a distance matrix.
 
-    Parameters:
-        box_size (tuple): The size of the simulation box.
-        histograms (np.ndarray): A list of distance histograms for each timestep.
-        num_particles (int): The total number of particles in the system.
-        delta_r (float): The bin size for the histogram.
+    Parameters
+    ----------
+    box_size: np.ndarray
+        The size of the simulation box.
+    histograms: np.ndarray
+        A list of distance histograms for each timestep.
+    num_particles: int
+        The total number of particles in the system.
+    delta_r: float
+        The bin size for the histogram.
 
-    Returns:
-        r_values (numpy array): The midpoints of the histogram bins.
-        g_r (numpy array): The time-averaged pair correlation function values.
+    Returns
+    -------
+    r_values: np.ndarray
+        The midpoints of the histogram bins.
+    g_r: np.ndarray
+        The time-averaged pair correlation function values.
     """
     volume = box_size[0] * box_size[1] * box_size[2]
-    r_max = np.sqrt(box_size[0]**2 + box_size[1]**2 + box_size[2]**2)/2
+    r_max = np.sqrt(box_size[0] ** 2 + box_size[1] ** 2 + box_size[2] ** 2) / 2
     bins = np.arange(0, r_max, delta_r)
 
     # Time-averaged histogram
