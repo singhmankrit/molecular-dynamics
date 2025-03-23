@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.typing import NDArray
 
 from .utilities import is2d
 
@@ -7,7 +8,9 @@ from .utilities import is2d
 ###########################
 
 
-def uniform_random(amount_of_particles, box_dim, seed=None):
+def uniform_random(
+    amount_of_particles: int, box_dim: NDArray[np.float64], seed: int | None = None
+):
     """
     Initialise `amount_of_particles` positions which fit in the specified box
 
