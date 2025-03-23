@@ -142,7 +142,7 @@ def compute_specific_heat(
 
 
 def bootstrap_specific_heat(
-    kinetic_energy: NDArray[np.float64],
+    kinetic_energies: NDArray[np.float64],
     N: int,
     num_samples: int = 10000,
     block_size: int = 100,
@@ -169,17 +169,17 @@ def bootstrap_specific_heat(
         The error in specific heat
     """
 
-    num_blocks = len(kinetic_energy) // block_size
+    num_blocks = len(kinetic_energies) // block_size
     block_averages_1 = np.array(
         [
-            np.mean(kinetic_energy[i * block_size : (i + 1) * block_size])
+            np.mean(kinetic_energies[i * block_size : (i + 1) * block_size])
             for i in range(num_blocks)
         ]
     )
 
     block_averages_2 = np.array(
         [
-            np.mean(kinetic_energy[i * block_size : (i + 1) * block_size] ** 2)
+            np.mean(kinetic_energies[i * block_size : (i + 1) * block_size] ** 2)
             for i in range(num_blocks)
         ]
     )
