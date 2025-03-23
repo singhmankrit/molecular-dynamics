@@ -43,23 +43,27 @@ def compute_pair_correlation(
     return r_values, g_r
 
 
-def compute_msd(pos, t_eq):
+def compute_msd(pos: NDArray[np.float64], t_eq: int) -> NDArray[np.float64]:
     """
     Computes the mean squared displacement (MSD) given a 3D array of
     particle positions, starting from a given equilibrium time step.
 
-    Parameters:
-        pos (numpy array): A 3D array of shape (time_steps, num_particles, 3)
-            containing the positions of particles at each time step.
-        t_eq (int): The time step at which to start computing the MSD.
+    Parameters
+    ----------
+    pos: np.ndarray
+        A 3D array of shape (time_steps, num_particles, 3)
+        containing the positions of particles at each time step.
+    t_eq: int
+        The time step at which to start computing the MSD.
 
     Returns:
-        msd (numpy array): A 1D array of shape (time_steps - t_eq,)
-            containing the mean squared displacement at each time step.
+    msd: np.ndarray
+        A 1D array of shape (time_steps - t_eq,)
+        containing the mean squared displacement at each time step.
     """
 
     pos_eq = pos[t_eq:]  # shape: (time_steps - t_eq, num_particles, 3)
-    pos_0 = pos_eq[0]    # reference positions at t_eq
+    pos_0 = pos_eq[0]  # reference positions at t_eq
 
     # Compute displacements
     displacements = pos_eq - pos_0  # (time_steps - t_eq, num_particles, 3)
