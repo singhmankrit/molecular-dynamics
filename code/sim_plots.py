@@ -57,7 +57,13 @@ def plot_energy(
 
 
 def create_animation(
-    positions, timesteps, step_size, eq_timestep, box_size, selected=0, file_name="particles.mp4"
+    positions: NDArray[np.float64],
+    timesteps: int,
+    step_size: float,
+    eq_timestep: int,
+    box_size: NDArray[np.float64],
+    selected: int = 0,
+    file_name: str = "particles.mp4",
 ):
     """
     Creates an animation of the system.
@@ -94,7 +100,8 @@ def create_animation(
     )
     title = ax.set_title("Time = 0.00")
     # Update function for animation
-    with alive_bar(timesteps+2) as bar:
+    with alive_bar(timesteps + 2) as bar:
+
         def update(frame):
             time = frame * step_size
             particles._offsets3d = (
@@ -106,7 +113,8 @@ def create_animation(
                 title.set_text(f"Time = {time:.2f}")
             else:
                 title.set_text(
-                    f"Time = {time:.2f} \n Reached Equilibrium at Time = {eq_timestep * step_size:.2f}")
+                    f"Time = {time:.2f} \n Reached Equilibrium at Time = {eq_timestep * step_size:.2f}"
+                )
             bar()
             return particles, title
 
