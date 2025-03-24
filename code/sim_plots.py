@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from alive_progress import alive_bar
+from numpy.typing import NDArray
 from scipy import optimize as opt
 import csv
 from tabulate import tabulate
@@ -9,7 +10,14 @@ from tabulate import tabulate
 from .utilities import dprint
 
 
-def plot_energy(kinetic, potential, step_size, timesteps, eq_timestep, file_name="energies.png"):
+def plot_energy(
+    kinetic: NDArray[np.float64],
+    potential: NDArray[np.float64],
+    step_size: float,
+    timesteps: int,
+    eq_timestep: int,
+    file_name: str = "energies.png",
+):
     """
     Plots the energy vs timesteps.
 
@@ -29,7 +37,7 @@ def plot_energy(kinetic, potential, step_size, timesteps, eq_timestep, file_name
         Name of file to save to
     """
     print("Now plotting the energies")
-    time = np.arange(timesteps+1) * step_size
+    time = np.arange(timesteps + 1) * step_size
     eq_time = eq_timestep * step_size
     _ = plt.figure(figsize=(10, 7))
     plt.title("Energy vs Time")
@@ -37,8 +45,9 @@ def plot_energy(kinetic, potential, step_size, timesteps, eq_timestep, file_name
     plt.ylabel(r"Energy ($\epsilon$)")
     plt.plot(time, kinetic, label="kinetic", color="orange")
     plt.plot(time, potential, label="potential", color="purple")
-    plt.plot(time, np.array(kinetic) + np.array(potential),
-             label="total", color="black")
+    plt.plot(
+        time, np.array(kinetic) + np.array(potential), label="total", color="black"
+    )
     plt.axvline(eq_time, color="green", linestyle="--", label="equilibrium")
     plt.legend()
     plt.tight_layout()
@@ -47,47 +56,14 @@ def plot_energy(kinetic, potential, step_size, timesteps, eq_timestep, file_name
     plt.close()
 
 
-def plot_distances(distance_list, step_size, timesteps, eq_timestep, particle=0, file_name="distances.png"):
-    """
-    Plots the distances between particles.
-
-    Parameters
-    ----------
-    distance_list : list
-        List of distances
-    step_size : float
-        Step size of simulation
-    timesteps : int
-        Number of timesteps
-    eq_timestep : int
-        Equilibrium timestep
-    particle : int
-        Particle to plot distances from
-    file_name : string
-        Name of file to save to
-    """
-    print("Now plotting the distances")
-    time = np.arange(timesteps+1) * step_size
-    eq_time = eq_timestep * step_size
-    _ = plt.figure(figsize=(10, 7))
-    plt.title(f"Distances between particle {particle} and other particles")
-    plt.xlabel(r"Time  $\left ( \sqrt{\frac{m\sigma^2}{\epsilon}}\right )$ ")
-    plt.ylabel(r"Distance ($\sigma$)")
-    reduced = np.array(distance_list)[:, particle, :]
-    for i in range(0, len(reduced[0])):
-        if i == particle:
-            continue
-        plt.plot(time, reduced[:, i], label=f"Particle {i}")
-    plt.axvline(eq_time, color="green", linestyle="--", label="equilibrium")
-    plt.tight_layout()
-    plt.legend()
-    dprint(f"saving the distances plot to {file_name}")
-    plt.savefig(file_name)
-    plt.close()
-
-
 def create_animation(
-    positions, timesteps, step_size, eq_timestep, box_size, selected=0, file_name="particles.mp4"
+    positions: NDArray[np.float64],
+    timesteps: int,
+    step_size: float,
+    eq_timestep: int,
+    box_size: NDArray[np.float64],
+    selected: int = 0,
+    file_name: str = "particles.mp4",
 ):
     """
     Creates an animation of the system.
@@ -124,7 +100,8 @@ def create_animation(
     )
     title = ax.set_title("Time = 0.00")
     # Update function for animation
-    with alive_bar(timesteps+2) as bar:
+    with alive_bar(timesteps + 2) as bar:
+
         def update(frame):
             time = frame * step_size
             particles._offsets3d = (
@@ -136,7 +113,8 @@ def create_animation(
                 title.set_text(f"Time = {time:.2f}")
             else:
                 title.set_text(
-                    f"Time = {time:.2f} \n Reached Equilibrium at Time = {eq_timestep * step_size:.2f}")
+                    f"Time = {time:.2f} \n Reached Equilibrium at Time = {eq_timestep * step_size:.2f}"
+                )
             bar()
             return particles, title
 
@@ -147,7 +125,11 @@ def create_animation(
         ani.save(file_name, writer="ffmpeg", fps=30)
 
 
-def plot_pair_correlation(r_values, g_r, file_name="pair_correlation.png"):
+def plot_pair_correlation(
+    r_values: NDArray[np.float64],
+    g_r: NDArray[np.float64],
+    file_name: str = "pair_correlation.png",
+):
     """
     Plots the pair correlation function.
 
@@ -175,7 +157,14 @@ def plot_pair_correlation(r_values, g_r, file_name="pair_correlation.png"):
     plt.close()
 
 
-def plot_MSD(msd, time, file_name="MSD.png"):
+def plot_MSD(
+    msd: NDArray[np.float64],
+    time: NDArray[np.float64],
+    eq_time: float,
+    amp: float,
+    exponent: float,
+    file_name: str = "MSD.png",
+):
     """
     Plots the mean square displacement.
 
@@ -185,6 +174,12 @@ def plot_MSD(msd, time, file_name="MSD.png"):
         List of mean square displacements
     time : list
         List of time passed
+    eq_time: float
+        The equilibrium time
+    amp: float
+        Amplitude of the best fit
+    exponent: float
+        Exponent of the best fit
     file_name : string
         Name of file to save to
     """
@@ -195,6 +190,12 @@ def plot_MSD(msd, time, file_name="MSD.png"):
     plt.xlabel(r"Time  $\left ( \sqrt{\frac{m\sigma^2}{\epsilon}}\right )$ ")
     plt.ylabel(r"MSD ($\sigma^2$)")
     plt.plot(time, msd, label="MSD")
+    plt.plot(
+        time,
+        power_model(time - eq_time, amp, exponent),
+        label=f"Fit (exp: {exponent:.2f})",
+        linestyle="--",
+    )
     plt.legend()
     plt.tight_layout()
     dprint(f"saving the MSD plot to {file_name}")
@@ -202,7 +203,7 @@ def plot_MSD(msd, time, file_name="MSD.png"):
     plt.close()
 
 
-def print_outputs(variables, simulator_type, export_csv):
+def print_outputs(variables: dict[str, str], simulator_type: str, export_csv: bool):
     """
     Prints the simulation results and optionally exports them to a CSV file.
 
@@ -220,77 +221,97 @@ def print_outputs(variables, simulator_type, export_csv):
     Prints a formatted table of the variables and their values to the console.
     """
     if export_csv:
-        with open(f"results_{simulator_type}.csv", mode='w', newline='') as file:
+        with open(f"results_{simulator_type}.csv", mode="w", newline="") as file:
             writer = csv.writer(file)
             writer.writerow(["Variable", "Value"])
             for key, value in variables.items():
                 writer.writerow([key, value])
-    print_table = []
+    print_table: list[tuple[str, str]] = []
     for key, value in variables.items():
         if isinstance(value, (list, np.ndarray)):
             value_str = str(value)
-            print_table.append([key, value_str])
+            print_table.append((key, value_str))
         else:
-            print_table.append([key, value])
+            print_table.append((key, value))
 
     print(tabulate(print_table, headers=["Variable", "Value"], tablefmt="grid"))
 
 
-def linear_model(t, D):  # Diffusive (liquid)
-    return D * t
+def power_model(t, A, B):
+    """
+    Simple power model for the fit function to map to
 
-
-def quadratic_model(t, A):  # Ballistic (gas)
-    return A * t**2
-
-
-def constant_model(t, C, D):  # Localized (solid)
-    return C * (1-np.exp(-D*t))
+    Parameters
+    ----------
+    t: float
+        Time to fill into the model
+    A: float
+        Constant scaling factor in the model
+    B: float
+        Exponent factor in the model
+    """
+    return A * t**B
 
 
 def r_squared(y, y_fit):
+    """
+    Calculates the r^2 metric for the fit y_fit relative to the original data y.
+
+    Parameters
+    ----------
+    y: list[float]
+        A list of datapoints the fit should be compared with
+    y_fit: list[float]
+        A list of estimates retrieved from the fit
+
+    Returns
+    -------
+    How good the fit is in relation to the simple mean
+    """
     ss_res = np.sum((y - y_fit) ** 2)
     ss_tot = np.sum((y - np.mean(y)) ** 2)
     return 1 - (ss_res / ss_tot)
 
 
-def best_fit(msd, t):
-    popt_lin, _ = opt.curve_fit(linear_model, t, msd)
-    popt_quad, _ = opt.curve_fit(quadratic_model, t, msd)
-    msd_fit_lin = linear_model(t, *popt_lin)
-    msd_fit_quad = quadratic_model(t, *popt_quad)
+def best_fit(
+    msd: NDArray[np.float64], t: NDArray[np.float64]
+) -> tuple[str, float, float, float]:
+    """
+    Finds the phase by fitting a power model and then comparing the result
+    to values from literature
 
-    r2_lin = r_squared(msd, msd_fit_lin)
-    r2_quad = r_squared(msd, msd_fit_quad)
+    Parameters
+    ----------
+    msd: list[float]
+        The mean squared displacement at time t
+    t: list[float]
+        The times t the msd's are at
+
+    Returns
+    -------
+    phase: str
+        The phase closest to the fit
+    exponent: float
+        The exponent that appears in the fit
+    amplitude: float
+        The constant amplitude factor of the fit
+    r2_pow: float
+        The r2 value of the fit
+    """
     try:
-        popt_const, _ = opt.curve_fit(constant_model, t, msd, p0=[2,0.1], bounds=((0,0),(np.inf,1)))
-        msd_fit_const = constant_model(t, *popt_const)
-        r2_const = r_squared(msd, msd_fit_const)
+        popt_pow, cov = opt.curve_fit(
+            power_model, t, msd, bounds=([-0.5, 0.0], [np.inf, 3.0])
+        )
     except:
-        r2_const = -np.inf
-    # # Print results
-    # print(f"Linear Fit (Liquid): D = {popt_lin[0]:.5f}, R² = {r2_lin:.5f}")
-    # print(f"Quadratic Fit (Gas): A = {popt_quad[0]:.5f}, R² = {r2_quad:.5f}")
-    # print(
-    #     f"Constant Fit (Solid): C = {popt_const[0]:.5f}, R² = {r2_const:.5f}")
+        return "NoConverge", np.nan, np.nan, 0
+    msd_fit_pow = power_model(t, *popt_pow)
+    r2_pow = r_squared(msd, msd_fit_pow)
 
-    # Determine best fit
-    best_fit = max((r2_lin, "Liquid"), (r2_quad, "Gas"),
-                   (r2_const, "Solid"))[1]
-    # print(f"Best fit suggests the system behaves as a {best_fit}")
-
-    # # Plot results
-    # plt.scatter(t, msd, label="MSD Data", color="black", s=10)
-    # plt.plot(t, msd_fit_lin,
-    #          label=f"Linear Fit (R²={r2_lin:.2f})", linestyle="--")
-    # plt.plot(t, msd_fit_quad,
-    #          label=f"Quadratic Fit (R²={r2_quad:.2f})", linestyle=":")
-    # plt.plot(t, msd_fit_const,
-    #          label=f"Constant Fit (R²={r2_const:.2f})", linestyle="-.")
-    # plt.xlabel("Time")
-    # plt.ylabel("MSD")
-    # plt.legend()
-    # plt.savefig("best_fit.png")
-    # plt.close()
-
-    return best_fit, r2_lin, r2_quad, r2_const
+    phase = "Unknown"
+    if popt_pow[1] < np.sqrt(2) / 2:
+        phase = "Solid"
+    elif popt_pow[1] < np.sqrt(2):
+        phase = "Liquid"
+    elif popt_pow[1] < 3.0:
+        phase = "Gas"
+    return phase, float(popt_pow[1]), float(popt_pow[0]), float(r2_pow)

@@ -1,21 +1,22 @@
 import numpy as np
+from numpy.typing import NDArray
 from .utilities import dprint
 from alive_progress import alive_bar
 from scipy.integrate import solve_ivp
 
 
 def simulate(
-    init_pos,
-    init_vel,
-    num_tsteps,
-    timestep,
-    box_dim,
-    equilibrium_steps,
-    target_temperature,
-    temperature_tolerance,
-    equilibrium_stable_check,
-    integrator,
-    delta_r,
+    init_pos: NDArray[np.float64],
+    init_vel: NDArray[np.float64],
+    num_tsteps: int,
+    timestep: float,
+    box_dim: NDArray[np.float64],
+    equilibrium_steps: int,
+    target_temperature: float,
+    temperature_tolerance: float,
+    equilibrium_stable_check: int,
+    integrator: str,
+    delta_r: float,
     alive_params={},
 ):
     """
@@ -23,32 +24,49 @@ def simulate(
 
     Parameters
     ----------
-    init_pos : np.ndarray
+    init_pos: np.ndarray
         The initial positions of the atoms in Cartesian space
-    init_vel : np.ndarray
+    init_vel: np.ndarray
         The initial velocities of the atoms in Cartesian space
-    num_tsteps : int
+    num_tsteps: int
         The total number of simulation steps
-    timestep : float
+    timestep: float
         Duration of a single simulation step
-    box_dim : np.ndarray(float)
+    box_dim: np.ndarray(float)
         Dimensions of the simulation box
-    equilibrium_steps : int
+    equilibrium_steps: int
         Number of steps after which we apply velocity rescaling (if applicable)
-    target_temperature : float
+    target_temperature: float
         The target temperature of the system
-    temperature_tolerance : float
+    temperature_tolerance: float
         The tolerated error in temperature np.abs(actual_temp/target_temp - 1)
-    equilibrium_stable_check : int
+    equilibrium_stable_check: int
         Number of stable steps after which we stop rescaling
-    integrator : str
+    integrator: str
         The integrator based on which we want to simulate
-    delta_r : float
+    delta_r: float
         The bin size for the pair_correlation graph
+    alive_params: dict
+        Parameters to pass to alive_bar
 
     Returns
     -------
-    Any quantities or observables that you wish to study.
+    positions_list: np.ndarray
+        The positions of all the particles at each timestep
+    velocities_list: np.ndarray
+        The velocities of all the particles at each timestep
+    kinetic_energies_list: np.ndarray
+        The total kinetic energy at each timestep
+    potential_energies_list: np.ndarray
+        The total potential energy at each timestep
+    virials: np.ndarray
+        The virial at each timestep
+    histograms: np.ndarray
+        A histogram of the pairwise distances at each timestep
+    equilibrium_timestep: int
+        The timestep where equilibrium was reached
+    average_temperature: float
+        The calculated average temperature after equilibrium
     """
     amount_of_particles = len(init_pos)
     positions_list = np.zeros((num_tsteps + 1, amount_of_particles, 3))
@@ -76,12 +94,11 @@ def simulate(
     potential_energies_list[0] = potential_energy(distances)
 
     # For pair_correlation
-    r_max = np.sqrt(box_dim[0] ** 2 + box_dim[1] ** 2 + box_dim[2] ** 2) /2
+    r_max = np.sqrt(box_dim[0] ** 2 + box_dim[1] ** 2 + box_dim[2] ** 2) / 2
     bins = np.arange(0, r_max, delta_r)
-    histograms = np.zeros((num_tsteps + 1, len(bins)-1))
+    histograms = np.zeros((num_tsteps + 1, len(bins) - 1))
     pairwise_dist = distances[np.triu_indices(amount_of_particles, k=1)]
     histograms[0], _ = np.histogram(pairwise_dist, bins=bins)
-
 
     # Counter for equilibrium stability
     stable_counter = 0
@@ -118,18 +135,18 @@ def simulate(
                     box_dim,
                 )
             elif integrator == "euler":
-                force_magnitudes, current_forces = lj_force(
-                    relative_positions, distances
-                )
-                current_positions, current_velocities = euler_step(
+                (
+                    current_positions,
+                    current_velocities,
+                    current_forces,
+                    distances,
+                    force_magnitudes,
+                ) = euler_step(
                     current_positions,
                     current_velocities,
                     current_forces,
                     timestep,
                     box_dim,
-                )
-                relative_positions, distances = atomic_distances(
-                    current_positions, box_dim
                 )
             elif integrator == "leapfrog":
                 is_leapfrog = True
@@ -176,23 +193,30 @@ def simulate(
             )
             if is_leapfrog:
                 # refer to half step temperature and velocities for scaling
-                current_temperature = compute_temperature(kinetic_energy(half_velocities), amount_of_particles)
+                current_temperature = compute_temperature(
+                    kinetic_energy(half_velocities), amount_of_particles
+                )
             # rescale velocities if applicable
-            if apply_rescale == False:
-                temperature_list[step-equilibrium_timestep-1] = current_temperature
+            if not apply_rescale:
+                temperature_list[step - equilibrium_timestep - 1] = current_temperature
             if step % equilibrium_steps == 0 and apply_rescale:
-                rescale_factor = compute_rescale_factor(amount_of_particles, target_temperature, current_kinetic_energy)
+                rescale_factor = compute_rescale_factor(
+                    amount_of_particles, target_temperature, current_kinetic_energy
+                )
                 if is_leapfrog:
                     half_velocities *= rescale_factor
                 else:
                     current_velocities *= rescale_factor
-                if abs(current_temperature/target_temperature - 1) > temperature_tolerance:
+                if (
+                    abs(current_temperature / target_temperature - 1)
+                    > temperature_tolerance
+                ):
                     stable_counter = 0
                 else:
                     # Increase stability count if temperature is stable
                     stable_counter += 1
                     # Exit rescaling if stable for longer than equilibrium_stable_check and store timestep
-                    if (stable_counter > equilibrium_stable_check):
+                    if stable_counter > equilibrium_stable_check:
                         apply_rescale = False
                         equilibrium_timestep = step
                         temperature_list = np.zeros((num_tsteps - step))
@@ -215,7 +239,13 @@ def simulate(
     )
 
 
-def verlet_step(positions, velocities, forces, timestep, box_dim):
+def verlet_step(
+    positions: NDArray[np.float64],
+    velocities: NDArray[np.float64],
+    forces: NDArray[np.float64],
+    timestep: float,
+    box_dim: NDArray[np.float64],
+):
     """
     Uses the velocity-Verlet algorithm to integrate the equations of motion.
 
@@ -245,16 +275,20 @@ def verlet_step(positions, velocities, forces, timestep, box_dim):
     new_magnitudes : np.ndarray
         The new forces between the particles
     """
-    new_positions = (
-        positions + velocities * timestep + forces * timestep * timestep / 2
-    ) 
+    new_positions = positions + velocities * timestep + forces * timestep * timestep / 2
     relative_positions, new_distances = atomic_distances(new_positions, box_dim)
     new_magnitudes, new_forces = lj_force(relative_positions, new_distances)
     velocities += (forces + new_forces) * timestep / 2
     return new_positions, velocities, new_forces, new_distances, new_magnitudes
 
 
-def euler_step(positions, velocities, forces, timestep, box_dim):
+def euler_step(
+    positions: NDArray[np.float64],
+    velocities: NDArray[np.float64],
+    forces: NDArray[np.float64],
+    timestep: float,
+    box_dim: NDArray[np.float64],
+):
     """
     Uses the Euler method to integrate the equations of motion.
 
@@ -274,16 +308,29 @@ def euler_step(positions, velocities, forces, timestep, box_dim):
     Returns
     -------
     new_positions : np.ndarray
-        The updated positions of the particles in Cartesian space
+        The new positions of the particles in Cartesian space
     velocities : np.ndarray
         The updated velocities of the particles in Cartesian space
+    forces : np.ndarray
+        The new forces on the particles in Cartesian space
+    distances : np.ndarray
+        The new distances between the particles
+    new_magnitudes : np.ndarray
+        The new forces between the particles
     """
-    new_positions = (positions + velocities * timestep)
+    new_positions = positions + velocities * timestep
+    relative_positions, distances = atomic_distances(new_positions, box_dim)
+    force_magnitudes, new_forces = lj_force(relative_positions, distances)
     velocities += forces * timestep
-    return new_positions, velocities
+    return new_positions, velocities, new_forces, distances, force_magnitudes
 
 
-def leapfrog_step(positions, half_velocities, timestep, box_dim):
+def leapfrog_step(
+    positions: NDArray[np.float64],
+    half_velocities: NDArray[np.float64],
+    timestep: float,
+    box_dim: NDArray[np.float64],
+):
     """
     Uses the Leapfrog method to integrate the equations of motion.
 
@@ -308,9 +355,11 @@ def leapfrog_step(positions, half_velocities, timestep, box_dim):
         The full-step velocities of the particles in Cartesian space
     distances : np.ndarray
         The distances between all particles in Cartesian space
+    force_magnitudes : np.ndarray
+        The new forces between the particles
     """
     # Position update using half-step velocities
-    new_positions = (positions + half_velocities * timestep)
+    new_positions = positions + half_velocities * timestep
 
     # Update the positions and forces
     relative_positions, distances = atomic_distances(new_positions, box_dim)
@@ -322,10 +371,21 @@ def leapfrog_step(positions, half_velocities, timestep, box_dim):
     # Half-step velocity update for the next step
     half_velocities += forces * timestep
 
-    return new_positions, half_velocities, current_velocities, distances, force_magnitudes
+    return (
+        new_positions,
+        half_velocities,
+        current_velocities,
+        distances,
+        force_magnitudes,
+    )
 
 
-def scipy_rk45_step(positions, velocities, timestep, box_dim):
+def scipy_rk45_step(
+    positions: NDArray[np.float64],
+    velocities: NDArray[np.float64],
+    timestep: float,
+    box_dim: NDArray[np.float64],
+):
     """
     Uses the scipy.integrate.solve_ivp method to integrate the equations of motion.
 
@@ -359,22 +419,36 @@ def scipy_rk45_step(positions, velocities, timestep, box_dim):
         y0=y0,
         t_eval=t_eval,
         args=(box_dim,),
-        method="RK45"  # Runge-Kutta 4th/5th order
+        method="RK45",  # Runge-Kutta 4th/5th order
     )
 
     # Reshape solution: extract positions and velocities
-    current_positions = sol.y[:3 * amount_of_particles].reshape(
-        amount_of_particles, 3, -1).transpose(2, 0, 1).squeeze()
-    current_velocities = sol.y[3 * amount_of_particles:].reshape(
-        amount_of_particles, 3, -1).transpose(2, 0, 1).squeeze()
-    relative_positions, distances = atomic_distances(
-        current_positions, box_dim
+    current_positions = (
+        sol.y[: 3 * amount_of_particles]
+        .reshape(amount_of_particles, 3, -1)
+        .transpose(2, 0, 1)
+        .squeeze()
     )
-    force_magnitudes,current_forces = lj_force(relative_positions, distances)
-    return current_positions, current_velocities, current_forces, distances,force_magnitudes
+    current_velocities = (
+        sol.y[3 * amount_of_particles :]
+        .reshape(amount_of_particles, 3, -1)
+        .transpose(2, 0, 1)
+        .squeeze()
+    )
+    relative_positions, distances = atomic_distances(current_positions, box_dim)
+    force_magnitudes, current_forces = lj_force(relative_positions, distances)
+    return (
+        current_positions,
+        current_velocities,
+        current_forces,
+        distances,
+        force_magnitudes,
+    )
 
 
-def molecular_dynamics_rhs(t, y, box_dim):
+def molecular_dynamics_rhs(
+    _t: float, y: NDArray[np.float64], box_dim: NDArray[np.float64]
+):
     """
     Compute derivatives for the molecular dynamics ODE system.
 
@@ -393,12 +467,12 @@ def molecular_dynamics_rhs(t, y, box_dim):
         Flattened derivative array containing velocity and acceleration.
     """
     amount_of_particles = len(y) // 6  # 3 for positions, 3 for velocities
-    positions = y[:3 * amount_of_particles].reshape(amount_of_particles, 3)
-    velocities = y[3 * amount_of_particles:].reshape(amount_of_particles, 3)
+    positions = y[: 3 * amount_of_particles].reshape(amount_of_particles, 3)
+    velocities = y[3 * amount_of_particles :].reshape(amount_of_particles, 3)
 
     # Compute distances and forces
     relative_positions, distances = atomic_distances(positions, box_dim)
-    forces = lj_force(relative_positions, distances)
+    _, forces = lj_force(relative_positions, distances)
 
     # First derivatives (velocities)
     dpdt = velocities.flatten()
@@ -409,7 +483,7 @@ def molecular_dynamics_rhs(t, y, box_dim):
     return np.concatenate([dpdt, dvdt])
 
 
-def compute_temperature(kinetic_energy, amount_of_particles):
+def compute_temperature(kinetic_energy: float, amount_of_particles: int):
     """
     Computes the temperature of the system using the kinetic energy.
 
@@ -429,7 +503,9 @@ def compute_temperature(kinetic_energy, amount_of_particles):
     return (2 * kinetic_energy) / (3 * (amount_of_particles - 1))
 
 
-def compute_rescale_factor(amount_of_particles, target_temperature, kinetic_energy):
+def compute_rescale_factor(
+    amount_of_particles: int, target_temperature: float, kinetic_energy: float
+) -> float:
     """
     Returns the rescale factor for the velocities of the particles to reach a target temperature.
 
@@ -447,12 +523,14 @@ def compute_rescale_factor(amount_of_particles, target_temperature, kinetic_ener
     scaled_velocities : float
         The rescale factor
     """
-    return np.sqrt(3*(amount_of_particles-1)*target_temperature/(2*kinetic_energy))
+    return np.sqrt(
+        3 * (amount_of_particles - 1) * target_temperature / (2 * kinetic_energy)
+    )
 
 
 def atomic_distances(
-    pos: np.typing.NDArray[np.float64], box_dim: np.typing.NDArray[np.float64]
-) -> np.typing.NDArray[np.float64]:
+    pos: NDArray[np.float64], box_dim: NDArray[np.float64]
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """
     Calculates relative positions and distances between particles.
 
@@ -492,12 +570,15 @@ def atomic_distances(
     dprint(f"there are {np.ma.count_masked(distances)} masked distance values")
 
     # return the full distance matrix of shape n-by-n
-    return (relative_positions, distances)
+    return relative_positions, distances
 
 
-def lj_force(rel_pos, rel_dist):  # units of epsilon/sigma
+def lj_force(
+    rel_pos: NDArray[np.float64], rel_dist: NDArray[np.float64]
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """
-    Calculates the net forces on each atom from the matrices containing the positions and distances.
+    Calculates the net forces on each atom from the matrices containing the positions and distances
+    using the Lennard-Jones potential in the units epsilon/sigma
 
     Parameters
     ----------
@@ -527,10 +608,10 @@ def lj_force(rel_pos, rel_dist):  # units of epsilon/sigma
     # Sum forces acting on each particle
     net_force = -np.sum(force_matrix, axis=1)
 
-    return (force_magnitude, net_force.T)
+    return force_magnitude, net_force.T
 
 
-def kinetic_energy(vel):  # units of epsilon
+def kinetic_energy(vel: NDArray[np.float64]) -> float:  # units of epsilon
     """
     Computes the kinetic energy of an atomic system.
 
@@ -551,11 +632,24 @@ def kinetic_energy(vel):  # units of epsilon
     return ke
 
 
-def lj_potential(distance):  # units of epsilon
+def lj_potential(distance: NDArray[np.float64]) -> NDArray[np.float64]:
+    """
+    Computes the magnitude of the Lennard-Jones potential in units of epsilon at distance in units of sigma
+
+    Parameters
+    ----------
+    distance: float
+        The distance between two particles
+
+    Returns
+    -------
+    float
+        The potential energy between the two particles
+    """
     return 4 * ((1 / distance) ** 12 - (1 / distance) ** 6)
 
 
-def potential_energy(rel_dist):
+def potential_energy(rel_dist: NDArray[np.float64]) -> float:
     """
     Computes the potential energy of an atomic system.
 

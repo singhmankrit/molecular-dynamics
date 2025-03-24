@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.typing import NDArray
 
 from .utilities import is2d
 
@@ -7,7 +8,9 @@ from .utilities import is2d
 ###########################
 
 
-def uniform_random(amount_of_particles, box_dim, seed=None):
+def uniform_random(
+    amount_of_particles: int, box_dim: NDArray[np.float64], seed: int | None = None
+):
     """
     Initialise `amount_of_particles` positions which fit in the specified box
 
@@ -32,7 +35,7 @@ def uniform_random(amount_of_particles, box_dim, seed=None):
     return np.hstack((x_coordinates, y_coordinates, z_coordinates))
 
 
-def static(amount_of_particles, box_dim):
+def static(amount_of_particles: int, box_dim: NDArray[np.float64]):
     """
     Take the first `amount_of_particles` from a predefined array of locations
     rescaled to the size of the box.
@@ -137,7 +140,7 @@ def fcc_lattice(
 ###########################
 
 
-def zero_speed(amount_of_particles):
+def zero_speed(amount_of_particles: int) -> NDArray[np.float64]:
     """
     Generate `amount_of_particles` zero-velocities
 
@@ -155,7 +158,9 @@ def zero_speed(amount_of_particles):
     return np.zeros((amount_of_particles, 3))
 
 
-def init_velocity(num_atoms, temp, seed=None):
+def init_velocity(
+    num_atoms: int, temp: float, seed: int | None = None
+) -> NDArray[np.float64]:
     """
     Initializes the system with Gaussian distributed velocities.
 
