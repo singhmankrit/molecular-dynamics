@@ -8,6 +8,17 @@ from numpy.typing import NDArray
 debug = True if os.environ.get("DEBUG") is not None else False
 
 
+def fcc_for_box(
+    box_size: NDArray[np.float64], num_particles: int
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """
+    Calculates the lattice constant such that the crystal repeats exactly in the box
+    """
+    lattice_const = box_size / np.power(num_particles / 4, 1 / 3)
+    corner_offset = lattice_const / 2
+    return lattice_const, corner_offset
+
+
 def dprint(str: object):
     """
     Prints the passed string only if the debug environment variable is set.
@@ -104,8 +115,14 @@ def parse_config(file_path: str):
             ],
         )
         enable_cache: bool = config.get("do_caching", True)
-        lat_const: float = config.get("lattice_const", 1.5)
-        corner_offset: list[float] = config.get("corner_offset", [0, 0, 0])
+        lat_const: float | None = config.get("lattice_const")
+        corner_offset: list[float] | None = config.get("corner_offset")
+        if lat_const is None or corner_offset is None:
+            lat_consts, corner_offsets = fcc_for_box(
+                np.array([box_x, box_y, box_z]), amount_of_particles
+            )
+            corner_offset = list(corner_offsets)
+            lat_const = float(np.mean(lat_consts))
         bin_size: float = config.get("bin_size", 0.1)
         export_csv: bool = config.get("export_csv", False)
         return (
