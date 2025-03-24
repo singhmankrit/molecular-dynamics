@@ -141,8 +141,8 @@ if __name__ == "__main__":
         levels=[-0.5, np.sqrt(2) / 2, np.sqrt(2), 2.5],
     )
 
-    ax.set_xlabel(r"T$(\epsilon/kB)$")
-    ax.set_ylabel(r"$\rho T$ $(N \epsilon/kB\sigma^3)$")
+    ax.set_xlabel(r"T $(\frac{\epsilon}{k_B})$")
+    ax.set_ylabel(r"$\rho T$ $(\frac{N \epsilon}{k_B\sigma^3})$")
     ax.set_yscale("log")
     ax.set_title("Argon simulation phase diagram")
 
@@ -166,8 +166,8 @@ if __name__ == "__main__":
     gas_idxs = np.where(fits2d == "Gas")
     ax.scatter(tgrid[gas_idxs], pgrid[gas_idxs], c="g", label="Gas", marker="x")
 
-    ax.set_xlabel(r"T$(\epsilon/kB)$")
-    ax.set_ylabel(r"$\rho T$ $(N \epsilon/kB\sigma^3)$")
+    ax.set_xlabel(r"T $(\frac{\epsilon}{k_B})$")
+    ax.set_ylabel(r"$\rho T$ $(\frac{N \epsilon}{k_B\sigma^3})$")
     ax.set_yscale("log")
     ax.set_title("Argon simulation phase diagram")
 
