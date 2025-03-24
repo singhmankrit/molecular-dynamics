@@ -158,7 +158,11 @@ def plot_pair_correlation(
 
 
 def plot_MSD(
-    msd: NDArray[np.float64], time: NDArray[np.float64], file_name: str = "MSD.png"
+    msd: NDArray[np.float64],
+    time: NDArray[np.float64],
+    amp: float,
+    exponent: float,
+    file_name: str = "MSD.png",
 ):
     """
     Plots the mean square displacement.
@@ -169,6 +173,10 @@ def plot_MSD(
         List of mean square displacements
     time : list
         List of time passed
+    amp: float
+        Amplitude of the best fit
+    exponent: float
+        Exponent of the best fit
     file_name : string
         Name of file to save to
     """
@@ -179,6 +187,12 @@ def plot_MSD(
     plt.xlabel(r"Time  $\left ( \sqrt{\frac{m\sigma^2}{\epsilon}}\right )$ ")
     plt.ylabel(r"MSD ($\sigma^2$)")
     plt.plot(time, msd, label="MSD")
+    plt.plot(
+        time,
+        power_model(time, amp, exponent),
+        label=f"Fit (exp: {exponent:.2f})",
+        linestyle="--",
+    )
     plt.legend()
     plt.tight_layout()
     dprint(f"saving the MSD plot to {file_name}")
@@ -258,7 +272,7 @@ def r_squared(y, y_fit):
 
 def best_fit(
     msd: NDArray[np.float64], t: NDArray[np.float64]
-) -> tuple[str, float, float]:
+) -> tuple[str, float, float, float]:
     """
     Finds the phase by fitting a power model and then comparing the result
     to values from literature
@@ -276,6 +290,8 @@ def best_fit(
         The phase closest to the fit
     exponent: float
         The exponent that appears in the fit
+    amplitude: float
+        The constant amplitude factor of the fit
     r2_pow: float
         The r2 value of the fit
     """
@@ -284,15 +300,15 @@ def best_fit(
             power_model, t, msd, bounds=([-0.5, 0.0], [np.inf, 3.0])
         )
     except:
-        return "NoConverge", np.nan, 0
+        return "NoConverge", np.nan, np.nan, 0
     msd_fit_pow = power_model(t, *popt_pow)
     r2_pow = r_squared(msd, msd_fit_pow)
 
+    phase = "Unknown"
     if popt_pow[1] < np.sqrt(2) / 2:
-        return "Solid", popt_pow[1], r2_pow
+        phase = "Solid"
     elif popt_pow[1] < np.sqrt(2):
-        return "Liquid", popt_pow[1], r2_pow
+        phase = "Liquid"
     elif popt_pow[1] < 3.0:
-        return "Gas", popt_pow[1], r2_pow
-    else:
-        return "Unknown", popt_pow[1], r2_pow
+        phase = "Gas"
+    return phase, float(popt_pow[1]), float(popt_pow[0]), float(r2_pow)
