@@ -73,7 +73,7 @@ def do_simulation(temp, vol_per_particle):
         except:
             print(repr(sys.exception()))
     if eq_timestep < 0:
-        return ("no equilibrium", np.nan, 0)
+        return ("NoEquilibrium", np.nan, np.nan, 0)
     msd = observables.compute_msd(pos, eq_timestep)
     if (
         np.abs(
@@ -83,7 +83,7 @@ def do_simulation(temp, vol_per_particle):
         )
         > 0.1
     ):
-        return ("Explosion", np.nan, 0)
+        return ("Explosion", np.nan, np.nan, 0)
     time = np.arange(eq_timestep, timesteps + 1, 1) * step_size
     fit = sim_plots.best_fit(msd, time)
     return fit
@@ -112,9 +112,6 @@ if __name__ == "__main__":
 
     with open("phases.pkl", "wb") as file:
         pickle.dump((tgrid, rhogrid, vgrid, fits), file)
-
-    # with open("phases.pkl", "rb") as file:
-    #     tgrid, rhogrid, vgrid, fits = pickle.load(file)
 
     pgrid = rhogrid * tgrid
     print(fits)

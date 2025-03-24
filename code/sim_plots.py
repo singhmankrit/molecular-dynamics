@@ -160,6 +160,7 @@ def plot_pair_correlation(
 def plot_MSD(
     msd: NDArray[np.float64],
     time: NDArray[np.float64],
+    eq_time: float,
     amp: float,
     exponent: float,
     file_name: str = "MSD.png",
@@ -173,6 +174,8 @@ def plot_MSD(
         List of mean square displacements
     time : list
         List of time passed
+    eq_time: float
+        The equilibrium time
     amp: float
         Amplitude of the best fit
     exponent: float
@@ -189,7 +192,7 @@ def plot_MSD(
     plt.plot(time, msd, label="MSD")
     plt.plot(
         time,
-        power_model(time, amp, exponent),
+        power_model(time - eq_time, amp, exponent),
         label=f"Fit (exp: {exponent:.2f})",
         linestyle="--",
     )
@@ -296,7 +299,7 @@ def best_fit(
         The r2 value of the fit
     """
     try:
-        popt_pow, _ = opt.curve_fit(
+        popt_pow, cov = opt.curve_fit(
             power_model, t, msd, bounds=([-0.5, 0.0], [np.inf, 3.0])
         )
     except:
