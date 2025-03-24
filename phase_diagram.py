@@ -4,6 +4,7 @@ from os.path import isfile
 import pickle
 import sys
 import numpy as np
+import scipy
 import matplotlib.pyplot as plt
 from code import initialisation, sim_plots, simulators, observables
 import tqdm.contrib.concurrent as conc
@@ -72,7 +73,7 @@ def do_simulation(temp, vol_per_particle):
         except:
             print(repr(sys.exception()))
     if eq_timestep < 0:
-        return ("no equilibrium", 0, 0, 0)
+        return ("no equilibrium", np.nan, 0)
     msd = observables.compute_msd(pos, eq_timestep)
     if (
         np.abs(
@@ -82,15 +83,24 @@ def do_simulation(temp, vol_per_particle):
         )
         > 0.1
     ):
-        return ("Explosion", 0, 0, 0)
+        return ("Explosion", np.nan, 0)
     time = np.arange(eq_timestep, timesteps + 1, 1) * step_size
     fit = sim_plots.best_fit(msd, time)
     return fit
 
 
 if __name__ == "__main__":
-    temperatures = np.logspace(-2.5, 0.5, 41)
-    pressures = np.logspace(-2, 1, 41)
+    MIN_TEMP_EXP = -2.5
+    MAX_TEMP_EXP = 0.5
+    TEMP_POINTS_CALC = 41
+    TEMP_POINTS_DISPLAY = 400
+    MIN_PRESSURE_EXP = -2
+    MAX_PRESSURE_EXP = 1
+    PRESSURE_POINTS_CALC = 41
+    PRESSURE_POINTS_DISPLAY = 400
+
+    temperatures = np.logspace(MIN_TEMP_EXP, MAX_TEMP_EXP, TEMP_POINTS_CALC)
+    pressures = np.logspace(MIN_PRESSURE_EXP, MAX_PRESSURE_EXP, PRESSURE_POINTS_CALC)
 
     tgrid, pressure_grid = np.meshgrid(temperatures, pressures)
     rhogrid = pressure_grid / tgrid
@@ -107,10 +117,44 @@ if __name__ == "__main__":
     #     tgrid, rhogrid, vgrid, fits = pickle.load(file)
 
     pgrid = rhogrid * tgrid
+    print(fits)
     fits2d = np.array(fits)[:, 0].reshape((len(temperatures), len(pressures)))
-    print(fits2d)
-    fig, ax = plt.subplots()
+    pows2d = (
+        np.array(fits)[:, 1]
+        .reshape((len(temperatures), len(pressures)))
+        .astype(np.float64)
+    )
+    mask = np.isnan(pows2d)
+    tgrid_flat = tgrid[~mask]
+    pgrid_flat = pgrid[~mask]
+    pows_flat = pows2d[~mask]
 
+    disp_temps = np.logspace(MIN_TEMP_EXP, MAX_TEMP_EXP, TEMP_POINTS_DISPLAY)
+    disp_pres = np.logspace(MIN_PRESSURE_EXP, MAX_PRESSURE_EXP, PRESSURE_POINTS_DISPLAY)
+    dtgrid, dpgrid = np.meshgrid(disp_temps, disp_pres)
+    pows_interpolated = scipy.interpolate.griddata(
+        (tgrid_flat, pgrid_flat), pows_flat, (dtgrid, dpgrid), method="linear"
+    )
+
+    fig, ax = plt.subplots()
+    contour = ax.contourf(
+        dtgrid,
+        dpgrid,
+        pows_interpolated,
+        cmap="managua",
+        levels=[-0.5, np.sqrt(2) / 2, np.sqrt(2), 2.5],
+    )
+
+    ax.set_xlabel("temperature")
+    ax.set_ylabel(r"$\rho \dot t$")
+    ax.set_yscale("log")
+    ax.set_title("phase diagram of argon")
+
+    fig.colorbar(contour)
+    fig.tight_layout()
+    fig.savefig("phase_diagram_contour.png")
+
+    fig, ax = plt.subplots()
     solid_idxs = np.where(fits2d == "Solid")
     ax.scatter(
         tgrid[solid_idxs],
@@ -130,8 +174,7 @@ if __name__ == "__main__":
     ax.set_ylabel(r"$\rho \dot t$")
     ax.set_yscale("log")
     ax.set_title("phase diagram of argon")
-    ax.legend()
 
+    ax.legend()
     fig.tight_layout()
-    fig.savefig("phase_diagram.png")
-    plt.show()
+    fig.savefig("phase_diagram_points.png")

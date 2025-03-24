@@ -191,7 +191,7 @@ for simulator_type in simulator_types:
         time = np.arange(eq_timestep, timesteps + 1, 1) * step_size
         eq_time = eq_timestep * step_size
         sim_plots.plot_MSD(msd, time, file_name=f"MSD_{simulator_type}.png")
-        state, r2_liquid, r2_gas, r2_solid = sim_plots.best_fit(msd, time)
+        state, exponent, r2_pow = sim_plots.best_fit(msd, time)
         variables["State of Matter"] = state
 
     if "compressibility" in outputs:

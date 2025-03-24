@@ -220,58 +220,20 @@ def print_outputs(variables: dict[str, str], simulator_type: str, export_csv: bo
     print(tabulate(print_table, headers=["Variable", "Value"], tablefmt="grid"))
 
 
-def linear_model(t: float, D: float) -> float:
+def power_model(t, A, B):
     """
-    A linear fit model for fitting MSD, fits best when the MSD is Diffusive (liquid)
+    Simple power model for the fit function to map to
 
     Parameters
     ----------
     t: float
-        The time to evaluate at
-    D: float
-        The slope of the linear model
-
-    Returns
-    -------
-    The model output at the time t
-    """
-    return D * t
-
-
-def quadratic_model(t: float, A: float) -> float:  # Ballistic (gas)
-    """
-    A quadratic fit model for fitting MSD, fits best when the MSD is Ballistic (gas)
-
-    Parameters
-    ----------
-    t: float
-        The time to evaluate at
+        Time to fill into the model
     A: float
-        The scaling factor for the quadratic model
-
-    Returns
-    -------
-    The model output at the time t
+        Constant scaling factor in the model
+    B: float
+        Exponent factor in the model
     """
-    return A * t**2
-
-
-def constant_model(t: float, C: float, D: float) -> float:  # Localized (solid)
-    """
-    An exponential decay to constant fit model for fitting MSD, fits best when the MSD is Localized (solid)
-
-    Parameters
-    ----------
-    t: float
-        The time to evaluate at
-    A: float
-        The scaling factor for the quadratic model
-
-    Returns
-    -------
-    The model output at the time t
-    """
-    return C * (1 - np.exp(-D * t))
+    return A * t**B
 
 
 def r_squared(y, y_fit):
@@ -294,9 +256,12 @@ def r_squared(y, y_fit):
     return 1 - (ss_res / ss_tot)
 
 
-def best_fit(msd, t):
+def best_fit(
+    msd: NDArray[np.float64], t: NDArray[np.float64]
+) -> tuple[str, float, float]:
     """
-    Finds the best fit out of the three models above and returns the phase it corresponds with
+    Finds the phase by fitting a power model and then comparing the result
+    to values from literature
 
     Parameters
     ----------
@@ -307,32 +272,27 @@ def best_fit(msd, t):
 
     Returns
     -------
-    best_fit: str
-        The name of the best_fit
-    r2_lin: float
-        The r2 value for liquid
-    r2_quad: float
-        The r2 value for gas
-    r2_const: float
-        The r2 value for solid
+    phase: str
+        The phase closest to the fit
+    exponent: float
+        The exponent that appears in the fit
+    r2_pow: float
+        The r2 value of the fit
     """
-    popt_lin, _ = opt.curve_fit(linear_model, t, msd)
-    popt_quad, _ = opt.curve_fit(quadratic_model, t, msd)
-    msd_fit_lin = linear_model(t, *popt_lin)
-    msd_fit_quad = quadratic_model(t, *popt_quad)
-
-    r2_lin = r_squared(msd, msd_fit_lin)
-    r2_quad = r_squared(msd, msd_fit_quad)
     try:
-        popt_const, _ = opt.curve_fit(
-            constant_model, t, msd, p0=[2, 0.1], bounds=((0, 0), (np.inf, 1))
+        popt_pow, _ = opt.curve_fit(
+            power_model, t, msd, bounds=([-0.5, 0.0], [np.inf, 3.0])
         )
-        msd_fit_const = constant_model(t, *popt_const)
-        r2_const = r_squared(msd, msd_fit_const)
     except:
-        r2_const = -np.inf
+        return "NoConverge", np.nan, 0
+    msd_fit_pow = power_model(t, *popt_pow)
+    r2_pow = r_squared(msd, msd_fit_pow)
 
-    # Determine best fit
-    best_fit = max((r2_lin, "Liquid"), (r2_quad, "Gas"), (r2_const, "Solid"))[1]
-
-    return best_fit, r2_lin, r2_quad, r2_const
+    if popt_pow[1] < np.sqrt(2) / 2:
+        return "Solid", popt_pow[1], r2_pow
+    elif popt_pow[1] < np.sqrt(2):
+        return "Liquid", popt_pow[1], r2_pow
+    elif popt_pow[1] < 3.0:
+        return "Gas", popt_pow[1], r2_pow
+    else:
+        return "Unknown", popt_pow[1], r2_pow
