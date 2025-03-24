@@ -31,4 +31,4 @@ The configuration file uses the json format. The options are listed below with t
 | export_csv | `false` | This exports the input parameters and measured observables into a CSV file for report/analysis.
 
 ## Final Report
-The final report for this project can be found at ![](Final_Report_Project_1.pdf)
+The final report for this project can be found at ![Final Report](Final_Report_Project_1.pdf)

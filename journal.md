@@ -374,7 +374,7 @@ so we would be able to run larger simulations for the report.
 We compute specific heat as 2.7465 and using block bootstrap we get 2.7223 ± 0.1932
 
 ## Final Report
-The final report for this project can be found at ![](Final_Report_Project_1.pdf)
+The final report for this project can be found at ![Final Report](Final_Report_Project_1.pdf)
 
 
 ## Reminder final deadline
