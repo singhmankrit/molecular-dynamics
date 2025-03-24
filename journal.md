@@ -372,6 +372,11 @@ various simulator codes, this would improve the memory consumption by an order o
 so we would be able to run larger simulations for the report.
 
 We compute specific heat as 2.7465 and using block bootstrap we get 2.7223 ± 0.1932
+
+## Final Report
+The final report for this project can be found at ![](Final_Report_Project_1.pdf)
+
+
 ## Reminder final deadline
 
 The deadline for project 1 is **25 March, 23:59**. By then, you must have uploaded the report to the repository, and the repository must contain the latest version of the code.
