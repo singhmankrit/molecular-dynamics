@@ -95,13 +95,10 @@ if __name__ == "__main__":
     tgrid, pressure_grid = np.meshgrid(temperatures, pressures)
     rhogrid = pressure_grid / tgrid
     vgrid = 1 / rhogrid
-    print(tgrid)
-    print(pressure_grid)
 
     fits = conc.process_map(
         do_simulation, tgrid.ravel(), vgrid.ravel(), max_workers=20, chunksize=1
     )
-    print(fits)
 
     with open("phases.pkl", "wb") as file:
         pickle.dump((tgrid, rhogrid, vgrid, fits), file)
