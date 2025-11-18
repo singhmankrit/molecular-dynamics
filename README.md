@@ -1,4 +1,4 @@
-# Project 1: Molecular dynamics simulation of Argon atoms
+# Molecular dynamics simulation of Argon atoms
 
 A numpy based simulator for the molecular dynamics of Argon, has multiple integrators which
 can be chosen using the config file `config.json`.
